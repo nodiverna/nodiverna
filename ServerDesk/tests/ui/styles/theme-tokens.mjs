@@ -131,7 +131,7 @@ for(const [name,value] of light){
 const pairs=[
  ['--sd-ink','--sd-bg',4.5],['--sd-ink','--sd-panel',4.5],['--sd-ink','--sd-accent-soft',4.5],
  ['--sd-muted','--sd-bg',4.5],['--sd-muted','--sd-panel',4.5],
- ['--sd-accent-strong','--sd-panel',4.5],['--sd-accent-strong','--sd-accent-soft',4.5],
+ ['--sd-accent-strong','--sd-bg',4.5],['--sd-accent-strong','--sd-panel',4.5],['--sd-accent-strong','--sd-accent-soft',4.5],
  ['--sd-success','--sd-success-bg',4.5],['--sd-success','--sd-panel',4.5],
  ['--sd-warn','--sd-warn-bg',4.5],['--sd-warn','--sd-panel',4.5],
  ['--sd-danger','--sd-danger-bg',4.5],['--sd-danger','--sd-panel',4.5],

@@ -41,7 +41,7 @@
 .sdx[data-backdrop], .sdx-backdrop-scrims {
   --sdx-backdrop-bars: light-dark(color-mix(in srgb, var(--sd-bg) var(--sdx-scrim-bars-light, 32%), transparent), color-mix(in srgb, var(--sd-bg) var(--sdx-scrim-bars-dark, 64%), transparent));
   --sdx-backdrop-navigator: light-dark(color-mix(in srgb, var(--sd-bg) var(--sdx-scrim-navigator-light, 0%), transparent), color-mix(in srgb, var(--sd-bg) var(--sdx-scrim-navigator-dark, 5%), transparent));
-  --sdx-backdrop-workspace: light-dark(color-mix(in srgb, var(--sd-bg) var(--sdx-scrim-workspace-light, 85%), transparent), color-mix(in srgb, var(--sd-bg) var(--sdx-scrim-workspace-dark, 88%), transparent));
+  --sdx-backdrop-workspace: light-dark(color-mix(in srgb, var(--sd-bg) var(--sdx-scrim-workspace-light, 82%), transparent), color-mix(in srgb, var(--sd-bg) var(--sdx-scrim-workspace-dark, 88%), transparent));
 }
 /* The frame paints no surface of its own (.sd-console has --sd-bg), so the layer below it shows; the page canvas
    (the body background) stays under the layer. */
