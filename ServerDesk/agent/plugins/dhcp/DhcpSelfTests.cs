@@ -126,7 +126,7 @@ internal static class DhcpSelfTests
         var hello = PluginProtocol.ReadPluginHello(lines[0]);
         Check(hello.Name == "dhcp" && hello.Version == Program.Version && hello.Capabilities.SequenceEqual(Program.Capabilities), "The plugin hello is wrong.");
         var result = PluginProtocol.ReadResult(lines[1], id);
-        Check(result.Ok && result.Code == "PLUGIN_DHCP_READ_COMPLETED" && result.Message == "The DHCP server was read: 3 scopes, 20 leases." && result.Data?["schema"]?.GetValue<int>() == 1, "The plugin result is wrong.");
+        Check(result.Ok && result.Code == "PLUGIN_DHCP_READ_COMPLETED" && result.Message == "The DHCP server was read. Scopes: 3, leases: 20." && result.Data?["schema"]?.GetValue<int>() == 1, "The plugin result is wrong.");
         var handshake = await Session(PluginProtocol.BrokerHello("4.16.0"));
         Check(handshake.Code == 0 && handshake.Lines.Count == 1, "The install handshake did not end with exit code 0 after the hello.");
         var wrongProtocol = await Session(new JsonObject { ["type"] = "hello", ["protocol"] = 2, ["agentVersion"] = "4.16.0" });

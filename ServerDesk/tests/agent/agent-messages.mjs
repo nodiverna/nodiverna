@@ -120,7 +120,7 @@ assert.deepEqual(agentResultFields({result_code:'lower',result_args:'{}'}),{resu
 assert.match('AGENT_FEATURE_NOT_FOUND',AGENT_CODE_PATTERN);checks+=13;
 // A plugin code is a stored code like an agent code; an unknown one keeps the plugin's English text.
 assert.deepEqual(agentResultFields({result_code:'PLUGIN_DHCP_READ_COMPLETED',result_args:'{"scopes":"3","leases":"20"}'}),{resultCode:'PLUGIN_DHCP_READ_COMPLETED',resultArgs:{scopes:'3',leases:'20'}},'a plugin code is kept');
-assert.equal(agentMessageText({result:'The DHCP server was read: 3 scopes, 20 leases.',resultCode:'PLUGIN_DHCP_READ_COMPLETED',resultArgs:{scopes:'3',leases:'20'}},t('de')),'Der DHCP-Server wurde gelesen: 3 Bereiche, 20 Leases.','a plugin code shows its German catalog text');
+assert.equal(agentMessageText({result:'The DHCP server was read: 3 scopes, 20 leases.',resultCode:'PLUGIN_DHCP_READ_COMPLETED',resultArgs:{scopes:'3',leases:'20'}},t('de')),'Der DHCP-Server wurde gelesen. Bereiche: 3, Leases: 20.','a plugin code shows its German catalog text');
 assert.equal(agentMessageText({result:'A newer plugin text.',resultCode:'PLUGIN_DNS_FROM_A_NEWER_PLUGIN',resultArgs:null},t('de')),'A newer plugin text.','an unknown plugin code keeps the English message');checks+=3;
 
 // 7. The two codes of a failed plugin job, and the toast text that never shows raw agent text.
@@ -128,7 +128,7 @@ for(const code of ['AGENT_PLUGIN_UPLOAD_FAILED','AGENT_PLUGIN_FAILED'])assert.ok
 assert.equal(en['agentMessage.AGENT_PLUGIN_UPLOAD_FAILED'],'The extension read the data, but the agent could not send them to the portal. Try again.');
 assert.equal(de['agentMessage.AGENT_PLUGIN_FAILED'],'Der Agent konnte die Erweiterung nicht ausführen. Versuche es erneut. Wenn es wieder fehlschlägt, prüfe das Agent-Protokoll auf dem Gerät.');
 assert.equal(agentMessageTextOr({result:'The plugin read the data, but the agent could not send them to the portal. Try again.',resultCode:'AGENT_PLUGIN_UPLOAD_FAILED',resultArgs:null},t('de'),'dns.error.read'),'Die Erweiterung hat die Daten gelesen, aber der Agent konnte sie nicht an das Portal senden. Versuche es erneut.','a known code shows its catalog text');
-assert.equal(agentMessageTextOr({result:'The DNS server refused access to the plugin. Check the DnsAdmins group.',resultCode:'PLUGIN_DNS_ACCESS_DENIED',resultArgs:null},t('en'),'dns.error.read'),'The DNS server refused access to the extension. Check the DnsAdmins group.','a known plugin code shows its catalog text');
+assert.equal(agentMessageTextOr({result:'The DNS server refused access to the plugin. Check the DnsAdmins group.',resultCode:'PLUGIN_DNS_ACCESS_DENIED',resultArgs:null},t('en'),'dns.error.read'),'The DNS server refused access to the DNS extension. On the server, check the members of the group DnsAdmins.','a known plugin code shows its catalog text');
 assert.equal(agentMessageTextOr({result:'serverMessage.job.unsupported',resultCode:null,resultArgs:null},t('en'),'dns.error.read'),translate('en','serverMessage.job.unsupported'),'a stored serverMessage key shows its catalog text');
 assert.equal(agentMessageTextOr({result:'apiError.console.queueChanged',resultCode:null,resultArgs:null},t('de'),'dns.error.read'),translate('de','apiError.console.queueChanged'),'a stored apiError key shows its catalog text');
 assert.equal(agentMessageTextOr({result:'apiError.internalError',resultCode:null,resultArgs:null},t('de'),'dns.error.read'),'Der DNS-Server konnte nicht gelesen werden. Versuche es erneut.','an apiError key whose placeholder has no value: the fallback');
