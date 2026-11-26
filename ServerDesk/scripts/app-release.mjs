@@ -66,28 +66,88 @@ export function releaseNotesHeader({ image, version }) {
   return `Image: \`docker pull ${image}:${version}\``;
 }
 
-const hubImage = /^(?:docker\.io\/)?([a-z0-9]+(?:[._-][a-z0-9]+)*)\/([a-z0-9]+(?:[._-][a-z0-9]+)*)$/;
+const ghcrImage = /^ghcr\.io\/([a-z0-9]+(?:[._-][a-z0-9]+)*)\/([a-z0-9]+(?:[._-][a-z0-9]+)*)$/;
+const hubImage = /^(docker\.io\/)?([a-z0-9]+(?:[._-][a-z0-9]+)*)\/([a-z0-9]+(?:[._-][a-z0-9]+)*)$/;
 const imageTag = /^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$/;
+const imageError = image => new Error(`Image "${image}" must be ghcr.io/<owner>/<repository> or docker.io/<namespace>/<repository>.`);
 
-/** The anonymous Docker Hub API URL of one image tag. Only [docker.io/]<namespace>/<repo> images. */
-export function dockerHubTagUrl(image, tag) {
-  const match = typeof image === 'string' ? hubImage.exec(image) : null;
-  if (!match) throw new Error(`Image "${image}" must be docker.io/<namespace>/<repository>.`);
+/**
+ * The registry of an image: ghcr.io/<owner>/<repo>, or Docker Hub as docker.io/<ns>/<repo>
+ * or <ns>/<repo> (the old image name stays accepted). Without the docker.io prefix, a first
+ * part with a dot or localhost is a registry host for Docker, so it is refused.
+ * @returns {{ registry: 'ghcr.io' | 'docker.io', owner: string, repository: string }}
+ */
+function parseImage(image) {
+  if (typeof image !== 'string') throw imageError(image);
+  const ghcr = ghcrImage.exec(image);
+  if (ghcr) return { registry: 'ghcr.io', owner: ghcr[1], repository: ghcr[2] };
+  const hub = hubImage.exec(image);
+  if (hub && (hub[1] || (!hub[2].includes('.') && hub[2] !== 'localhost'))) return { registry: 'docker.io', owner: hub[2], repository: hub[3] };
+  throw imageError(image);
+}
+
+/** The URL that tells whether one image tag exists: the GHCR manifest, or the anonymous Docker Hub API. */
+export function registryTagUrl(image, tag) {
+  const { registry, owner, repository } = parseImage(image);
   if (typeof tag !== 'string' || !imageTag.test(tag)) throw new Error(`Image tag "${tag}" is not valid.`);
-  return `https://hub.docker.com/v2/namespaces/${match[1]}/repositories/${match[2]}/tags/${tag}`;
+  return registry === 'ghcr.io'
+    ? `https://ghcr.io/v2/${owner}/${repository}/manifests/${tag}`
+    : `https://hub.docker.com/v2/namespaces/${owner}/repositories/${repository}/tags/${tag}`;
 }
 
 /** 404 is the only pass: 200 means the version is taken, any other status fails closed. */
-export function dockerHubTagCheck(status, image, tag) {
+export function registryTagCheck(status, image, tag) {
   if (status === 404) return;
-  if (status === 200) throw new Error(`Docker Hub already has ${image}:${tag}. Re-run the failed jobs of the first run, or delete the Docker Hub tag first.`);
-  throw new Error(`Cannot check Docker Hub for ${image}:${tag} (HTTP ${status}).`);
+  if (status === 200) throw new Error(`The registry already has ${image}:${tag}. Re-run the failed jobs of the first run, or delete the tag first.`);
+  throw new Error(`Cannot check the registry for ${image}:${tag} (HTTP ${status}).`);
+}
+
+// Every manifest type a GHCR tag can have: a HEAD with this list gets 200 for any of them.
+const manifestTypes = [
+  'application/vnd.oci.image.index.v1+json',
+  'application/vnd.oci.image.manifest.v1+json',
+  'application/vnd.docker.distribution.manifest.list.v2+json',
+  'application/vnd.docker.distribution.manifest.v2+json',
+].join(', ');
+
+/**
+ * Stops a release whose version the registry has already. GHCR: a pull token
+ * (HTTP Basic with REGISTRY_USERNAME and REGISTRY_TOKEN when both are set,
+ * anonymous otherwise), then HEAD on the manifest. Docker Hub: the anonymous API.
+ * Every failure fails closed, and no message contains the token.
+ */
+export async function checkRegistry({ image, version }, { env = process.env, fetch: request = fetch, log = console.log } = {}) {
+  const url = registryTagUrl(image, version);
+  const { registry, owner, repository } = parseImage(image);
+  const options = { redirect: 'error', signal: AbortSignal.timeout(30_000) };
+  const fail = reason => new Error(`Cannot check the registry for ${image}:${version} (${reason}).`);
+  let status;
+  try {
+    if (registry === 'ghcr.io') {
+      const headers = {};
+      if (env.REGISTRY_USERNAME && env.REGISTRY_TOKEN) headers.Authorization = `Basic ${Buffer.from(`${env.REGISTRY_USERNAME}:${env.REGISTRY_TOKEN}`).toString('base64')}`;
+      const tokenResponse = await request(`https://ghcr.io/token?service=ghcr.io&scope=repository:${owner}/${repository}:pull`, { ...options, headers });
+      if (tokenResponse.status !== 200) throw fail(`token request HTTP ${tokenResponse.status}`);
+      let body;
+      try { body = await tokenResponse.json(); } catch { throw fail('the token answer is not JSON'); }
+      const token = body?.token;
+      if (typeof token !== 'string' || !token) throw fail('the token answer has no token');
+      status = (await request(url, { ...options, method: 'HEAD', headers: { Authorization: `Bearer ${token}`, Accept: manifestTypes } })).status;
+    } else {
+      status = (await request(url, options)).status;
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith('Cannot check the registry for ')) throw error;
+    throw fail(error instanceof Error ? error.message : String(error));
+  }
+  registryTagCheck(status, image, version);
+  log(`The registry has no ${image}:${version} yet.`);
 }
 
 // CLI: node scripts/app-release.mjs plan --bump <patch|minor|none> [--image <name>]
-//      node scripts/app-release.mjs check-hub --image <name> --version <X.Y.Z>
-const usage = 'Usage: node scripts/app-release.mjs plan --bump <patch|minor|none> [--image docker.io/<owner>/<name>] | check-hub --image docker.io/<owner>/<name> --version X.Y.Z';
-const defaultImage = 'docker.io/lostindreamz/nodiverna';
+//      node scripts/app-release.mjs check-registry --image <name> --version <X.Y.Z>
+const usage = 'Usage: node scripts/app-release.mjs plan --bump <patch|minor|none> [--image ghcr.io/<owner>/<name>] | check-registry --image ghcr.io/<owner>/<name> --version X.Y.Z';
+const defaultImage = 'ghcr.io/nodiverna/nodiverna';
 
 function git(args) {
   const result = spawnSync('git', args, { encoding: 'utf8' });
@@ -95,19 +155,9 @@ function git(args) {
   return result.stdout.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
 }
 
-async function checkHub({ image, version }) {
-  const url = dockerHubTagUrl(image, version);
-  let status;
-  try { status = (await fetch(url, { redirect: 'error', signal: AbortSignal.timeout(30_000) })).status; } catch (error) {
-    throw new Error(`Cannot check Docker Hub for ${image}:${version} (${error instanceof Error ? error.message : String(error)}).`);
-  }
-  dockerHubTagCheck(status, image, version);
-  console.log(`Docker Hub has no ${image}:${version} yet.`);
-}
-
 async function cli(argv, env) {
   const { positionals, values } = parseArgs({ args: argv, allowPositionals: true, options: { bump: { type: 'string' }, image: { type: 'string' }, version: { type: 'string' } } });
-  if (positionals.length === 1 && positionals[0] === 'check-hub' && values.image !== undefined && values.version !== undefined && values.bump === undefined) return checkHub(values);
+  if (positionals.length === 1 && positionals[0] === 'check-registry' && values.image !== undefined && values.version !== undefined && values.bump === undefined) return checkRegistry(values);
   if (positionals.length !== 1 || positionals[0] !== 'plan' || values.bump === undefined || values.version !== undefined) throw new Error(usage);
   const ref = env.GITHUB_REF || git(['rev-parse', '--symbolic-full-name', 'HEAD'])[0] || '';
   const sha = env.GITHUB_SHA || git(['rev-parse', 'HEAD'])[0] || '';

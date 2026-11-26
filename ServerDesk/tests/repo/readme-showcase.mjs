@@ -21,7 +21,7 @@ const firstSection = lines.findIndex((line) => line.startsWith('## '));
 const header = lines.slice(0, firstSection).join('\n');
 
 // The first non-empty lines are the centered header block.
-const workflow = 'https://github.com/LostInDreamZ/nodiverna/actions/workflows/docker-image.yml';
+const workflow = 'https://github.com/nodiverna/nodiverna/actions/workflows/docker-image.yml';
 const expectedHeader = [
   '<p align="center">',
   '<img src="ServerDesk/public/favicon.svg" width="96" height="96" alt="Nodiverna logo">',
@@ -30,7 +30,7 @@ const expectedHeader = [
   '<p align="center">Self-hosted management portal for your servers and PCs.</p>',
   '<p align="center">',
   `<a href="${workflow}"><img src="${workflow}/badge.svg" alt="Docker image"></a>`,
-  '<a href="https://hub.docker.com/r/lostindreamz/nodiverna"><img src="https://img.shields.io/docker/v/lostindreamz/nodiverna?sort=semver&label=Docker%20Hub" alt="Docker Hub version"></a>',
+  '<a href="https://github.com/nodiverna/nodiverna/pkgs/container/nodiverna"><img src="https://img.shields.io/github/v/release/nodiverna/nodiverna?filter=v*&sort=semver&label=image" alt="Image version"></a>',
   '<a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="License: AGPL-3.0"></a>',
   '</p>',
   '<p align="center">',
