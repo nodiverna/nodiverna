@@ -302,7 +302,7 @@
   --scheme-light-on-accent: #11151c;
   --scheme-light-from: color-mix(in srgb, #ff6115 97%, #000);
   --scheme-light-to: #fffcf4;
-  --scheme-light-strong: 75%;
+  --scheme-light-strong: 70%;
   --scheme-light-soft: 9%;
 }
 /* Prompt Blue #0b132b & AI Green #39ff88, dark only */

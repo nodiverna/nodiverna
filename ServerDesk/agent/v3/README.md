@@ -40,6 +40,8 @@ Since 4.21.3, an update without a severity in Windows Update no longer makes the
 
 Since 4.21.4, the agent classifies a runbook diagnosis by the same rule as the portal. A diagnosis with invalid operation parameters counts as a change and no longer runs next to another change. For the details, refer to [Fixes in 4.21.4](../../docs/native-agent-v4.md#fixes-in-4214).
 
+Since 4.21.5, a slow role enumeration on a Windows server shows the roles instead of "Roles and features could not be read (TimeoutException)". For the details, refer to [Fixes in 4.21.5](../../docs/native-agent-v4.md#fixes-in-4215).
+
 Since 4.22.0, the agent also reports whether Windows is activated, its license channel and, for an evaluation edition or a grace period, when it ends. It reads no product key. For the details, refer to [Windows license in 4.22.0](../../docs/native-agent-v4.md#windows-license-in-4220).
 
 Since 4.7.0, the EXE runs as two services. A SYSTEM broker without network access does only the work that the portal signed. An unprivileged worker does all the portal traffic.

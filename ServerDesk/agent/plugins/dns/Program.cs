@@ -14,24 +14,24 @@ namespace ServerDesk.Plugin.Dns;
 internal static class Program
 {
     // BaseVersion is the csproj <Version>; a dev build adds -dev.<sha7> (agent/BuildVersion.targets).
-    internal const string Name = "dns", BaseVersion = "1.0.4", Version = BaseVersion + BuildVersion.DevSuffix;
+    internal const string Name = "dns", BaseVersion = "1.0.5", Version = BaseVersion + BuildVersion.DevSuffix;
     internal static readonly string[] Capabilities = ["dns-read", "dns-zone-read", .. DnsChanges.Operations];
 
     /// <summary>The English texts of the plugin codes; agent/v3/AgentMessages.cs registers the same texts for the portal catalogs.</summary>
     internal static readonly IReadOnlyDictionary<string, string> Messages = new Dictionary<string, string>(StringComparer.Ordinal)
     {
-        ["PLUGIN_DNS_READ_COMPLETED"] = "The DNS server was read: {zones} zones.",
-        ["PLUGIN_DNS_ZONE_READ_COMPLETED"] = "Zone {zone} was read: {records} records.",
-        ["PLUGIN_DNS_SERVICE_STOPPED"] = "The DNS Server service is stopped. Start it under Management → Services.",
-        ["PLUGIN_DNS_NOT_INSTALLED"] = "The DNS Server role is not installed on this device.",
+        ["PLUGIN_DNS_READ_COMPLETED"] = "The DNS server was read. Zones: {zones}.",
+        ["PLUGIN_DNS_ZONE_READ_COMPLETED"] = "Zone {zone} was read. Records: {records}.",
+        ["PLUGIN_DNS_SERVICE_STOPPED"] = "The DNS Server service is stopped. Start the service in Management → Services.",
+        ["PLUGIN_DNS_NOT_INSTALLED"] = "The DNS Server role is not installed on this device. Install the role in Management → Roles & features, or remove the DNS plugin in the Extensions area.",
         ["PLUGIN_DNS_READ_FAILED"] = "The DNS server could not be read (error {error}). Try again.",
-        ["PLUGIN_DNS_ACCESS_DENIED"] = "The DNS server refused access to the plugin. Check the DnsAdmins group.",
+        ["PLUGIN_DNS_ACCESS_DENIED"] = "The DNS server refused access to the DNS plugin. On the server, check the members of the group DnsAdmins.",
         ["PLUGIN_DNS_CHANGED"] = "The DNS server was changed.",
-        ["PLUGIN_DNS_CHANGED_NOT_READ"] = "The DNS server was changed. The plugin could not read it again. The portal shows the change after the next read.",
-        ["PLUGIN_DNS_INVALID_CHANGE"] = "The plugin refused the change because {field} is not valid.",
-        ["PLUGIN_DNS_OBJECT_EXISTS"] = "{object} already exists on the DNS server. Read the server again.",
-        ["PLUGIN_DNS_OBJECT_MISSING"] = "{object} does not exist on the DNS server. Read the server again.",
-        ["PLUGIN_DNS_NOT_DOMAIN_CONTROLLER"] = "This server is no domain controller, so it cannot store zones in Active Directory.",
+        ["PLUGIN_DNS_CHANGED_NOT_READ"] = "The DNS server was changed, but the plugin could not read it afterwards. Select “Read again” to see the change.",
+        ["PLUGIN_DNS_INVALID_CHANGE"] = "The DNS plugin did not make the change because the value of {field} is not valid. Correct the value and try again.",
+        ["PLUGIN_DNS_OBJECT_EXISTS"] = "{object} already exists on the DNS server. Select “Read again” to see the current state.",
+        ["PLUGIN_DNS_OBJECT_MISSING"] = "{object} does not exist on the DNS server. Select “Read again” to see the current state.",
+        ["PLUGIN_DNS_NOT_DOMAIN_CONTROLLER"] = "This server is not a domain controller, so it cannot store zones in Active Directory. Store the zone in a file on this server instead.",
         ["PLUGIN_DNS_CHANGE_FAILED"] = "The DNS server refused the change (error {error}). Check the values and try again.",
         ["PLUGIN_DNS_CHANGE_FAILED_DETAIL"] = "The DNS server refused the change (error {error}). Windows reports: {detail} Check the values and try again.",
     };

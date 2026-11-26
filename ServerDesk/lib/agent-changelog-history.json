@@ -7,6 +7,13 @@
     "fixes": []
   },
   {
+    "version": "4.21.5",
+    "features": [],
+    "fixes": [
+      "On Windows servers with a slow role enumeration, the roles and features inventory no longer stops after 45 seconds, and a slow read now shows the roles instead of a timeout."
+    ]
+  },
+  {
     "version": "4.21.4",
     "features": [],
     "fixes": [

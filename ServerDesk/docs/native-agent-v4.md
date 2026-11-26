@@ -16,6 +16,17 @@ Agent 4.22.0 reports the Windows activation state in the new snapshot key `windo
 - **Portal.** The device overview shows the fact **Windows activation**. The rules **Evaluation edition** and **Windows not activated** make issues and alarms. For the details, refer to [Windows activation](device-health-signals.md#windows-activation).
 - **Self-test.** `ServerDesk.Agent.exe --windows-license-self-test` checks every status, every channel rule, the end times, the second query and the failure results.
 
+## Fixes in 4.21.5
+
+- **Cause.** On some Windows servers, for example Windows Server 2025, the device page showed "Roles and features could not be read (TimeoutException)". The worker gave the broker read of the role list 45 seconds. The ServerManager enumeration can take up to 2 minutes. So a slow but working enumeration failed in every inventory cycle, and its late result was lost.
+- **Time budget.** "Roles and features" now has a deadline of 150 seconds (`NativeFeatures.InventoryDeadlineSeconds`). The worker's broker call waits 165 seconds. The deadline covers the 120-second enumeration (`NativeFeatures.ServerEnumerationSeconds`), four provider probes of 5 seconds and 10 seconds of margin. A run past 150 seconds still shows "the Windows provider does not answer in time".
+- **Joined broker reads.** The broker reads each privileged inventory in one run at a time. A request that arrives while the same read runs now waits for that run and gets its result or its failure. Agents up to 4.21.4 failed such a request after 30 seconds with "The privileged inventory is still running.". A failure is not kept: the next request reads again.
+- **Shared enumeration.** The telemetry and the drift inventory share one role enumeration. A list call that starts while an enumeration runs gets its result and does not start a second enumeration. A role installation or removal still excludes every list.
+- **Timing log line.** The broker writes "Broker telemetry Roles and features: read in <ms> ms (<count> components)." for the first successful role read after its start and for every read of 20 seconds or more.
+- **Customer move.** Moving a device to another customer does not cause the error. The move sends no job and no inventory refresh to the agent.
+
+`ServerDesk.Agent.exe --features-self-test` checks the time budget, the shared enumeration and the timing line. `--broker-self-test` checks the joined broker reads, and `--failure-paths-self-test` checks the device page lines of a slow read and of a real failure.
+
 ## Fixes in 4.21.4
 
 - **Runbook diagnosis class.** The agent now classifies a runbook diagnosis by the same rule as the portal. A diagnosis without script runs as a parallel job only when its operation parameters are valid for its operation. For example, `test-connection` needs a valid host and an integral port from 1 to 65535. Agents up to 4.21.3 did not check the operation parameters. They ran a diagnosis with invalid parameters as a parallel job, but the portal claimed it as an exclusive job.

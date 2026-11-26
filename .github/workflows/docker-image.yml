@@ -1,17 +1,13 @@
-# Publishes the runtime image (linux/amd64) to Docker Hub and, for patch and
-# minor, tags the release and creates a GitHub release. It runs only by hand,
-# never for pull requests, so forks never see the Docker Hub secrets.
+# Publishes the runtime image (linux/amd64) to ghcr.io/nodiverna/nodiverna and,
+# for patch and minor, tags the release and creates a GitHub release. It runs
+# only by hand, never for pull requests.
 # A run with release none pushes no release: on main it pushes edge and
 # sha-<sha7>, on dev it pushes dev and dev-<sha7>. The version of such an image
 # (label and SERVERDESK_VERSION) is edge-<sha7> or dev-<sha7>. Releases (patch
 # and minor) run only from main.
-# Before the first run: create the Docker Hub repository and the GitHub
-# environment docker-hub. That environment allows the branches main and dev, and it
-# holds the secrets DOCKERHUB_USERNAME and DOCKERHUB_TOKEN (access token with
-# read/write). Do not keep them as repository secrets: those are available from
-# every branch. Optionally set the variable DOCKERHUB_IMAGE (default
-# lostindreamz/nodiverna). The release job has no environment and needs no extra
-# secret.
+# The publish job pushes with the GITHUB_TOKEN (packages: write). The workflow
+# needs no secret and no environment. After the first push, an organisation
+# owner sets the package visibility to public in the package settings.
 name: Docker image
 
 on:
@@ -36,16 +32,18 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  IMAGE: ${{ vars.DOCKERHUB_IMAGE || 'lostindreamz/nodiverna' }}
+  IMAGE: ghcr.io/nodiverna/nodiverna
   SMOKE_IMAGE: nodiverna:smoke
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 120
-    # The Docker Hub secrets exist only in this environment, and it allows only
+    # The GITHUB_TOKEN of this job may push packages. planRelease allows only
     # main (releases, or edge and sha-) and dev (dev and dev-).
-    environment: docker-hub
+    permissions:
+      contents: read
+      packages: write
     outputs:
       version: ${{ steps.plan.outputs.version }}
       tag: ${{ steps.plan.outputs.tag }}
@@ -72,16 +70,18 @@ jobs:
         working-directory: ServerDesk
         env:
           RELEASE: ${{ inputs.release }}
-        run: node scripts/app-release.mjs plan --bump "$RELEASE" --image "docker.io/$IMAGE"
+        run: node scripts/app-release.mjs plan --bump "$RELEASE" --image "$IMAGE"
 
-      # A version that is on Docker Hub already (for example after a failed release
+      # A version that is in the registry already (for example after a failed release
       # job) stops the run before the build. Any answer except 404 stops it too.
-      - name: Check Docker Hub for the version
+      - name: Check the registry for the version
         if: steps.plan.outputs.release == 'true'
         working-directory: ServerDesk
         env:
           VERSION: ${{ steps.plan.outputs.version }}
-        run: node scripts/app-release.mjs check-hub --image "docker.io/$IMAGE" --version "$VERSION"
+          REGISTRY_USERNAME: ${{ github.actor }}
+          REGISTRY_TOKEN: ${{ github.token }}
+        run: node scripts/app-release.mjs check-registry --image "$IMAGE" --version "$VERSION"
 
       # Checks the lockfile against the npm advisory database. A critical or high
       # finding or a registry error stops the run before any build. The only
@@ -128,7 +128,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
-          images: docker.io/${{ env.IMAGE }}
+          images: ${{ env.IMAGE }}
           flavor: |
             latest=false
           tags: |
@@ -143,11 +143,12 @@ jobs:
           labels: |
             org.opencontainers.image.version=${{ steps.plan.outputs.version }}
 
-      - name: Log in to Docker Hub
+      - name: Log in to the GitHub Container Registry
         uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       # linux/arm64 stays off for now. The database driver is pure JavaScript
       # now, but the arm64 image has no smoke test yet (pipeline smoke runs on
@@ -164,7 +165,7 @@ jobs:
           build-args: |
             SERVERDESK_VERSION=${{ steps.plan.outputs.version }}
 
-  # Runs only after the image is on Docker Hub. The tag is the source of the
+  # Runs only after the image is in the registry. The tag is the source of the
   # version; the CI never commits. A failed run here can use "Re-run failed jobs".
   release:
     needs: publish

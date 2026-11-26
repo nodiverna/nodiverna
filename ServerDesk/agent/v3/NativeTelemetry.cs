@@ -67,7 +67,8 @@ internal sealed class NativeTelemetryCollector
         Add("Network", ConfigurationSeconds, Networks);
         Add("System inventory", InventorySeconds, ComputerInventory);
         Add("Hardware inventory", NativeHardwareInventory.IntervalSeconds, new NativeHardwareInventory().Collect, NativeHardwareInventory.DeadlineSeconds);
-        Add("Roles and features", InventorySeconds, () => new JsonObject { ["features"] = NativeFeatures.ListAsync(IsServer(), CancellationToken.None).GetAwaiter().GetResult() }, 25);
+        // The role enumeration can take up to 2 minutes (4.21.5): its deadline covers it, so the broker call waits 165 s.
+        Add("Roles and features", InventorySeconds, () => new JsonObject { ["features"] = NativeFeatures.ListAsync(IsServer(), CancellationToken.None).GetAwaiter().GetResult() }, NativeFeatures.InventoryDeadlineSeconds);
         Add("Local accounts", InventorySeconds, LocalAccounts, 10);
         Add("Page file", ConfigurationSeconds, Pagefile);
         Add("Security", ConfigurationSeconds, Security);

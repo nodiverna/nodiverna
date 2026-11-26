@@ -7,8 +7,8 @@
 <p align="center">Self-hosted management portal for your servers and PCs.</p>
 
 <p align="center">
-  <a href="https://github.com/LostInDreamZ/nodiverna/actions/workflows/docker-image.yml"><img src="https://github.com/LostInDreamZ/nodiverna/actions/workflows/docker-image.yml/badge.svg" alt="Docker image"></a>
-  <a href="https://hub.docker.com/r/lostindreamz/nodiverna"><img src="https://img.shields.io/docker/v/lostindreamz/nodiverna?sort=semver&label=Docker%20Hub" alt="Docker Hub version"></a>
+  <a href="https://github.com/nodiverna/nodiverna/actions/workflows/docker-image.yml"><img src="https://github.com/nodiverna/nodiverna/actions/workflows/docker-image.yml/badge.svg" alt="Docker image"></a>
+  <a href="https://github.com/nodiverna/nodiverna/pkgs/container/nodiverna"><img src="https://img.shields.io/github/v/release/nodiverna/nodiverna?filter=v*&sort=semver&label=image" alt="Image version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="License: AGPL-3.0"></a>
 </p>
 
@@ -69,15 +69,15 @@ You need Docker Compose 2.23.1 or later. At this time, the image is available on
 
    ```sh
    mkdir nodiverna && cd nodiverna
-   curl -fsSLO https://raw.githubusercontent.com/LostInDreamZ/nodiverna/main/ServerDesk/compose.yaml
-   curl -fsSLO https://raw.githubusercontent.com/LostInDreamZ/nodiverna/main/ServerDesk/deploy/runtime.env.example
+   curl -fsSLO https://raw.githubusercontent.com/nodiverna/nodiverna/main/ServerDesk/compose.yaml
+   curl -fsSLO https://raw.githubusercontent.com/nodiverna/nodiverna/main/ServerDesk/deploy/runtime.env.example
    ```
 
 2. Make the file `.env.runtime` and generate the secrets. The command uses the Node.js in the image:
 
    ```sh
    grep -v -E '^(SESSION_SECRET|PASSWORD_PEPPER|AGENT_JOB_SIGNING_KEY|DATABASE_PASSWORD)=' runtime.env.example > .env.runtime
-   docker run --rm --entrypoint node docker.io/lostindreamz/nodiverna:latest -e "const c=require('crypto'),r=()=>c.randomBytes(48).toString('base64url');console.log('SESSION_SECRET='+r()+'\nPASSWORD_PEPPER='+r()+'\nDATABASE_PASSWORD='+c.randomBytes(24).toString('hex')+'\nAGENT_JOB_SIGNING_KEY='+c.generateKeyPairSync('ec',{namedCurve:'prime256v1'}).privateKey.export({type:'pkcs8',format:'der'}).toString('base64'))" >> .env.runtime
+   docker run --rm --entrypoint node ghcr.io/nodiverna/nodiverna:latest -e "const c=require('crypto'),r=()=>c.randomBytes(48).toString('base64url');console.log('SESSION_SECRET='+r()+'\nPASSWORD_PEPPER='+r()+'\nDATABASE_PASSWORD='+c.randomBytes(24).toString('hex')+'\nAGENT_JOB_SIGNING_KEY='+c.generateKeyPairSync('ec',{namedCurve:'prime256v1'}).privateKey.export({type:'pkcs8',format:'der'}).toString('base64'))" >> .env.runtime
    chmod 600 .env.runtime
    ```
 
@@ -144,7 +144,7 @@ The agent supports Windows Server 2022/2025 and Windows 11 Pro/Enterprise. In th
 - [Own login and RBAC](ServerDesk/docs/local-identity-rbac.md): accounts, invitations, MFA and roles.
 - [Customers](ServerDesk/docs/customers.md): several customers in one portal, the customer boundary, installers and actions for several customers.
 - [Usage data](ServerDesk/docs/usage-data.md): which technical values the portal can send, and only with your consent.
-- [Releases](https://github.com/LostInDreamZ/nodiverna/releases): the versions of the image and the agent, with their changes.
+- [Releases](https://github.com/nodiverna/nodiverna/releases): the versions of the image and the agent, with their changes.
 
 ## Contributing and security
 
@@ -154,7 +154,7 @@ Do not report a vulnerability as a public issue. Report it in private, as [`SECU
 
 ## License
 
-The whole repository uses the GNU Affero General Public License, version 3 only (AGPL-3.0, refer to [`LICENSE`](LICENSE)). This includes the customer functions. The product stays free of charge on GitHub, and the Docker image `docker.io/lostindreamz/nodiverna` contains the complete product.
+The whole repository uses the GNU Affero General Public License, version 3 only (AGPL-3.0, refer to [`LICENSE`](LICENSE)). This includes the customer functions. The product stays free of charge on GitHub, and the Docker image `ghcr.io/nodiverna/nodiverna` contains the complete product.
 
 Contributions use the same license, as the contribution terms in [`CONTRIBUTING.md`](CONTRIBUTING.md) tell you.
 

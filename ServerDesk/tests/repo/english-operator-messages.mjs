@@ -1,6 +1,7 @@
 // Operator, developer and agent output is English. The guard flags
-// German text: an umlaut, ß, German quotation marks or a word from a German
-// stop-word list. Operator files are checked in full; agent C# files only in
+// German text: an umlaut, ß, the German opening quotation mark „ or a word
+// from a German stop-word list. English typographic quotes (“ and ”, as in
+// “Read again”) pass, although German closes a quote with “ too. Operator files are checked in full; agent C# files only in
 // their string literals. German stays in lib/i18n/messages/de.ts, in tests and
 // in the seeded Owner role description (database data the RBAC UI shows).
 import assert from 'node:assert/strict';
@@ -22,7 +23,7 @@ const stopWords = [
   'unbekannter', 'fehlt', 'geändert', 'ausgeführt', 'abgebrochen', 'verfügbar', 'über', 'zum', 'zur', 'auf', 'bei', 'nach', 'von', 'vor',
   'netzwerk', 'prozesse', 'inventar', 'sicherheit', 'geplante', 'lokale', 'konten', 'rollen', 'aufgaben',
 ];
-const german = new RegExp(String.raw`[äöüÄÖÜß„“]|(?<![\p{L}\p{N}_])(?:${stopWords.join('|')})(?![\p{L}\p{N}_])`, 'iu');
+const german = new RegExp(String.raw`[äöüÄÖÜß„]|(?<![\p{L}\p{N}_])(?:${stopWords.join('|')})(?![\p{L}\p{N}_])`, 'iu');
 
 /** The lines of text that look German, as "line: text". */
 export function germanLines(text) {

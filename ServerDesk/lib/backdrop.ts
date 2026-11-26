@@ -211,7 +211,7 @@ export const backdropSchemes:Record<BackdropMode,Partial<Record<SchemeId,SchemeS
   'cyber-teal':light(mixed('#7fffd4',8,'#f4f6fa'),parse('#0a5b61')),
   inkberry:light(mixed('#ffb7a5',4,'#f4f6fa'),parse('#1a0b2e')),
   'electric-violet':light(mixed('#ffd6a5',6,'#f4f6fa'),parse('#6a00f4')),
-  ember:light(mixed('#fffcf4',50,'#f4f6fa'),mixed('#ff6115',97,'#000000'),75),
+  ember:light(mixed('#fffcf4',50,'#f4f6fa'),mixed('#ff6115',97,'#000000'),70),
  },
  dark:{
   brand:aurora.dark,

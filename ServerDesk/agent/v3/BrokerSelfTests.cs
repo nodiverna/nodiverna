@@ -42,6 +42,79 @@ internal static class BrokerSelfTests
         await RemoteRenewalAsync();
         WorkerConfiguration();
         await StaleLaneAsync();
+        await TelemetrySingleFlightAsync();
+    }
+
+    // ---- 4.21.5: a privileged read is single-flight per name; a waiting request joins it ----
+    private static async Task TelemetrySingleFlightAsync()
+    {
+        var wait = TimeSpan.FromSeconds(10);
+        var calls = new System.Collections.Concurrent.ConcurrentDictionary<string, int>(StringComparer.Ordinal);
+        var started = new System.Collections.Concurrent.ConcurrentDictionary<string, TaskCompletionSource>(StringComparer.Ordinal);
+        var releases = new System.Collections.Concurrent.ConcurrentDictionary<string, TaskCompletionSource<Func<JsonObject>>>(StringComparer.Ordinal);
+        TaskCompletionSource Started(string name) => started.GetOrAdd(name, _ => new(TaskCreationOptions.RunContinuationsAsynchronously));
+        TaskCompletionSource<Func<JsonObject>> Release(string name) => releases.GetOrAdd(name, _ => new(TaskCreationOptions.RunContinuationsAsynchronously));
+        // Each read blocks until the test releases it with its result or failure, then the next read of the name needs a new release.
+        JsonObject Collect(string name)
+        {
+            calls.AddOrUpdate(name, 1, (_, count) => count + 1);
+            Started(name).TrySetResult();
+            var outcome = Release(name).Task.GetAwaiter().GetResult();
+            releases.TryRemove(name, out _); started.TryRemove(name, out _);
+            return outcome();
+        }
+        var telemetry = new BrokerTelemetry(Path.GetTempPath(), null, Collect);
+
+        // Two concurrent requests for one name: one read, the same value for both.
+        var first = telemetry.CollectAsync("Roles and features", CancellationToken.None);
+        await Started("Roles and features").Task.WaitAsync(wait);
+        var second = telemetry.CollectAsync("Roles and features", CancellationToken.None);
+        // A request that arrives later than the old 30 s gate budget would allow (scaled by a signal) still joins.
+        var late = telemetry.CollectAsync("Roles and features", CancellationToken.None);
+        using var cancel = new CancellationTokenSource();
+        var cancelled = telemetry.CollectAsync("Roles and features", cancel.Token);
+        cancel.Cancel();
+        var stopped = await FailureOf(() => cancelled.WaitAsync(wait));
+        Check(stopped is OperationCanceledException && !first.IsCompleted && !second.IsCompleted && !late.IsCompleted, "A cancelled waiter ends only its own wait; the read goes on.");
+        // Different names run in parallel: Drivers starts while Roles and features still runs.
+        var drivers = telemetry.CollectAsync("Drivers", CancellationToken.None);
+        await Started("Drivers").Task.WaitAsync(wait);
+        Check(calls["Drivers"] == 1 && !first.IsCompleted, "Different names do not wait for each other.");
+        Release("Roles and features").SetResult(() => new JsonObject { ["features"] = new JsonArray("Web-Server") });
+        var values = new[] { await first.WaitAsync(wait), await second.WaitAsync(wait), await late.WaitAsync(wait) };
+        Check(calls["Roles and features"] == 1 && values.All(value => value["features"]![0]!.GetValue<string>() == "Web-Server"), "Concurrent requests share one read and its value (" + calls["Roles and features"] + " reads).");
+        Check(!ReferenceEquals(values[0], values[1]) && values.All(value => value.Parent is null), "Each request gets its own copy for its reply.");
+        // Each reply takes its value as a child, as DispatchAsync does.
+        var replies = values.Select(value => new JsonObject { ["ok"] = true, ["value"] = value }).ToList();
+        Check(replies.Count == 3, "Every reply holds its value.");
+        Release("Drivers").SetResult(() => new JsonObject { ["driverHealth"] = new JsonObject() });
+        Check((await drivers.WaitAsync(wait))["driverHealth"] is JsonObject, "The Drivers read ends with its own value.");
+
+        // The next request after a finished read starts a new read; a later waiter of a cancelled request sees the result.
+        var again = telemetry.CollectAsync("Roles and features", CancellationToken.None);
+        await Started("Roles and features").Task.WaitAsync(wait);
+        Check(calls["Roles and features"] == 2, "A finished read is not kept: the next request reads again.");
+        Release("Roles and features").SetResult(() => new JsonObject { ["features"] = new JsonArray("DNS") });
+        Check((await again.WaitAsync(wait))["features"]![0]!.GetValue<string>() == "DNS", "The new read gives its own value.");
+
+        // A failed read gives the same failure to every waiter and is not replayed.
+        var failing = telemetry.CollectAsync("Software inventory", CancellationToken.None);
+        await Started("Software inventory").Task.WaitAsync(wait);
+        var joined = telemetry.CollectAsync("Software inventory", CancellationToken.None);
+        var failure = new NativeInventoryException("Software registry", new UnauthorizedAccessException("denied"));
+        Release("Software inventory").SetResult(() => throw failure);
+        var errors = new[] { await FailureOf(() => failing.WaitAsync(wait)), await FailureOf(() => joined.WaitAsync(wait)) };
+        Check(errors.All(error => error is NativeInventoryException && error.Message == failure.Message) && calls["Software inventory"] == 1, "A failed read gives its exception to every waiter.");
+        var replyCodes = errors.Select(error => BrokerProtocol.Failure(error!, 1)).Select(reply => reply["errorType"]!.GetValue<string>() + "/" + reply["errorCode"]!.GetValue<string>()).Distinct().ToList();
+        Check(replyCodes.SequenceEqual(new[] { "NativeInventoryException/access-denied" }), "Every waiter's failure reply has the same type and code: " + string.Join(", ", replyCodes));
+        var retry = telemetry.CollectAsync("Software inventory", CancellationToken.None);
+        await Started("Software inventory").Task.WaitAsync(wait);
+        Release("Software inventory").SetResult(() => new JsonObject { ["software"] = 1 });
+        Check((await retry.WaitAsync(wait))["software"]!.GetValue<int>() == 1 && calls["Software inventory"] == 2, "The next request after a failure reads again.");
+
+        // An unknown name is refused before any read.
+        var unknown = await FailureOf(() => telemetry.CollectAsync("Anything", CancellationToken.None));
+        Check(unknown is InvalidDataException && !calls.ContainsKey("Anything"), "An unknown name is refused.");
     }
 
     // A fake broker pipe. Each written frame is one request; `answer` gives its

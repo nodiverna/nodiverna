@@ -367,7 +367,8 @@ internal sealed class TerminalBroker
 }
 
 // Fixed, argument-free administrator inventories for the worker's telemetry.
-internal sealed class BrokerTelemetry(string root, Action<string>? log = null)
+// `collect` is a self-test seam that replaces the provider reads; null reads Windows.
+internal sealed class BrokerTelemetry(string root, Action<string>? log = null, Func<string, JsonObject>? collect = null)
 {
     private readonly NativeHardwareInventory hardware = new();
     private readonly NativeCrashInventory crashes = new();
@@ -380,21 +381,49 @@ internal sealed class BrokerTelemetry(string root, Action<string>? log = null)
     private readonly NativeAutostartInventory autostart = new();
     private readonly NativeDefender defender = new();
     private readonly NativeWindowsLicense windowsLicense = new();
-    private readonly ConcurrentDictionary<string, SemaphoreSlim> gates = new(StringComparer.Ordinal);
+    private readonly object flights = new();
+    private readonly Dictionary<string, Task<JsonObject>> running = new(StringComparer.Ordinal);
+    private readonly NativeFeatureTiming rolesTiming = new();
 
+    // Single flight per name (4.21.5): a request for a name whose read runs
+    // awaits that same read instead of failing after a fixed wait. Only the
+    // request's own token ends its wait; the read goes on for the other requests.
+    // Its result or its failure goes to every waiting request and is never kept:
+    // the next request after the read starts a new one.
     internal async Task<JsonObject> CollectAsync(string name, CancellationToken token)
     {
         if (name != "updates" && !NativeTelemetryCollector.PrivilegedProviders.Contains(name)) throw new InvalidDataException("Unknown privileged inventory.");
-        var gate = gates.GetOrAdd(name, _ => new SemaphoreSlim(1, 1));
-        if (!await gate.WaitAsync(TimeSpan.FromSeconds(30), token)) throw new TimeoutException("The privileged inventory is still running.");
-        try { return await Task.Run(() => Collect(name), token); }
-        finally { gate.Release(); }
+        token.ThrowIfCancellationRequested();
+        TaskCompletionSource<JsonObject>? owner = null; Task<JsonObject> run;
+        lock (flights)
+        {
+            if (!running.TryGetValue(name, out run!)) { owner = new(TaskCreationOptions.RunContinuationsAsynchronously); running[name] = run = owner.Task; }
+        }
+        if (owner is not null) _ = RunAsync(name, owner);
+        var value = await run.WaitAsync(token);
+        // A JSON node has one parent: every reply gets its own copy.
+        lock (value) return (JsonObject)value.DeepClone();
+    }
+
+    private async Task RunAsync(string name, TaskCompletionSource<JsonObject> owner)
+    {
+        try
+        {
+            var value = await Task.Run(() => collect is null ? Collect(name) : collect(name));
+            lock (flights) running.Remove(name);
+            owner.SetResult(value);
+        }
+        catch (Exception error)
+        {
+            lock (flights) running.Remove(name);
+            owner.SetException(error);
+        }
     }
 
     private JsonObject Collect(string name) => name switch
     {
         "Hardware inventory" => hardware.Collect(),
-        "Roles and features" => new JsonObject { ["features"] = NativeFeatures.ListAsync(NativeTelemetryCollector.IsServer(), CancellationToken.None).GetAwaiter().GetResult() },
+        "Roles and features" => Roles(),
         "Security" => NativeTelemetryCollector.Security(),
         "Local firewall rules" => NativeTelemetryCollector.FirewallRules(),
         "Scheduled tasks" => NativeTelemetryCollector.Tasks(),
@@ -419,6 +448,15 @@ internal sealed class BrokerTelemetry(string root, Action<string>? log = null)
         var value = drivers.Collect();
         if (drivers.TimingLogLine() is string line) log?.Invoke(line);
         return value;
+    }
+
+    // The time of the first role read after the broker start and of every slow one (4.21.5).
+    private JsonObject Roles()
+    {
+        var watch = Stopwatch.StartNew();
+        var features = NativeFeatures.ListAsync(NativeTelemetryCollector.IsServer(), CancellationToken.None).GetAwaiter().GetResult();
+        if (rolesTiming.LogLine(watch.ElapsedMilliseconds, features.Count) is string line) log?.Invoke(line);
+        return new JsonObject { ["features"] = features };
     }
 
     /// <summary>The broker log line of a failed telemetry read: collector, type and provider code, elapsed time, and the redacted message (at most 300 characters).</summary>

@@ -13,31 +13,80 @@ internal static class NativeFeatures
     internal const string RequestGuidClass = "MSFT_ServerManagerRequestGuid";
     internal const string ServerManagerNamespace = @"root\Microsoft\Windows\ServerManager";
     internal const string DocumentedNamespace = @"root\StandardCimv2";
-    private static readonly TimeSpan ProviderProbeTimeout = TimeSpan.FromSeconds(5);
+    internal static readonly TimeSpan ProviderProbeTimeout = TimeSpan.FromSeconds(5);
+    /// <summary>How long EnumerateServer polls ServerManager for the role list before AGENT_FEATURE_INVENTORY_TIMEOUT.</summary>
+    internal const int ServerEnumerationSeconds = 120;
+    /// <summary>The telemetry deadline of "Roles and features" (4.21.5): the enumeration, the four provider probes of the first OpenServerManager and 10 s margin. The worker's broker call waits AgentWorker.PrivilegedCallSeconds of it (165 s).</summary>
+    internal const int InventoryDeadlineSeconds = 150;
+    /// <summary>A role read of at least this long writes the broker timing line again.</summary>
+    internal const int TimingLogMilliseconds = 20_000;
+    private static readonly TimeSpan CacheLifetime = TimeSpan.FromSeconds(20);
     private static string? providerNamespace;
     private static readonly SemaphoreSlim Gate = new(1, 1);
+    // Flight guards the result cache and the running list enumerations (one per server/client kind).
+    private static readonly object Flight = new();
+    private static readonly Dictionary<bool, Task<JsonArray>> flights = [];
     private static JsonArray? cached;
     private static DateTime cacheAt;
     private static bool cacheServer;
     private static IntPtr dismModule;
     private static readonly NativeFeatureDisplayCache DismDisplayNames = new();
-    internal static async Task<JsonArray> ListAsync(bool server, CancellationToken token)
+    internal static Task<JsonArray> ListAsync(bool server, CancellationToken token) => ListAsync(server, token, kind => kind ? ServerList(CancellationToken.None) : DismList(CancellationToken.None));
+
+    // Single flight (4.21.5): a list call that starts while a list enumeration
+    // runs (telemetry, drift inventory) gets that enumeration's result or its
+    // failure, and never starts a second one after it. The caller's token only
+    // ends its own wait, never the shared enumeration.
+    internal static async Task<JsonArray> ListAsync(bool server, CancellationToken token, Func<bool, JsonArray> enumerate)
     {
-        await Gate.WaitAsync(token);
+        token.ThrowIfCancellationRequested();
+        TaskCompletionSource<JsonArray>? owner = null; Task<JsonArray> run;
+        lock (Flight)
+        {
+            if (cached is not null && cacheServer == server && DateTime.UtcNow - cacheAt < CacheLifetime) return (JsonArray)cached.DeepClone();
+            if (!flights.TryGetValue(server, out run!)) { owner = new(TaskCreationOptions.RunContinuationsAsynchronously); flights[server] = run = owner.Task; }
+        }
+        if (owner is not null) _ = EnumerateSharedAsync(server, enumerate, owner);
+        var rows = await run.WaitAsync(token);
+        // Every caller gets its own copy; the shared rows never leave this class.
+        lock (rows) return (JsonArray)rows.DeepClone();
+    }
+
+    private static async Task EnumerateSharedAsync(bool server, Func<bool, JsonArray> enumerate, TaskCompletionSource<JsonArray> owner)
+    {
+        // A list that starts during a change waits for the change, as before.
+        await Gate.WaitAsync();
         try
         {
-            if (cached is not null && cacheServer == server && DateTime.UtcNow - cacheAt < TimeSpan.FromSeconds(20)) return (JsonArray)cached.DeepClone();
-            var rows = await Task.Run(() => server ? ServerList(token) : DismList(token), token);
-            cached = (JsonArray)rows.DeepClone(); cacheServer = server; cacheAt = DateTime.UtcNow; return rows;
+            var rows = await Task.Run(() => enumerate(server));
+            // Cache and flight end together while Gate is held, so a later caller
+            // either joins this run or reads its cache, and a change that follows
+            // still clears the cache when it ends.
+            lock (Flight) { cached = (JsonArray)rows.DeepClone(); cacheServer = server; cacheAt = DateTime.UtcNow; flights.Remove(server); }
+            owner.SetResult(rows);
+        }
+        catch (Exception error)
+        {
+            // A failure goes to every waiting caller and is never kept: the next call enumerates again.
+            lock (Flight) flights.Remove(server);
+            owner.SetException(error);
         }
         finally { Gate.Release(); }
     }
+
+    /// <summary>Self-test seam: drops the 20 s list cache. Call it only when no list enumeration runs.</summary>
+    internal static void ResetListCache() { lock (Flight) cached = null; }
+
+    /// <summary>The broker timing line of a role read.</summary>
+    internal static string TimingLine(long elapsedMs, int components) => string.Create(System.Globalization.CultureInfo.InvariantCulture,
+        $"Broker telemetry Roles and features: read in {elapsedMs} ms ({components} components).");
+
     internal static async Task<bool> ChangeAsync(bool server, string name, bool install, bool managementTools, CancellationToken token)
     {
         NativeManagement.ValidateParameters(install ? "install-feature" : "remove-feature", new JsonObject { ["name"] = name, ["includeManagementTools"] = managementTools });
         await Gate.WaitAsync(token);
         try { return await Task.Run(() => server ? ChangeServer(name, install, managementTools, token) : ChangeDism(name, install, token), token); }
-        finally { cached = null; DismDisplayNames.Clear(); Gate.Release(); }
+        finally { lock (Flight) cached = null; DismDisplayNames.Clear(); Gate.Release(); }
     }
 
     // Probe the known ServerManager registration and the namespace documented
@@ -129,7 +178,7 @@ internal static class NativeFeatures
     {
         using var request = NewRequest(type); var values = new Dictionary<string, object?> { ["RequestGuid"] = request };
         using var first = Call(type, "GetServerComponentsAsync", values); ManagementBaseObject output = first; ManagementBaseObject? polled = null;
-        var deadline = DateTime.UtcNow.AddMinutes(2);
+        var deadline = DateTime.UtcNow.AddSeconds(ServerEnumerationSeconds);
         try
         {
             while (!Complete(output, "EnumerationState", out _))
@@ -309,6 +358,24 @@ internal static class NativeFeatures
         int hr = install ? DismEnableFeature(session, name, null, 0, false, IntPtr.Zero, 0, true, cancelled.SafeWaitHandle.DangerousGetHandle(), IntPtr.Zero, IntPtr.Zero) : DismDisableFeature(session, name, null, false, cancelled.SafeWaitHandle.DangerousGetHandle(), IntPtr.Zero, IntPtr.Zero);
         DismCheck(hr); return hr == 3010 || hr == unchecked((int)0x80070BC2);
     });
+}
+
+// The broker's timing of its role reads (4.21.5), as NativeDriverInventory.TimingLogLine:
+// a line for the first successful read of the process and for every slow one.
+internal sealed class NativeFeatureTiming
+{
+    private readonly object gate = new();
+    private bool logged;
+    /// <summary>The timing line of a successful read, or null for a read under NativeFeatures.TimingLogMilliseconds after the first.</summary>
+    internal string? LogLine(long elapsedMs, int components)
+    {
+        lock (gate)
+        {
+            if (logged && elapsedMs < NativeFeatures.TimingLogMilliseconds) return null;
+            logged = true;
+            return NativeFeatures.TimingLine(elapsedMs, components);
+        }
+    }
 }
 
 // NativeFeatures.Gate owns this bounded metadata cache. State is never cached

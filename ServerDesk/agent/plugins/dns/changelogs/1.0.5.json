@@ -1,0 +1,7 @@
+{
+  "version": "1.0.5",
+  "features": [],
+  "fixes": [
+    "The messages of the DNS extension say what happened and what to do next, for example where to start a stopped service."
+  ]
+}
