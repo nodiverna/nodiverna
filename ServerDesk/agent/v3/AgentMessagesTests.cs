@@ -25,7 +25,7 @@ internal static class AgentMessagesTests
 
         // A plugin code passes through: the registered template when every argument is there, else the plugin's text.
         var plugin = AgentMessages.WritePlugin(new JsonObject(), "PLUGIN_DHCP_READ_COMPLETED", new Dictionary<string, string> { ["scopes"] = "3", ["leases"] = "20" }, "ignored");
-        Check(plugin["code"]?.GetValue<string>() == "PLUGIN_DHCP_READ_COMPLETED" && plugin["message"]?.GetValue<string>() == "The DHCP server was read: 3 scopes, 20 leases." && plugin["args"]?["leases"]?.GetValue<string>() == "20", "a known plugin code gets its template");
+        Check(plugin["code"]?.GetValue<string>() == "PLUGIN_DHCP_READ_COMPLETED" && plugin["message"]?.GetValue<string>() == "The DHCP server was read. Scopes: 3, leases: 20." && plugin["args"]?["leases"]?.GetValue<string>() == "20", "a known plugin code gets its template");
         var unknown = AgentMessages.WritePlugin(new JsonObject(), "PLUGIN_DNS_NEWER", new Dictionary<string, string>(), "A newer plugin" + (char)7 + " text.");
         Check(unknown["code"]?.GetValue<string>() == "PLUGIN_DNS_NEWER" && unknown["message"]?.GetValue<string>() == "A newer plugin  text." && unknown["args"] is null, "an unknown plugin code keeps the plugin's English text");
         bool foreign = false; try { AgentMessages.WritePlugin(new JsonObject(), "AGENT_UPDATE_BUSY", new Dictionary<string, string>(), "x"); } catch (AgentMessageException e) { foreign = e.Code == "AGENT_PLUGIN_OUTPUT_INVALID"; }

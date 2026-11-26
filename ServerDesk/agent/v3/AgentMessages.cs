@@ -471,33 +471,33 @@ internal static class AgentMessages
         Define("AGENT_PLUGIN_ACCOUNT_MISMATCH", "The AD account of this change no longer matches the account in AD. Sign in again with your AD account.");
         Define("AGENT_PLUGIN_ACCOUNT_DENIED", "The server refused this change for {account}. Add the account to the group that manages this role on the server, for example DnsAdmins or DHCP Administrators, or sign in with another account.");
         // The codes of the DHCP plugin (agent/plugins/dhcp); the broker passes them through unchanged.
-        Define("PLUGIN_DHCP_READ_COMPLETED", "The DHCP server was read: {scopes} scopes, {leases} leases.");
-        Define("PLUGIN_DHCP_SERVICE_STOPPED", "The DHCP Server service is stopped. Start it under Management → Services.");
-        Define("PLUGIN_DHCP_ACCESS_DENIED", "The DHCP server refused access to the plugin. Check the DHCP Administrators and DHCP Users groups.");
-        Define("PLUGIN_DHCP_NOT_INSTALLED", "The DHCP Server role is not installed on this device.");
+        Define("PLUGIN_DHCP_READ_COMPLETED", "The DHCP server was read. Scopes: {scopes}, leases: {leases}.");
+        Define("PLUGIN_DHCP_SERVICE_STOPPED", "The DHCP Server service is stopped. Start the service in Management → Services.");
+        Define("PLUGIN_DHCP_ACCESS_DENIED", "The DHCP server refused access to the DHCP plugin. On the server, check the members of the groups DHCP Administrators and DHCP Users.");
+        Define("PLUGIN_DHCP_NOT_INSTALLED", "The DHCP Server role is not installed on this device. Install the role in Management → Roles & features, or remove the DHCP plugin in the Extensions area.");
         Define("PLUGIN_DHCP_READ_FAILED", "The DHCP server could not be read (error {error}). Try again.");
         // The changes of DHCP plugin 1.1.0.
         Define("PLUGIN_DHCP_CHANGED", "The DHCP server was changed.");
-        Define("PLUGIN_DHCP_CHANGED_NOT_READ", "The DHCP server was changed. The plugin could not read it again. The portal shows the change after the next read.");
-        Define("PLUGIN_DHCP_INVALID_CHANGE", "The plugin refused the change because {field} is not valid.");
-        Define("PLUGIN_DHCP_OBJECT_EXISTS", "{object} already exists on the DHCP server. Read the server again.");
-        Define("PLUGIN_DHCP_OBJECT_MISSING", "{object} does not exist on the DHCP server. Read the server again.");
-        Define("PLUGIN_DHCP_IN_FAILOVER", "Scope {scope} is in a failover relationship. Remove it from the relationship first.");
-        Define("PLUGIN_DHCP_SECRET_MISSING", "The shared secret did not reach the plugin. Update the agent to 4.17.0 or later and try again.");
+        Define("PLUGIN_DHCP_CHANGED_NOT_READ", "The DHCP server was changed, but the plugin could not read it afterwards. Select “Read again” to see the change.");
+        Define("PLUGIN_DHCP_INVALID_CHANGE", "The DHCP plugin did not make the change because the value of {field} is not valid. Correct the value and try again.");
+        Define("PLUGIN_DHCP_OBJECT_EXISTS", "{object} already exists on the DHCP server. Select “Read again” to see the current state.");
+        Define("PLUGIN_DHCP_OBJECT_MISSING", "{object} does not exist on the DHCP server. Select “Read again” to see the current state.");
+        Define("PLUGIN_DHCP_IN_FAILOVER", "Scope {scope} is part of a failover relationship. Remove the scope from the relationship on the Failover tab, and try again.");
+        Define("PLUGIN_DHCP_SECRET_MISSING", "The shared secret did not reach the DHCP plugin. Update the agent on this device to 4.17.0 or later, and try again.");
         Define("PLUGIN_DHCP_CHANGE_FAILED", "The DHCP server refused the change (error {error}). Check the values and try again.");
         // The DNS plugin 1.0.0 (agent/plugins/dns, docs/dns-server.md).
-        Define("PLUGIN_DNS_READ_COMPLETED", "The DNS server was read: {zones} zones.");
-        Define("PLUGIN_DNS_ZONE_READ_COMPLETED", "Zone {zone} was read: {records} records.");
-        Define("PLUGIN_DNS_SERVICE_STOPPED", "The DNS Server service is stopped. Start it under Management → Services.");
-        Define("PLUGIN_DNS_NOT_INSTALLED", "The DNS Server role is not installed on this device.");
+        Define("PLUGIN_DNS_READ_COMPLETED", "The DNS server was read. Zones: {zones}.");
+        Define("PLUGIN_DNS_ZONE_READ_COMPLETED", "Zone {zone} was read. Records: {records}.");
+        Define("PLUGIN_DNS_SERVICE_STOPPED", "The DNS Server service is stopped. Start the service in Management → Services.");
+        Define("PLUGIN_DNS_NOT_INSTALLED", "The DNS Server role is not installed on this device. Install the role in Management → Roles & features, or remove the DNS plugin in the Extensions area.");
         Define("PLUGIN_DNS_READ_FAILED", "The DNS server could not be read (error {error}). Try again.");
-        Define("PLUGIN_DNS_ACCESS_DENIED", "The DNS server refused access to the plugin. Check the DnsAdmins group.");
+        Define("PLUGIN_DNS_ACCESS_DENIED", "The DNS server refused access to the DNS plugin. On the server, check the members of the group DnsAdmins.");
         Define("PLUGIN_DNS_CHANGED", "The DNS server was changed.");
-        Define("PLUGIN_DNS_CHANGED_NOT_READ", "The DNS server was changed. The plugin could not read it again. The portal shows the change after the next read.");
-        Define("PLUGIN_DNS_INVALID_CHANGE", "The plugin refused the change because {field} is not valid.");
-        Define("PLUGIN_DNS_OBJECT_EXISTS", "{object} already exists on the DNS server. Read the server again.");
-        Define("PLUGIN_DNS_OBJECT_MISSING", "{object} does not exist on the DNS server. Read the server again.");
-        Define("PLUGIN_DNS_NOT_DOMAIN_CONTROLLER", "This server is no domain controller, so it cannot store zones in Active Directory.");
+        Define("PLUGIN_DNS_CHANGED_NOT_READ", "The DNS server was changed, but the plugin could not read it afterwards. Select “Read again” to see the change.");
+        Define("PLUGIN_DNS_INVALID_CHANGE", "The DNS plugin did not make the change because the value of {field} is not valid. Correct the value and try again.");
+        Define("PLUGIN_DNS_OBJECT_EXISTS", "{object} already exists on the DNS server. Select “Read again” to see the current state.");
+        Define("PLUGIN_DNS_OBJECT_MISSING", "{object} does not exist on the DNS server. Select “Read again” to see the current state.");
+        Define("PLUGIN_DNS_NOT_DOMAIN_CONTROLLER", "This server is not a domain controller, so it cannot store zones in Active Directory. Store the zone in a file on this server instead.");
         Define("PLUGIN_DNS_CHANGE_FAILED", "The DNS server refused the change (error {error}). Check the values and try again.");
         Define("PLUGIN_DNS_CHANGE_FAILED_DETAIL", "The DNS server refused the change (error {error}). Windows reports: {detail} Check the values and try again.");
         // agent-messages:end

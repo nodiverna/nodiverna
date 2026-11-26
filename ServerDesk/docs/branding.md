@@ -156,7 +156,7 @@ The darkest and the brightest color come from a measurement (`measureBackdrop` i
 
 - **Bundled backgrounds**: the values are in `brandingBackgrounds` (`lib/branding.ts`). `node scripts/measure-backgrounds.mjs` renders the six SVG files at 1920 × 1080 px in Chromium and prints the values.
 - **Own image**: the browser of the Owner measures the upload. The server does not decode the pixels. Refer to [Measurement of an uploaded console background](#measurement-of-an-uploaded-console-background).
-- **No measurement**: the console uses the fallback scrims. They keep 4.5:1 over a black and a white pixel, so they are safe for each image. The fallback scrims are 32 % (bars), 0 % (navigator) and 85 % (workspace) in light mode, and 64 %, 5 % and 88 % in dark mode.
+- **No measurement**: the console uses the fallback scrims. They keep 4.5:1 over a black and a white pixel, so they are safe for each image. The fallback scrims are 32 % (bars), 0 % (navigator) and 82 % (workspace) in light mode, and 64 %, 5 % and 88 % in dark mode.
 
 In light mode, a light image shows fully (0 %). A dark image keeps a workspace scrim of about 80 %, because dark text needs a light surface. `tests/ui/styles/theme-backdrop.mjs` checks each mode, scheme, region and surface.
 

@@ -11,8 +11,9 @@
 // a conditional forwarder; a failed create reads the zones again; the zone list
 // adds the zones that only DnsServerZone reports and a delete reaches them
 // through the modern provider; a failed change carries its result args and
-// PLUGIN_DNS_CHANGE_FAILED_DETAIL; version 1.0.4 with its changelog, the
-// minimum agent and the capabilities unchanged; the self-test cases (a)-(n);
+// PLUGIN_DNS_CHANGE_FAILED_DETAIL; a version of at least 1.0.4 (the fixes ship
+// in every later version), the changelog of 1.0.4, the minimum agent and the
+// capabilities unchanged; the self-test cases (a)-(n);
 // the documentation. Code without comments; no build (the self-test runs in
 // the plugin build on Windows).
 import assert from 'node:assert/strict';
@@ -124,11 +125,13 @@ ok(/0x80041001/.test(legacyFirst)&&/!IsDnsAnswer\(e\)/.test(legacyFirst)&&/throw
 ok(/case "dns-zone-delete": case "dns-zone-transfer":[\s\S]{0,400}server\.Zones\(\)\.FirstOrDefault/.test(changes),'the delete check uses the merged zone list');
 
 // ---- Version and changelog ----
-ok(/Version = "1\.0\.4"/.test(program),'Program.cs: version 1.0.4');
+const compareVersions=(left,right)=>{const [a,b]=[left,right].map(text=>text.split('.').map(Number));return a[0]-b[0]||a[1]-b[1]||a[2]-b[2];};
+const version=/BaseVersion = "(\d+\.\d+\.\d+)"/.exec(program)?.[1];
+ok(version!==undefined&&compareVersions(version,'1.0.4')>=0,'Program.cs: version 1.0.4 or later');
 ok(/\["PLUGIN_DNS_CHANGE_FAILED_DETAIL"\] = "The DNS server refused the change \(error \{error\}\)\. Windows reports: \{detail\} Check the values and try again\."/.test(program),'Program.cs has the template of PLUGIN_DNS_CHANGE_FAILED_DETAIL');
 ok(/\["PLUGIN_DNS_CHANGE_FAILED"\] = "The DNS server refused the change \(error \{error\}\)\. Check the values and try again\."/.test(program),'the template of PLUGIN_DNS_CHANGE_FAILED is unchanged');
 const csproj=read(`${dir}/ServerDesk.Plugin.Dns.csproj`);
-ok(/<Version>1\.0\.4<\/Version>/.test(csproj)&&/<PluginMinAgentVersion>4\.21\.2<\/PluginMinAgentVersion>/.test(csproj),'csproj: version 1.0.4, minimum agent 4.21.2');
+ok(/<Version>([^<]+)<\/Version>/.exec(csproj)?.[1]===version&&/<PluginMinAgentVersion>4\.21\.2<\/PluginMinAgentVersion>/.test(csproj),'csproj: the version of Program.cs, minimum agent 4.21.2');
 ok(/<PluginCapabilities>dns-read;dns-zone-read;dns-zone-create;dns-zone-edit;dns-zone-delete;dns-zone-transfer;dns-record-add;dns-record-edit;dns-record-delete;dns-conditional-create;dns-conditional-edit;dns-conditional-delete;dns-forwarders-set;dns-scavenging-set;dns-scavenge-now;dns-cache-clear<\/PluginCapabilities>/.test(csproj),'csproj: the capabilities are unchanged');
 const changelog=JSON.parse(read(`${dir}/changelogs/1.0.4.json`));
 ok(validateReleaseChangelog(changelog,'1.0.4').fixes.length===3,'changelogs/1.0.4.json passes the release-notes rules (at most 200 characters per entry)');
@@ -149,4 +152,4 @@ ok(!/one time with the fallback/.test(sources)&&!/static method `CreateZone`/.te
 const codes=docs.slice(docs.indexOf('## Codes'),docs.indexOf('## Checks'));
 ok(/`PLUGIN_DNS_READ_FAILED` \|[^\n]*error number of the DNS server when WMI gives one, else the WMI error number/.test(codes)&&/`PLUGIN_DNS_CHANGE_FAILED` \|[^\n]*error number of the DNS server when WMI gives one, else the WMI error number/.test(codes),'"Codes" names the DNS server error number');
 ok(/`PLUGIN_DNS_CHANGE_FAILED_DETAIL` \|/.test(codes)&&/`attempts`/.test(codes)&&/`signature`/.test(codes),'"Codes" has PLUGIN_DNS_CHANGE_FAILED_DETAIL and names the args of a failed change');
-console.log(`PASS DNS zone-create source (${checks} checks): the WMI error object with its provider code and texts, the lookup-step names, the mapping and the result args, the modern-first create with the classic fallback, the merged zone list and the modern delete, version 1.0.4, the self-test cases (a)-(n) and the documentation.`);
+console.log(`PASS DNS zone-create source (${checks} checks): the WMI error object with its provider code and texts, the lookup-step names, the mapping and the result args, the modern-first create with the classic fallback, the merged zone list and the modern delete, version 1.0.4 or later with the changelog of 1.0.4, the self-test cases (a)-(n) and the documentation.`);

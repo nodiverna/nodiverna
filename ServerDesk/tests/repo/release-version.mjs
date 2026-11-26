@@ -5,7 +5,7 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { dockerHubTagCheck, dockerHubTagUrl, latestReleaseTag, planRelease, releaseNotesHeader } from '../../scripts/app-release.mjs';
+import { checkRegistry, latestReleaseTag, planRelease, registryTagCheck, registryTagUrl, releaseNotesHeader } from '../../scripts/app-release.mjs';
 import { serverDeskRoot, repositoryRoot } from '../support/paths.mjs';
 
 // App versioning: the next SemVer from the vX.Y.Z tags, the release
@@ -88,38 +88,129 @@ test('none gives edge-<sha7> on main and dev-<sha7> on dev, and no release', () 
 });
 
 test('the release notes header has the exact text and names no agent: the image holds none', () => {
-  assert.equal(releaseNotesHeader({ image: 'docker.io/lostindreamz/nodiverna', version: '0.1.1' }),
-    'Image: `docker pull docker.io/lostindreamz/nodiverna:0.1.1`');
+  assert.equal(releaseNotesHeader({ image: 'ghcr.io/nodiverna/nodiverna', version: '0.1.1' }),
+    'Image: `docker pull ghcr.io/nodiverna/nodiverna:0.1.1`');
 });
 
-test('the Docker Hub check URL names the namespace, the repository and the tag', () => {
-  const url = 'https://hub.docker.com/v2/namespaces/lostindreamz/repositories/nodiverna/tags/0.1.1';
-  assert.equal(dockerHubTagUrl('docker.io/lostindreamz/nodiverna', '0.1.1'), url);
-  assert.equal(dockerHubTagUrl('lostindreamz/nodiverna', '0.1.1'), url);
-  for (const image of ['nodiverna', 'ghcr.io/lostindreamz/nodiverna', 'docker.io/library/a/b', 'docker.io/LostInDreamZ/nodiverna', 'docker.io/lostindreamz/nodiverna:latest', '', undefined]) {
-    assert.throws(() => dockerHubTagUrl(image, '0.1.1'), { message: `Image "${image}" must be docker.io/<namespace>/<repository>.` }, String(image));
+const imageMessage = image => `Image "${image}" must be ghcr.io/<owner>/<repository> or docker.io/<namespace>/<repository>.`;
+
+test('the registry check URL is the GHCR manifest, or the Docker Hub API for the old image form', () => {
+  assert.equal(registryTagUrl('ghcr.io/nodiverna/nodiverna', '0.1.1'), 'https://ghcr.io/v2/nodiverna/nodiverna/manifests/0.1.1');
+  const hub = 'https://hub.docker.com/v2/namespaces/example/repositories/nodiverna/tags/0.1.1';
+  assert.equal(registryTagUrl('docker.io/example/nodiverna', '0.1.1'), hub);
+  assert.equal(registryTagUrl('example/nodiverna', '0.1.1'), hub);
+  assert.equal(registryTagUrl('docker.io/my-org.x/app_1', 'dev-0123abc'), 'https://hub.docker.com/v2/namespaces/my-org.x/repositories/app_1/tags/dev-0123abc');
+  // A first part with a dot (or localhost) is a registry host for Docker, so it is not a Docker Hub namespace.
+  for (const image of ['nodiverna', 'ghcr.io/Nodiverna/nodiverna', 'quay.io/a/b', 'ghcr.io/a/b/c', 'ghcr.io/nodiverna/nodiverna:latest', 'ghcr.io/nodiverna',
+    'docker.io/library/a/b', 'docker.io/Example/nodiverna', 'docker.io/example/nodiverna:latest', 'quay.io/a', 'localhost/a', 'https://ghcr.io/a/b', '', undefined]) {
+    assert.throws(() => registryTagUrl(image, '0.1.1'), { message: imageMessage(image) }, String(image));
   }
-  for (const tag of ['', '../x', '0.1.1/../2', '-x']) assert.throws(() => dockerHubTagUrl('docker.io/lostindreamz/nodiverna', tag), { message: `Image tag "${tag}" is not valid.` });
-});
-
-test('the Docker Hub check passes only for 404 and fails closed on every other status', () => {
-  const image = 'docker.io/lostindreamz/nodiverna';
-  assert.equal(dockerHubTagCheck(404, image, '0.1.1'), undefined);
-  assert.throws(() => dockerHubTagCheck(200, image, '0.1.1'), { message: 'Docker Hub already has docker.io/lostindreamz/nodiverna:0.1.1. Re-run the failed jobs of the first run, or delete the Docker Hub tag first.' });
-  for (const status of [500, 429, 401, 301, 0]) {
-    assert.throws(() => dockerHubTagCheck(status, image, '0.1.1'), { message: `Cannot check Docker Hub for docker.io/lostindreamz/nodiverna:0.1.1 (HTTP ${status}).` });
+  for (const image of ['ghcr.io/nodiverna/nodiverna', 'docker.io/example/nodiverna']) {
+    for (const tag of ['', '../x', '0.1.1/../2', '-x', undefined]) assert.throws(() => registryTagUrl(image, tag), { message: `Image tag "${tag}" is not valid.` });
   }
 });
 
-test('the check-hub CLI refuses a wrong image and wrong options before any request', () => {
+test('the registry check passes only for 404 and fails closed on every other status', () => {
+  const image = 'ghcr.io/nodiverna/nodiverna';
+  assert.equal(registryTagCheck(404, image, '0.1.1'), undefined);
+  assert.throws(() => registryTagCheck(200, image, '0.1.1'), { message: 'The registry already has ghcr.io/nodiverna/nodiverna:0.1.1. Re-run the failed jobs of the first run, or delete the tag first.' });
+  for (const status of [401, 403, 500, 429, 301, 0]) {
+    assert.throws(() => registryTagCheck(status, image, '0.1.1'), { message: `Cannot check the registry for ghcr.io/nodiverna/nodiverna:0.1.1 (HTTP ${status}).` });
+  }
+});
+
+// A recording fetch: each call gets the next answer (a status with an optional JSON body, or an Error to throw).
+const fakeFetch = answers => {
+  const calls = [];
+  const request = async (url, options) => {
+    calls.push({ url, options });
+    const answer = answers.shift();
+    if (answer instanceof Error) throw answer;
+    return { status: answer.status, json: async () => { if (answer.body === undefined) throw new SyntaxError('Unexpected end of JSON input'); return answer.body; } };
+  };
+  return { calls, request };
+};
+const secret = 'gh-token-0123456789';
+const bearer = 'pull-token-abcdef';
+const registryEnv = { REGISTRY_USERNAME: 'octo', REGISTRY_TOKEN: secret };
+
+test('check-registry gets a GHCR pull token, then sends HEAD to the manifest with the bearer token and every manifest type', async () => {
+  const { calls, request } = fakeFetch([{ status: 200, body: { token: bearer } }, { status: 404 }]);
+  const lines = [];
+  await checkRegistry({ image: 'ghcr.io/nodiverna/nodiverna', version: '0.1.1' }, { env: registryEnv, fetch: request, log: line => lines.push(line) });
+  assert.deepEqual(lines, ['The registry has no ghcr.io/nodiverna/nodiverna:0.1.1 yet.']);
+  assert.equal(calls.length, 2);
+  assert.equal(calls[0].url, 'https://ghcr.io/token?service=ghcr.io&scope=repository:nodiverna/nodiverna:pull');
+  assert.deepEqual(calls[0].options.headers, { Authorization: `Basic ${Buffer.from(`octo:${secret}`).toString('base64')}` });
+  assert.equal(calls[1].url, 'https://ghcr.io/v2/nodiverna/nodiverna/manifests/0.1.1');
+  assert.equal(calls[1].options.method, 'HEAD');
+  assert.equal(calls[1].options.headers.Authorization, `Bearer ${bearer}`);
+  assert.deepEqual(calls[1].options.headers.Accept.split(', '), [
+    'application/vnd.oci.image.index.v1+json', 'application/vnd.oci.image.manifest.v1+json',
+    'application/vnd.docker.distribution.manifest.list.v2+json', 'application/vnd.docker.distribution.manifest.v2+json',
+  ]);
+  for (const call of calls) {
+    assert.equal(call.options.redirect, 'error');
+    assert.ok(call.options.signal instanceof AbortSignal, 'every request has a timeout signal');
+  }
+  // Without both values the token request is anonymous.
+  const anonymous = fakeFetch([{ status: 200, body: { token: bearer } }, { status: 404 }]);
+  await checkRegistry({ image: 'ghcr.io/nodiverna/nodiverna', version: '0.1.1' }, { env: { REGISTRY_USERNAME: 'octo' }, fetch: anonymous.request, log: () => {} });
+  assert.deepEqual(anonymous.calls[0].options.headers, {});
+});
+
+test('check-registry keeps the anonymous Docker Hub request for the old image form', async () => {
+  const { calls, request } = fakeFetch([{ status: 404 }]);
+  const lines = [];
+  await checkRegistry({ image: 'docker.io/example/nodiverna', version: '0.1.1' }, { env: registryEnv, fetch: request, log: line => lines.push(line) });
+  assert.deepEqual(lines, ['The registry has no docker.io/example/nodiverna:0.1.1 yet.']);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].url, 'https://hub.docker.com/v2/namespaces/example/repositories/nodiverna/tags/0.1.1');
+  assert.equal(calls[0].options.headers, undefined, 'no credentials go to Docker Hub');
+  assert.equal(calls[0].options.redirect, 'error');
+});
+
+test('check-registry fails closed and never shows the token', async () => {
+  const image = 'ghcr.io/nodiverna/nodiverna';
+  const prefix = `Cannot check the registry for ${image}:0.1.1 (`;
+  for (const [answers, reason] of [
+    [[{ status: 401 }], 'token request HTTP 401'],
+    [[{ status: 403 }], 'token request HTTP 403'],
+    [[new TypeError('fetch failed')], 'fetch failed'],
+    [[{ status: 200 }], 'the token answer is not JSON'],
+    [[{ status: 200, body: {} }], 'the token answer has no token'],
+    [[{ status: 200, body: { token: '' } }], 'the token answer has no token'],
+    [[{ status: 200, body: { token: bearer } }, new TypeError('fetch failed')], 'fetch failed'],
+    [[{ status: 200, body: { token: bearer } }, { status: 401 }], 'HTTP 401'],
+    [[{ status: 200, body: { token: bearer } }, { status: 403 }], 'HTTP 403'],
+  ]) {
+    const { request } = fakeFetch([...answers]);
+    const lines = [];
+    await assert.rejects(checkRegistry({ image, version: '0.1.1' }, { env: registryEnv, fetch: request, log: line => lines.push(line) }), error => {
+      assert.equal(error.message, `${prefix}${reason}).`);
+      assert.ok(!error.message.includes(secret) && !error.message.includes(bearer));
+      return true;
+    }, reason);
+    assert.deepEqual(lines, []);
+  }
+  const { request } = fakeFetch([{ status: 200, body: { token: bearer } }, { status: 200 }]);
+  await assert.rejects(checkRegistry({ image, version: '0.1.1' }, { env: registryEnv, fetch: request, log: () => {} }),
+    { message: 'The registry already has ghcr.io/nodiverna/nodiverna:0.1.1. Re-run the failed jobs of the first run, or delete the tag first.' });
+  const hub = fakeFetch([new TypeError('fetch failed')]);
+  await assert.rejects(checkRegistry({ image: 'example/nodiverna', version: '0.1.1' }, { fetch: hub.request, log: () => {} }),
+    { message: 'Cannot check the registry for example/nodiverna:0.1.1 (fetch failed).' });
+});
+
+test('the check-registry CLI refuses a wrong image and wrong options before any request, and check-hub is gone', () => {
   const cli = args => spawnSync(process.execPath, [script, ...args], { encoding: 'utf8' });
-  const image = cli(['check-hub', '--image', 'ghcr.io/lostindreamz/nodiverna', '--version', '0.1.1']);
+  const image = cli(['check-registry', '--image', 'quay.io/a/b', '--version', '0.1.1']);
   assert.equal(image.status, 1);
-  assert.equal(image.stderr.trim(), 'Image "ghcr.io/lostindreamz/nodiverna" must be docker.io/<namespace>/<repository>.');
-  for (const args of [['check-hub', '--image', 'docker.io/a/b'], ['check-hub', '--version', '0.1.1'], ['check-hub', '--image', 'docker.io/a/b', '--version', '0.1.1', '--bump', 'patch']]) {
+  assert.equal(image.stderr.trim(), imageMessage('quay.io/a/b'));
+  for (const args of [['check-registry', '--image', 'ghcr.io/a/b'], ['check-registry', '--version', '0.1.1'], ['check-registry', '--image', 'ghcr.io/a/b', '--version', '0.1.1', '--bump', 'patch'],
+    ['check-hub', '--image', 'docker.io/a/b', '--version', '0.1.1']]) {
     const failed = cli(args);
     assert.equal(failed.status, 1);
-    assert.ok(failed.stderr.includes('Usage: node scripts/app-release.mjs'), failed.stderr);
+    assert.equal(failed.stderr.trim(), 'Usage: node scripts/app-release.mjs plan --bump <patch|minor|none> [--image ghcr.io/<owner>/<name>] | check-registry --image ghcr.io/<owner>/<name> --version X.Y.Z', args.join(' '));
   }
 });
 
@@ -144,7 +235,7 @@ test('the plan CLI reads the tags of a Git repository and prints JSON or writes 
     assert.equal(printed.status, 0, printed.stderr);
     assert.deepEqual(JSON.parse(printed.stdout), {
       version: '0.1.11', tag: 'v0.1.11', previous_tag: 'v0.1.10', release: 'true', channel: 'release',
-      notes: 'Image: `docker pull docker.io/lostindreamz/nodiverna:0.1.11`',
+      notes: 'Image: `docker pull ghcr.io/nodiverna/nodiverna:0.1.11`',
     });
     // Without GITHUB_REF/GITHUB_SHA the CLI reads them from Git.
     assert.equal(JSON.parse(cli(['plan', '--bump', 'minor']).stdout).tag, 'v0.2.0');
@@ -200,11 +291,11 @@ test('the root README header has the title and the workflow badge, and the docs 
   const readme = (await readFile(path.join(repository, 'README.md'), 'utf8')).replaceAll('\r\n', '\n');
   const header = readme.slice(0, readme.search(/^## /m));
   assert.ok(header.includes('<h1 align="center">Nodiverna</h1>'), 'the header has the title Nodiverna');
-  const workflow = 'https://github.com/LostInDreamZ/nodiverna/actions/workflows/docker-image.yml';
+  const workflow = 'https://github.com/nodiverna/nodiverna/actions/workflows/docker-image.yml';
   assert.ok(header.includes(`<a href="${workflow}"><img src="${workflow}/badge.svg" alt="Docker image"></a>`), 'the header has the Docker image workflow badge');
-  assert.match(await readFile(path.join(root, 'README.md'), 'utf8'), /\]\(https:\/\/github\.com\/LostInDreamZ\/nodiverna\/releases\)/);
+  assert.match(await readFile(path.join(root, 'README.md'), 'utf8'), /\]\(https:\/\/github\.com\/nodiverna\/nodiverna\/releases\)/);
   const selfHosting = await readFile(path.join(root, 'docs', 'self-hosting.md'), 'utf8');
   assert.match(selfHosting, /nodiverna:<version>` to `\.env\.runtime`, for example `0\.1\.1`/);
   assert.doesNotMatch(selfHosting, /`4\.7\.0`/);
-  assert.match(selfHosting, /\[Releases\]\(https:\/\/github\.com\/LostInDreamZ\/nodiverna\/releases\)/);
+  assert.match(selfHosting, /\[Releases\]\(https:\/\/github\.com\/nodiverna\/nodiverna\/releases\)/);
 });
