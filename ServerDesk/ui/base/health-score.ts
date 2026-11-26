@@ -66,7 +66,7 @@ const alarmTargets:Record<AlertRuleId,AlarmTarget>={
  'battery-capacity':{section:'hardware',detail:'overview'},
  'dhcp-scope-full':{section:'extensions',detail:'dhcp'},'dhcp-service-stopped':{section:'extensions',detail:'dhcp'},'dns-service-stopped':{section:'extensions',detail:'dns'},
  'agent-stopped':{section:'overview'},'agent-removed':{section:'overview'},'agent-protection-changed':{section:'overview'},
- 'firewall-off':{section:'overview'},'os-support-end':{section:'overview'},'os-support-unknown':{section:'overview'},'inventory-incomplete':{section:'overview'},'device-offline':{section:'overview'},
+ 'firewall-off':{section:'overview'},'os-support-end':{section:'overview'},'os-support-unknown':{section:'overview'},'windows-evaluation':{section:'overview'},'windows-not-activated':{section:'overview'},'inventory-incomplete':{section:'overview'},'device-offline':{section:'overview'},
 };
 /**
  * The device area of an alarm, for the jump from the Problems tab. Every rule

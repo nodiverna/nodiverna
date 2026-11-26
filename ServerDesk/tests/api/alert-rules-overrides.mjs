@@ -88,7 +88,7 @@ try{
  // ---- Defaults on all three levels ----
  for(const [type,id] of [['global','*'],['group',child],['device',dev1]]){
   const view=await get(reader,type,id);check(view.status,200,`GET ${type}`);
-  check(view.body.rules.length,39,`${type}: 39 rules`);check(view.body.rules.every(row=>row.origin.type==='default'&&row.override===null&&row.inherited.origin.type==='default'),true,`${type}: every origin is the default`);
+  check(view.body.rules.length,41,`${type}: 41 rules`);check(view.body.rules.every(row=>row.origin.type==='default'&&row.override===null&&row.inherited.origin.type==='default'),true,`${type}: every origin is the default`);
   check([view.body.canEdit,view.body.reason],[false,'right'],`${type}: a Reader cannot edit`);
  }
  check(rule(await get(reader,'global','*')).effective,{enabled:true,warning:80,critical:90,level:null,durationMinutes:5,recovery:5},'default thresholds');

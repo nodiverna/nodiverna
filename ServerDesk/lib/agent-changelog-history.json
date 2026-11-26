@@ -1,5 +1,12 @@
 [
   {
+    "version": "4.22.0",
+    "features": [
+      "The agent reports whether Windows is activated, its license channel and, for an evaluation edition or a grace period, when it ends. It reads no product key."
+    ],
+    "fixes": []
+  },
+  {
     "version": "4.21.4",
     "features": [],
     "fixes": [

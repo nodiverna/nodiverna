@@ -1,10 +1,20 @@
-# ServerDesk native agent 4.21.4
+# ServerDesk native agent 4.22.0
 
 ## Delivery and compatibility
 
 The agent is a self-contained .NET 10 application. It comes as one x64 `ServerDesk.Agent.exe` of approximately 58 MiB. Supported hosts are Windows Server 2022, Windows Server 2025 and Windows 11 Pro/Enterprise. For the server editions, Server Core is also supported. You do not have to install .NET or PowerShell 7 separately. The download size is known, but nobody has measured the Windows resource consumption yet.
 
 Agent version 4.7.0 uses portal protocol version 3. The existing `agent/v3`, manifest URLs and build-script names stay compatible with device identities and portal records. A release ZIP contains one EXE. The signed manifest also identifies the hash and size of this EXE. Artifacts that active releases or update jobs refer to stay available. When you retire an unused release, the portal keeps its signed historical metadata and its completed job records.
+
+## Windows license in 4.22.0
+
+Agent 4.22.0 reports the Windows activation state in the new snapshot key `windowsLicense`. The broker reads it once an hour as the fixed, argument-free collector "Windows license", with a deadline of 30 seconds. A manual inventory refresh also reads it.
+
+- **Data.** The agent sends the license status, the license channel, the end of an evaluation or a grace period and the evaluation end date. The fields are in [Windows license in 4.22.0](v3-health-signals.md#windows-license-in-4220).
+- **No product key.** The collector reads `SoftwareLicensingProduct` only for the Windows application ID. It selects no product key and no part of one, and it calls no method of a licensing class.
+- **Older Windows.** When Windows does not know `ProductKeyChannel` or `EvaluationEndDate`, the agent reads again without them.
+- **Portal.** The device overview shows the fact **Windows activation**. The rules **Evaluation edition** and **Windows not activated** make issues and alarms. For the details, refer to [Windows activation](device-health-signals.md#windows-activation).
+- **Self-test.** `ServerDesk.Agent.exe --windows-license-self-test` checks every status, every channel rule, the end times, the second query and the failure results.
 
 ## Fixes in 4.21.4
 

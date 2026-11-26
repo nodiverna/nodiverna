@@ -38,7 +38,7 @@ internal sealed class NativeTelemetryCollector
     // These inventories need administrator rights. In the unprivileged worker
     // they are fixed, argument-free broker reads; everything else is collected
     // with the worker's own rights (Performance Monitor and Event Log Readers).
-    internal static readonly string[] PrivilegedProviders = ["Hardware inventory", "Roles and features", "Security", "Local firewall rules", "Scheduled tasks", "Scheduled system action", "Crashes", "BitLocker", "Software inventory", "Drivers", "Reliability", "Disk and battery health", "Certificates", "Autostart", "Defender"];
+    internal static readonly string[] PrivilegedProviders = ["Hardware inventory", "Roles and features", "Security", "Local firewall rules", "Scheduled tasks", "Scheduled system action", "Crashes", "BitLocker", "Software inventory", "Drivers", "Reliability", "Disk and battery health", "Certificates", "Autostart", "Defender", "Windows license"];
     // The software, driver and autostart lists travel with the collector result under these keys, never in the snapshot.
     internal const string SoftwareInventoryKey = "_softwareInventory";
     private static readonly string[] ListKeys = [SoftwareInventoryKey, NativeDriverInventory.InventoryKey, NativeAutostartInventory.InventoryKey];
@@ -87,6 +87,8 @@ internal sealed class NativeTelemetryCollector
         Add("Autostart", NativeAutostartInventory.IntervalSeconds, new NativeAutostartInventory().Collect, NativeAutostartInventory.DeadlineSeconds);
         // Microsoft Defender of 4.14.0: the same kind of fixed, argument-free broker read; it only reads.
         Add("Defender", NativeDefender.IntervalSeconds, new NativeDefender().Collect, NativeDefender.DeadlineSeconds);
+        // Windows activation of 4.22.0: the same kind of fixed, argument-free broker read, once an hour; it only reads.
+        Add("Windows license", NativeWindowsLicense.IntervalSeconds, new NativeWindowsLicense().Collect, NativeWindowsLicense.DeadlineSeconds);
         scheduler = new(collectors);
     }
 
