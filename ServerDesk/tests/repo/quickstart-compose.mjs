@@ -101,7 +101,7 @@ test('db, ca-export, proxy and the Caddy config are the ones of compose.yaml', (
   const withoutPassword = service => ({ ...service, environment: { ...service.environment, POSTGRES_PASSWORD: undefined } });
   assert.deepEqual(withoutPassword(db), withoutPassword(production.services.db));
   assert.deepEqual(quickstart.services['ca-export'], production.services['ca-export']);
-  const withoutAddress = ({ environment: _environment, ports: _ports, ...service }) => service;
+  const withoutAddress = service => Object.fromEntries(Object.entries(service).filter(([key]) => !['environment', 'ports'].includes(key)));
   assert.deepEqual(withoutAddress(proxy), withoutAddress(production.services.proxy));
   assert.equal(quickstart.configs.caddyfile.content, production.configs.caddyfile.content);
 });
