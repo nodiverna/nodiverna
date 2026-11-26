@@ -39,7 +39,7 @@ for(const [locale,expected] of Object.entries(copy)){
  check(text(tree),`${expected.title} ${expected.text}`,`${locale}: the full sentence`);
  check(/\d|k1\./.test(text(tree)),false,`${locale}: no count, kid or ciphertext`);
  const link=tree.props.action;
- check([link.type,link.props.href,link.props.target,link.props.rel],['a','https://github.com/LostInDreamZ/nodiverna/blob/main/ServerDesk/docs/self-hosting.md#change-the-session-secret','_blank','noreferrer'],`${locale}: the guide link`);
+ check([link.type,link.props.href,link.props.target,link.props.rel],['a','https://github.com/nodiverna/nodiverna/blob/main/ServerDesk/docs/self-hosting.md#change-the-session-secret','_blank','noreferrer'],`${locale}: the guide link`);
  check(link.props.className,'sdx-btn sdx-btn-ghost sdx-btn-sm','styled like Btn size="sm" variant="ghost"');
  const [icon,label]=[link.props.children].flat();
  check([icon.type,icon.props.size,icon.props['aria-hidden']],['ExternalLink',13,true],'the external link icon');

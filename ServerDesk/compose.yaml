@@ -15,7 +15,7 @@
 name: serverdesk
 
 # The image and the storage environment of the app.
-x-image: &image ${SERVERDESK_IMAGE:-docker.io/lostindreamz/nodiverna:latest}
+x-image: &image ${SERVERDESK_IMAGE:-ghcr.io/nodiverna/nodiverna:latest}
 x-runtime-environment: &runtime-environment
   NODE_ENV: production
   DATABASE_URL: ${DATABASE_URL:-postgres://serverdesk@db:5432/serverdesk}

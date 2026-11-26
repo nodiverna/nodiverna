@@ -17,7 +17,7 @@ problem and the impact that you expect.
 ## Supported versions
 
 Only the latest release gets security fixes. This includes the newest tag of
-the Docker image `docker.io/lostindreamz/nodiverna`. Update to the latest
+the Docker image `ghcr.io/nodiverna/nodiverna`. Update to the latest
 release before you report a problem.
 
 ## Response
