@@ -3,8 +3,9 @@
 // no free helper on memory that dhcpsapi.dll returned (freeing nested pointers
 // corrupted the heap, 0xC0000374, on a server with scopes); the Native scope of
 // the writer still owns, clears and frees the input structs; the memory rule
-// comment in both files; the rollback of CreateScope; version 1.1.1 with its
-// changelog and the capabilities of 1.1.0. Code without comments; no build (the
+// comment in both files; the rollback of CreateScope; a version of at least
+// 1.1.1 (the fix ships in every later version), the changelog of 1.1.1 and the
+// capabilities of 1.1.0. Code without comments; no build (the
 // layout and change checks run with --self-test in the plugin build).
 import assert from 'node:assert/strict';
 import {existsSync,readFileSync} from 'node:fs';
@@ -61,10 +62,11 @@ ok(/Ok\("DhcpCreateSubnet", DhcpCreateSubnet\(null, subnet, ref info\), Ip\(subn
 ok(/try \{ Range\(subnet, start, end, type, add: true\); Lease\(subnet, leaseSeconds\); if \(activate\) SetSubnet\(subnet, null, null, 0\); \}\s*catch \{ DhcpDeleteSubnet\(null, subnet, FullForce\); throw; \}/.test(create),'a failed range, lease or state step deletes the new subnet again');
 ok(/Ok\("DhcpGetSubnetInfo", DhcpGetSubnetInfo\(null, scope, out var info\), Ip\(scope\)\);\s*return use\(\*info\);/.test(body(changes,'private static T WithSubnet<T>(')),'WithSubnet reads the subnet and hands a copy of the struct to the change');
 
-// ---- Version 1.1.1, its changelog and the capabilities of 1.1.0 ----
+// ---- Version 1.1.1 or later, the changelog of 1.1.1 and the capabilities of 1.1.0 ----
 const program=read(`${dir}/Program.cs`),project=read(`${dir}/ServerDesk.Plugin.Dhcp.csproj`);
 const version=/internal const string Name = "dhcp", BaseVersion = "(\d+\.\d+\.\d+)", Version = BaseVersion \+ BuildVersion\.DevSuffix;/.exec(program)?.[1];
-ok(version==='1.1.1','Program.Version is 1.1.1');
+const compareVersions=(left,right)=>{const [a,b]=[left,right].map(text=>text.split('.').map(Number));return a[0]-b[0]||a[1]-b[1]||a[2]-b[2];};
+ok(version!==undefined&&compareVersions(version,'1.1.1')>=0,'Program.Version is 1.1.1 or later');
 ok(/<Version>([^<]+)<\/Version>/.exec(project)?.[1]===version,'the csproj version is Program.Version');
 ok(existsSync(`${dir}/changelogs/1.1.1.json`),'the changelog 1.1.1 exists');
 const changelog=JSON.parse(read(`${dir}/changelogs/1.1.1.json`));
@@ -78,4 +80,4 @@ ok(/Capabilities = \["dhcp-read", \.\. DhcpChanges\.Operations\]/.test(program),
 assert.deepEqual(['dhcp-read',...operations],capabilities110,'Program.Capabilities are those of 1.1.0: 26 entries, dhcp-read first');checks++;
 ok(/<PluginMinAgentVersion>4\.16\.0<\/PluginMinAgentVersion>/.test(project),'the minimum agent version stays 4.16.0');
 
-console.log(`PASS DHCP plugin memory source (${checks} checks): no DhcpRpcFreeMemory and no free helper in DhcpApi.cs and DhcpChanges.cs, the Native scope still owns and zeroes the input structs, the memory rule in both files, the CreateScope rollback, version 1.1.1 with its changelog and the 26 capabilities of 1.1.0.`);
+console.log(`PASS DHCP plugin memory source (${checks} checks): no DhcpRpcFreeMemory and no free helper in DhcpApi.cs and DhcpChanges.cs, the Native scope still owns and zeroes the input structs, the memory rule in both files, the CreateScope rollback, version 1.1.1 or later, the changelog of 1.1.1 and the 26 capabilities of 1.1.0.`);

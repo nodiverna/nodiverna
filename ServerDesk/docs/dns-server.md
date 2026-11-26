@@ -175,16 +175,16 @@ In demo mode, SRV-DC01 has the DNS plugin 1.0.1. Its sample data have the zones 
 | --- | --- |
 | `PLUGIN_DNS_READ_COMPLETED` | The server read is complete. The job result has the number of zones. |
 | `PLUGIN_DNS_ZONE_READ_COMPLETED` | The zone read is complete. The job result has the zone and the number of records. |
-| `PLUGIN_DNS_SERVICE_STOPPED` | The DNS Server service is stopped. A read sends the server facts without zones. |
-| `PLUGIN_DNS_NOT_INSTALLED` | The DNS Server role is not installed on the device. |
+| `PLUGIN_DNS_SERVICE_STOPPED` | The DNS Server service is stopped. A read sends the server facts without zones. The message tells the user to start the service in **Management → Services**. |
+| `PLUGIN_DNS_NOT_INSTALLED` | The DNS Server role is not installed on the device. The message tells the user to install the role in **Management → Roles & features**, or to remove the plugin. |
 | `PLUGIN_DNS_READ_FAILED` | WMI gave an error. The job result has the error number of the DNS server when WMI gives one, else the WMI error number. |
-| `PLUGIN_DNS_ACCESS_DENIED` | WMI refused the access. In a change with an AD account, the agent shows `AGENT_PLUGIN_ACCOUNT_DENIED`. |
+| `PLUGIN_DNS_ACCESS_DENIED` | WMI refused the access. The message tells the user to check the members of the group DnsAdmins on the server. In a change with an AD account, the agent shows `AGENT_PLUGIN_ACCOUNT_DENIED`. |
 | `PLUGIN_DNS_CHANGED` | The change is complete. The plugin sends the new read. |
-| `PLUGIN_DNS_CHANGED_NOT_READ` | The change is complete, but the read after it failed. The portal shows the change after the next read. |
-| `PLUGIN_DNS_INVALID_CHANGE` | The plugin refused a value. The job result names the field. |
-| `PLUGIN_DNS_OBJECT_EXISTS` | The object exists on the server already. Read the server again. |
-| `PLUGIN_DNS_OBJECT_MISSING` | The object does not exist on the server. Read the server again. |
-| `PLUGIN_DNS_NOT_DOMAIN_CONTROLLER` | The server is not a domain controller, so it cannot store zones in Active Directory. |
+| `PLUGIN_DNS_CHANGED_NOT_READ` | The change is complete, but the read after it failed. The message tells the user to select **Read again** to see the change. |
+| `PLUGIN_DNS_INVALID_CHANGE` | The plugin did not make the change because a value is not valid. The job result names the field. |
+| `PLUGIN_DNS_OBJECT_EXISTS` | The object exists on the server already. The message tells the user to select **Read again** to see the current state. |
+| `PLUGIN_DNS_OBJECT_MISSING` | The object does not exist on the server. The message tells the user to select **Read again** to see the current state. |
+| `PLUGIN_DNS_NOT_DOMAIN_CONTROLLER` | The server is not a domain controller, so it cannot store zones in Active Directory. The message tells the user to store the zone in a file on the server. |
 | `PLUGIN_DNS_CHANGE_FAILED` | The DNS server refused the change. The job result has the error number of the DNS server when WMI gives one, else the WMI error number. |
 | `PLUGIN_DNS_CHANGE_FAILED_DETAIL` | The DNS server refused the change, and Windows gave an error text. The message shows the error number and the text of Windows. |
 
