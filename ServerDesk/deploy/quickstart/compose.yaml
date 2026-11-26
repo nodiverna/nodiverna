@@ -1,0 +1,119 @@
+# Nodiverna quick start: PostgreSQL, the app and Caddy HTTPS with a local CA.
+# Compose reads all values from .env next to this file. Steps: README.md,
+# "Quick start". The full production file with all options is compose.yaml;
+# see docs/self-hosting.md, "Run with Docker Compose". Requires Compose 2.23.1+.
+name: serverdesk
+
+# For app and migrate. The secrets have no default: Compose stops without them.
+x-app: &app
+  image: ${SERVERDESK_IMAGE:-ghcr.io/nodiverna/nodiverna:latest}
+  environment:
+    DATABASE_URL: postgres://serverdesk@db:5432/serverdesk
+    DATABASE_PASSWORD: ${DATABASE_PASSWORD:?generate the secrets into .env as in the README quick start, step 2}
+    SESSION_SECRET: ${SESSION_SECRET:?generate the secrets into .env as in the README quick start, step 2}
+    PASSWORD_PEPPER: ${PASSWORD_PEPPER:?generate the secrets into .env as in the README quick start, step 2}
+    AGENT_JOB_SIGNING_KEY: ${AGENT_JOB_SIGNING_KEY:?generate the secrets into .env as in the README quick start, step 2}
+    SITE_ORIGIN: https://${PORTAL_HOST:-localhost}:8443
+    TRUSTED_CLIENT_IP_HEADER: x-serverdesk-client-ip
+    PORTAL_CA_FILE: /portal-ca/root.crt
+  volumes: [app-data:/data, portal-ca:/portal-ca:ro]
+  networks: [default, database]
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    networks: [database]
+    environment:
+      POSTGRES_USER: serverdesk
+      POSTGRES_DB: serverdesk
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?generate the secrets into .env as in the README quick start, step 2}
+    volumes: [db-data:/var/lib/postgresql/data]
+    healthcheck: {test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "serverdesk", "-d", "serverdesk"],
+                  interval: 5s, timeout: 5s, retries: 20, start_period: 10s}
+    security_opt: [no-new-privileges:true]
+
+  # Runs at each "docker compose up -d": backup and migration if one is pending.
+  migrate:
+    <<: *app
+    command: [node, scripts/selfhost.mjs, migrate]
+    restart: "no"
+    depends_on: {db: {condition: service_healthy}}
+
+  app:
+    <<: *app
+    restart: unless-stopped
+    init: true
+    expose: ["3000"]
+    depends_on: {db: {condition: service_healthy}, migrate: {condition: service_completed_successfully}}
+    stop_grace_period: 30s
+
+  proxy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    ports: ["8080:80", "8443:443"]
+    environment:
+      CADDY_ADDRESS: https://${PORTAL_HOST:-localhost}
+      CADDY_SERVER_NAME: ${PORTAL_HOST:-localhost}
+      SITE_ORIGIN: https://${PORTAL_HOST:-localhost}:8443
+      CADDY_TLS: internal
+    configs: [{source: caddyfile, target: /etc/caddy/Caddyfile}]
+    volumes: [caddy-data:/data, caddy-config:/config]
+    depends_on: {app: {condition: service_healthy}}
+
+  # Copies the public root of Caddy's local CA for the agent install scripts.
+  ca-export:
+    image: caddy:2.10-alpine
+    init: true
+    restart: unless-stopped
+    network_mode: none
+    read_only: true
+    environment: {CADDY_TLS: "${CADDY_TLS:-internal}"}
+    volumes: [caddy-data:/caddy:ro, portal-ca:/export]
+    command:
+      - /bin/sh
+      - -c
+      - |
+        source=/caddy/caddy/pki/authorities/local/root.crt
+        while :; do
+          if [ "$$CADDY_TLS" = internal ] && [ -f "$$source" ]; then
+            if ! cmp -s "$$source" /export/root.crt; then
+              cp "$$source" /export/root.crt.tmp && chmod 0644 /export/root.crt.tmp && mv -f /export/root.crt.tmp /export/root.crt
+            fi
+          else
+            rm -f /export/root.crt /export/root.crt.tmp
+          fi
+          sleep 60
+        done
+    depends_on: [proxy]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+
+# Same text as deploy/Caddyfile; $$ keeps Compose from interpolating.
+configs:
+  caddyfile:
+    content: |
+      {
+          auto_https disable_redirects
+          # IP clients may omit SNI; use the configured certificate name then.
+          default_sni {$$CADDY_SERVER_NAME:localhost}
+      }
+
+      http://{$$CADDY_SERVER_NAME:localhost} {
+          # Preserve the externally published HTTPS port, e.g. NAS :8443.
+          redir {$$SITE_ORIGIN:https://localhost:8443}{uri} permanent
+      }
+
+      {$$CADDY_ADDRESS:https://localhost} {
+          tls {$$CADDY_TLS:internal}
+          encode zstd gzip
+          reverse_proxy app:3000 {
+              # App has no published port: this header is supplied only by this proxy.
+              header_up X-ServerDesk-Client-IP {remote_host}
+          }
+      }
+
+networks: {database: {internal: true}}
+volumes: {db-data: {}, app-data: {}, caddy-data: {}, caddy-config: {}, portal-ca: {}}

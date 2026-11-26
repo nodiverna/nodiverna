@@ -43,6 +43,6 @@ export default defineConfig({
     // the two viewports (1440×900, and 390×844 with touch and 4× CPU throttling) itself.
     ...(perf ? [{name: 'perf', testMatch: /overlay-performance\.spec\.ts$/, dependencies: ['setup'], use: {screenshot: 'off' as const}}] : []),
     // README screenshots in docs/images/ (e2e/readme.spec.ts), only with E2E_README=1.
-    ...(readme ? [{name: 'readme', testMatch: /readme\.spec\.ts$/, dependencies: ['setup'], use: {viewport: {width: 1440, height: 900}, deviceScaleFactor: 2, screenshot: 'off' as const}}] : []),
+    ...(readme ? [{name: 'readme', testMatch: /readme\.spec\.ts$/, dependencies: ['setup'], use: {viewport: {width: 1440, height: 900}, deviceScaleFactor: 1, screenshot: 'off' as const}}] : []),
   ],
 });
