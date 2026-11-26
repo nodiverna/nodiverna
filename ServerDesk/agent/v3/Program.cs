@@ -6,7 +6,7 @@ internal static class Program
 {
     // The csproj <Version> (the base X.Y.Z). A dev build of the Agent release workflow
     // adds -dev.<sha7> (BuildVersion.DevSuffix, agent/BuildVersion.targets).
-    internal const string BaseVersion = "4.21.4";
+    internal const string BaseVersion = "4.21.5";
     internal const string Version = BaseVersion + BuildVersion.DevSuffix;
     internal static async Task<int> Main(string[] args)
     {

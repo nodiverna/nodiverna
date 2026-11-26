@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Text.Json.Nodes;
 
 namespace ServerDesk.Agent;
 
@@ -122,6 +123,81 @@ internal static class NativeFeaturesProviderTests
         catch (InvalidDataException) { failedLabel = true; }
         labels.Read("Failure", now, Label);
         Assert(failedLabel && labelReads == 4, "failed DISM metadata reads are retried rather than cached as success");
+        Budget(Assert);
+        ListSingleFlightAsync(Assert).GetAwaiter().GetResult();
+        Timing(Assert);
         Console.WriteLine("PASS native feature provider: complete same-namespace resolution, missing metadata fallback, all-missing diagnostics, operational/permission failure isolation and cancellation.");
+        Console.WriteLine("PASS native feature list: time budget, single-flight enumeration with shared failure and cancellation, timing line.");
+    }
+
+    // ---- 4.21.5: the deadline covers the enumeration and the first provider probes; the broker call outlives it ----
+    private static void Budget(Action<bool, string> Assert)
+    {
+        Assert(NativeFeatures.ServerEnumerationSeconds == 120 && NativeFeatures.InventoryDeadlineSeconds == 150, "the enumeration polls 120 s within a 150 s deadline.");
+        Assert(NativeFeatures.InventoryDeadlineSeconds >= NativeFeatures.ServerEnumerationSeconds + 4 * NativeFeatures.ProviderProbeTimeout.TotalSeconds + 10,
+            "the deadline covers the enumeration, four provider probes and 10 s margin.");
+        Assert(AgentWorker.PrivilegedCallSeconds(NativeFeatures.InventoryDeadlineSeconds) > NativeFeatures.InventoryDeadlineSeconds && AgentWorker.PrivilegedCallSeconds(NativeFeatures.InventoryDeadlineSeconds) == 165,
+            "the worker's broker call waits longer than the deadline (165 s).");
+    }
+
+    private static JsonArray Rows(params string[] names) => new(names.Select(name => (JsonNode?)new JsonObject { ["name"] = name, ["displayName"] = name, ["installed"] = true, ["featureType"] = "Role", ["parent"] = null, ["subFeatures"] = new JsonArray(), ["depth"] = 0 }).ToArray());
+    private static string Names(JsonArray rows) => string.Join(",", rows.Select(row => row!["name"]!.GetValue<string>()));
+
+    // ---- 4.21.5: one shared list enumeration for concurrent callers ----
+    private static async Task ListSingleFlightAsync(Action<bool, string> Assert)
+    {
+        var wait = TimeSpan.FromSeconds(10);
+        NativeFeatures.ResetListCache();
+        try
+        {
+            int calls = 0;
+            var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously); var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            JsonArray Blocking(bool server) { Interlocked.Increment(ref calls); entered.TrySetResult(); release.Task.GetAwaiter().GetResult(); return Rows("AD-Domain-Services", "Web-Server"); }
+            var telemetry = NativeFeatures.ListAsync(true, CancellationToken.None, Blocking);
+            await entered.Task.WaitAsync(wait);
+            // The drift inventory and a cancelled caller start while the telemetry enumeration runs.
+            var drift = NativeFeatures.ListAsync(true, CancellationToken.None, Blocking);
+            using var cancel = new CancellationTokenSource();
+            var cancelled = NativeFeatures.ListAsync(true, cancel.Token, Blocking);
+            cancel.Cancel();
+            bool stopped = false;
+            try { await cancelled.WaitAsync(wait); } catch (OperationCanceledException) { stopped = true; }
+            Assert(stopped && !telemetry.IsCompleted && !drift.IsCompleted, "a cancelled caller ends only its own wait; the shared enumeration goes on.");
+            release.SetResult();
+            var first = await telemetry.WaitAsync(wait); var second = await drift.WaitAsync(wait);
+            Assert(calls == 1 && Names(first) == "AD-Domain-Services,Web-Server" && Names(second) == Names(first) && !ReferenceEquals(first, second),
+                "two concurrent list calls share one enumeration and each get the rows (" + calls + " enumerations).");
+            var fromCache = await NativeFeatures.ListAsync(true, CancellationToken.None, _ => throw new InvalidOperationException("The cache must answer."));
+            Assert(Names(fromCache) == Names(first) && calls == 1, "a list call within 20 s reads the cache.");
+            var client = await NativeFeatures.ListAsync(false, CancellationToken.None, _ => { Interlocked.Increment(ref calls); return Rows("Microsoft-Hyper-V"); });
+            Assert(calls == 2 && Names(client) == "Microsoft-Hyper-V", "the cache keeps its server check.");
+
+            // A failed enumeration reaches every waiting caller once and is not kept.
+            NativeFeatures.ResetListCache(); calls = 0;
+            var failEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously); var failRelease = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            JsonArray Failing(bool server) { Interlocked.Increment(ref calls); failEntered.TrySetResult(); failRelease.Task.GetAwaiter().GetResult(); throw new AgentMessageException("AGENT_FEATURE_INVENTORY_TIMEOUT"); }
+            var one = NativeFeatures.ListAsync(true, CancellationToken.None, Failing);
+            await failEntered.Task.WaitAsync(wait);
+            var two = NativeFeatures.ListAsync(true, CancellationToken.None, Failing);
+            failRelease.SetResult();
+            var failures = new List<Exception>();
+            foreach (var call in new[] { one, two })
+                try { await call.WaitAsync(wait); } catch (Exception error) { failures.Add(error); }
+            Assert(calls == 1 && failures.Count == 2 && failures.All(error => error is AgentMessageException && error.Message == failures[0].Message),
+                "a failed enumeration gives the same failure to both callers without a second enumeration.");
+            var retried = await NativeFeatures.ListAsync(true, CancellationToken.None, _ => { Interlocked.Increment(ref calls); return Rows("Web-Server"); });
+            Assert(calls == 2 && Names(retried) == "Web-Server", "the next call after a failure enumerates again.");
+        }
+        finally { NativeFeatures.ResetListCache(); }
+    }
+
+    // ---- 4.21.5: the broker's timing line of a role read ----
+    private static void Timing(Action<bool, string> Assert)
+    {
+        var timing = new NativeFeatureTiming();
+        Assert(timing.LogLine(812, 74) == "Broker telemetry Roles and features: read in 812 ms (74 components).", "the first read after the broker start gives a line.");
+        Assert(timing.LogLine(900, 74) is null && timing.LogLine(19_999, 74) is null, "a fast read after the first gives no line.");
+        Assert(timing.LogLine(20_000, 74) == "Broker telemetry Roles and features: read in 20000 ms (74 components).", "a read of 20 000 ms gives a line with its time and count.");
+        Assert(timing.LogLine(95_310, 3) == "Broker telemetry Roles and features: read in 95310 ms (3 components).", "every slow read gives a line.");
     }
 }
