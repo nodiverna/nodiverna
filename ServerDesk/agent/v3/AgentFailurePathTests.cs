@@ -27,6 +27,7 @@ internal static class AgentFailurePathTests
         await StallAsync();
         await RetentionAsync();
         await SchedulerAsync();
+        await RolesAsync();
         BrokerReplies();
         LogLines();
         Budgets();
@@ -166,6 +167,55 @@ internal static class AgentFailurePathTests
         snapshot = new JsonObject(); errors = new JsonArray();
         NativeTelemetryCollector.ApplyCollectors(snapshot, new[] { broken }.Concat(others), tick, errors);
         Check(others.All(slot => snapshot[slot.Id]?.GetValue<bool>() == true) && snapshot["collectorErrors"]!.AsArray().Single()!["code"]!.GetValue<string>() == "access-denied", "a throwing Drivers collector keeps the other fields.");
+    }
+
+    // ---- 4.21.5: a slow role enumeration within its deadline shows the roles; a real failure keeps its line ----
+    private static async Task RolesAsync()
+    {
+        var deadline = TimeSpan.FromSeconds(NativeFeatures.InventoryDeadlineSeconds);
+        var at = DateTimeOffset.Parse("2026-11-26T09:00:00Z");
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously); var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var lines = new List<string>();
+        var slot = new TelemetryCollectorSlot("Roles and features", TimeSpan.FromSeconds(NativeTelemetryCollector.InventorySeconds), deadline,
+            () => { entered.TrySetResult(); release.Task.GetAwaiter().GetResult(); return new JsonObject { ["features"] = new JsonArray(new JsonObject { ["name"] = "Web-Server", ["installed"] = true }) }; }, lines.Add);
+        slot.StartIfDue(at); await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        foreach (int seconds in new[] { 26, 46, 100, NativeFeatures.ServerEnumerationSeconds, NativeFeatures.InventoryDeadlineSeconds })
+        {
+            var running = slot.Read(at.AddSeconds(seconds));
+            Check(running.Failure is null && running.Error == "Roles and features is being initialized.", "a role read at " + seconds + " s is no failure and no \"does not answer in time\" line: " + running.Error);
+        }
+        release.SetResult(); await slot.CurrentTask!;
+        var snapshot = new JsonObject(); var errors = new JsonArray();
+        NativeTelemetryCollector.ApplyCollectors(snapshot, new[] { slot }, at.AddSeconds(NativeFeatures.InventoryDeadlineSeconds), errors);
+        Check(snapshot["features"]?[0]?["name"]?.GetValue<string>() == "Web-Server" && errors.Count == 0 && snapshot["collectorErrors"]!.AsArray().Count == 0 && lines.Count == 0,
+            "a slow read within the deadline fills features without a collection error: " + snapshot.ToJsonString());
+
+        // A run past the deadline still reports the stall line.
+        var stuck = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var late = new TelemetryCollectorSlot("Roles and features", TimeSpan.FromSeconds(NativeTelemetryCollector.InventorySeconds), deadline, () => { stuck.Task.GetAwaiter().GetResult(); return new JsonObject { ["features"] = new JsonArray() }; }, lines.Add);
+        late.StartIfDue(at);
+        var stalled = late.Read(at.AddSeconds(NativeFeatures.InventoryDeadlineSeconds + 1));
+        Check(stalled.Error == "Roles and features: the Windows provider does not answer in time; the collection continues independently." && stalled.Failure is { Collector: "roles-and-features", Code: "timeout" }, "past 150 s the stall line stays.");
+        stuck.SetResult(); await late.CurrentTask!;
+
+        // Real failures keep today's line, one classified entry and the worker log line.
+        foreach (var (failure, code) in new (Exception, string)[]
+        {
+            (new AgentMessageException("AGENT_FEATURE_INVENTORY_TIMEOUT"), "error"),
+            (new AgentMessageException("AGENT_FEATURE_INVENTORY_EMPTY"), "error"),
+            (new BrokerException("ServerManager failed.", "NativeInventoryException", "NativeInventoryException, WMI=AccessDenied (0x80041003)", "access-denied", 4200), "access-denied")
+        })
+        {
+            lines.Clear();
+            var failing = new TelemetryCollectorSlot("Roles and features", TimeSpan.FromSeconds(NativeTelemetryCollector.InventorySeconds), deadline, () => throw failure, lines.Add);
+            failing.StartIfDue(at); try { await failing.CurrentTask!; } catch (Exception) { }
+            snapshot = new JsonObject(); errors = new JsonArray();
+            NativeTelemetryCollector.ApplyCollectors(snapshot, new[] { failing }, at.AddSeconds(1), errors);
+            var entries = snapshot["collectorErrors"]!.AsArray();
+            Check(!snapshot.ContainsKey("features") && errors.Count == 1 && errors[0]!.GetValue<string>() == "Roles and features could not be read (" + NativeInventoryDiagnostics.Describe(failure) + ")."
+                && entries.Count == 1 && entries[0]!["collector"]!.GetValue<string>() == "roles-and-features" && entries[0]!["code"]!.GetValue<string>() == code
+                && lines.Count == 1 && lines[0].StartsWith("Inventory Roles and features: ", StringComparison.Ordinal), "a real failure keeps its line and code: " + errors.ToJsonString() + " " + entries.ToJsonString() + " " + string.Join(" | ", lines));
+        }
     }
 
     // ---- the broker failure reply round-trips into BrokerException ----
