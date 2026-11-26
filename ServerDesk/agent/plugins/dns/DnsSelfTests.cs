@@ -439,7 +439,7 @@ internal static class DnsSelfTests
         var hello = PluginProtocol.ReadPluginHello(lines[0]);
         Check(hello.Name == "dns" && hello.Version == Program.Version && hello.Capabilities.SequenceEqual(Program.Capabilities), "The plugin hello is wrong.");
         var result = PluginProtocol.ReadResult(lines[1], id);
-        Check(result.Ok && result.Code == "PLUGIN_DNS_READ_COMPLETED" && result.Message == "The DNS server was read: 5 zones." && result.Data?["kind"]?.GetValue<string>() == "server", "The plugin result is wrong.");
+        Check(result.Ok && result.Code == "PLUGIN_DNS_READ_COMPLETED" && result.Message == "The DNS server was read. Zones: 5." && result.Data?["kind"]?.GetValue<string>() == "server", "The plugin result is wrong.");
         var unknown = await Session(PluginProtocol.BrokerHello("4.20.0"), PluginProtocol.Request(id, "dns-write", new JsonObject()));
         Check(unknown.Code == 3 && unknown.Lines.Count == 1, "An unknown operation got a result.");
         calls.Clear();

@@ -13,24 +13,24 @@ namespace ServerDesk.Plugin.Dhcp;
 internal static class Program
 {
     // BaseVersion is the csproj <Version>; a dev build adds -dev.<sha7> (agent/BuildVersion.targets).
-    internal const string Name = "dhcp", BaseVersion = "1.1.1", Version = BaseVersion + BuildVersion.DevSuffix;
+    internal const string Name = "dhcp", BaseVersion = "1.1.2", Version = BaseVersion + BuildVersion.DevSuffix;
     internal static readonly string[] Capabilities = ["dhcp-read", .. DhcpChanges.Operations];
 
     /// <summary>The English texts of the plugin codes; agent/v3/AgentMessages.cs registers the same texts for the portal catalogs.</summary>
     internal static readonly IReadOnlyDictionary<string, string> Messages = new Dictionary<string, string>(StringComparer.Ordinal)
     {
-        ["PLUGIN_DHCP_READ_COMPLETED"] = "The DHCP server was read: {scopes} scopes, {leases} leases.",
-        ["PLUGIN_DHCP_SERVICE_STOPPED"] = "The DHCP Server service is stopped. Start it under Management → Services.",
-        ["PLUGIN_DHCP_ACCESS_DENIED"] = "The DHCP server refused access to the plugin. Check the DHCP Administrators and DHCP Users groups.",
-        ["PLUGIN_DHCP_NOT_INSTALLED"] = "The DHCP Server role is not installed on this device.",
+        ["PLUGIN_DHCP_READ_COMPLETED"] = "The DHCP server was read. Scopes: {scopes}, leases: {leases}.",
+        ["PLUGIN_DHCP_SERVICE_STOPPED"] = "The DHCP Server service is stopped. Start the service in Management → Services.",
+        ["PLUGIN_DHCP_ACCESS_DENIED"] = "The DHCP server refused access to the DHCP plugin. On the server, check the members of the groups DHCP Administrators and DHCP Users.",
+        ["PLUGIN_DHCP_NOT_INSTALLED"] = "The DHCP Server role is not installed on this device. Install the role in Management → Roles & features, or remove the DHCP plugin in the Extensions area.",
         ["PLUGIN_DHCP_READ_FAILED"] = "The DHCP server could not be read (error {error}). Try again.",
         ["PLUGIN_DHCP_CHANGED"] = "The DHCP server was changed.",
-        ["PLUGIN_DHCP_CHANGED_NOT_READ"] = "The DHCP server was changed. The plugin could not read it again. The portal shows the change after the next read.",
-        ["PLUGIN_DHCP_INVALID_CHANGE"] = "The plugin refused the change because {field} is not valid.",
-        ["PLUGIN_DHCP_OBJECT_EXISTS"] = "{object} already exists on the DHCP server. Read the server again.",
-        ["PLUGIN_DHCP_OBJECT_MISSING"] = "{object} does not exist on the DHCP server. Read the server again.",
-        ["PLUGIN_DHCP_IN_FAILOVER"] = "Scope {scope} is in a failover relationship. Remove it from the relationship first.",
-        ["PLUGIN_DHCP_SECRET_MISSING"] = "The shared secret did not reach the plugin. Update the agent to 4.17.0 or later and try again.",
+        ["PLUGIN_DHCP_CHANGED_NOT_READ"] = "The DHCP server was changed, but the plugin could not read it afterwards. Select “Read again” to see the change.",
+        ["PLUGIN_DHCP_INVALID_CHANGE"] = "The DHCP plugin did not make the change because the value of {field} is not valid. Correct the value and try again.",
+        ["PLUGIN_DHCP_OBJECT_EXISTS"] = "{object} already exists on the DHCP server. Select “Read again” to see the current state.",
+        ["PLUGIN_DHCP_OBJECT_MISSING"] = "{object} does not exist on the DHCP server. Select “Read again” to see the current state.",
+        ["PLUGIN_DHCP_IN_FAILOVER"] = "Scope {scope} is part of a failover relationship. Remove the scope from the relationship on the Failover tab, and try again.",
+        ["PLUGIN_DHCP_SECRET_MISSING"] = "The shared secret did not reach the DHCP plugin. Update the agent on this device to 4.17.0 or later, and try again.",
         ["PLUGIN_DHCP_CHANGE_FAILED"] = "The DHCP server refused the change (error {error}). Check the values and try again.",
     };
 
