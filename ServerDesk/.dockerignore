@@ -1,0 +1,26 @@
+node_modules
+.next
+.vinext
+dist
+.build
+.data
+certificates
+.git
+**/.git
+.agents
+.codex
+.openai
+.env*
+**/.env*
+*.tsbuildinfo
+coverage
+e2e/.auth/
+e2e/artifacts/
+outputs
+work
+build
+agent/**/bin
+agent/**/obj
+*.log
+# No agent binaries in the image: installations import signed releases.
+public/downloads

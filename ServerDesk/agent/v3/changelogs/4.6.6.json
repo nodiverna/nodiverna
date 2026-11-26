@@ -1,0 +1,10 @@
+{
+  "version": "4.6.6",
+  "features": [
+    "Eine eigene GPU-Diagnose zeigt Modell, Treiber, PCI-Adresse und Grafikspeicher erkannter Grafikkarten.",
+    "NVIDIA-Grafikkarten melden verfügbare Treibersensoren für Temperatur, Takt, Leistung, Lüfter und PCIe-Verbindung."
+  ],
+  "fixes": [
+    "Hardware- und Sensordaten werden der passenden physischen GPU zugeordnet; nicht verfügbare Werte bleiben unbekannt."
+  ]
+}

@@ -1,0 +1,174 @@
+/* Settings › Branding (ui/settings/branding-page.tsx). The cards stack in the settings column, which is 326px to
+   760px wide (beside the preview it is narrower than the viewport), so the card internals use fluid grids and
+   container queries on the card list, never a viewport breakpoint. */
+.sdx-branding-cards { display: grid; gap: var(--sd-space-4); min-width: 0; container-type: inline-size; }
+.sdx-branding-cards > * { min-width: 0; }
+/* The small label of a setting inside a card (a row of Logo and icon, "Main color", "Background"). */
+.sdx-brand-label { margin: 0; font-size: 12.5px; font-weight: 600; }
+/* The limits line of an upload, in plain words. */
+.sdx-brand-rules { margin: 0; font-size: 12px; color: var(--sd-muted); }
+.sdx-branding-facts { font-variant-numeric: tabular-nums; }
+.sdx-branding-slot-actions { display: flex; flex-wrap: wrap; gap: var(--sd-space-2); }
+
+/* ---- Logo and icon: one row per image. The frame leads; beside it the label with its state tag, the state line,
+   the limits, the actions and the error of a failed upload. ---- */
+.sdx-brand-rows { display: grid; padding: 0; list-style: none; }
+.sdx-brand-row { display: grid; grid-template-columns: 112px minmax(0, 1fr); align-items: start; gap: var(--sd-space-4); padding: var(--sd-space-4) 0; border-top: 1px solid var(--sd-soft-line); }
+.sdx-brand-row:first-child { padding-top: 0; border-top: 0; }
+.sdx-brand-row:last-child { padding-bottom: 0; }
+.sdx-brand-row-main { display: grid; gap: var(--sd-space-3); min-width: 0; }
+.sdx-brand-row-text { display: grid; gap: var(--sd-space-1); min-width: 0; }
+.sdx-brand-row-text p { margin: 0; font-size: 12px; color: var(--sd-muted); }
+.sdx-brand-row-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sd-space-1) var(--sd-space-2); }
+
+/* The frame of a row: the image at its top bar size on the panel of its appearance. The fixed-scheme rules in
+   app/globals.css set color-scheme on the light and the dark frame, so their tokens resolve light or dark whatever
+   the console theme is. */
+.sdx-branding-frame { display: flex; align-items: center; justify-content: center; gap: var(--sd-space-3); min-height: 64px; padding: var(--sd-space-3); border: 1px solid var(--sd-line); border-radius: var(--sd-radius); background: var(--sd-panel); color: var(--sd-ink); box-shadow: var(--sd-shadow-sm); overflow: hidden; }
+.sdx-branding-frame-icon { align-items: flex-end; }
+.sdx-branding-frame-logo { display: block; width: auto; height: 24px; max-width: 100%; object-fit: contain; }
+.sdx-branding-placeholder { display: inline-flex; align-items: center; gap: var(--sd-space-2); min-width: 0; color: var(--sd-muted); font-size: 12px; font-weight: 600; }
+.sdx-branding-icon-32 { display: block; width: 32px; height: 32px; object-fit: contain; }
+.sdx-branding-icon-16 { display: block; width: 16px; height: 16px; object-fit: contain; }
+
+/* The customer table inside its card: name with its state, thumbnails at most 24px high. */
+.sdx-branding-customer { display: inline-flex; align-items: center; gap: var(--sd-space-2); min-width: 0; }
+.sdx-branding-thumb { display: block; width: auto; height: 24px; max-width: 120px; object-fit: contain; object-position: left center; }
+.sdx-branding-uses-portal { color: var(--sd-muted); }
+
+/* ---- Colors (ui/settings/brand-scheme-card.tsx) ----
+   The main color radiogroup: one swatch per logo color, the chosen one with the selection ring and a check. */
+.sdx-brand-lead-group { display: grid; gap: var(--sd-space-2); }
+.sdx-brand-leads { display: flex; flex-wrap: wrap; gap: var(--sd-space-2); }
+.sdx-brand-lead { display: inline-flex; align-items: center; gap: var(--sd-space-2); min-height: 40px; padding: var(--sd-space-1) var(--sd-space-3) var(--sd-space-1) var(--sd-space-1); border: 1px solid var(--sd-line); border-radius: var(--sd-radius); color: var(--sd-ink); background: var(--sd-panel); font: 12.5px var(--sd-font); cursor: pointer; transition: border-color var(--sd-dur-fast) var(--sd-ease-out), box-shadow var(--sd-dur-fast) var(--sd-ease-out), transform .22s var(--sd-ease-spring); }
+.sdx-brand-lead:hover { border-color: var(--sdx-edge); box-shadow: var(--sd-shadow-sm); }
+.sdx-brand-lead:active { transform: scale(.96); }
+.sdx-brand-lead[aria-checked="true"] { border-color: var(--sd-accent); box-shadow: 0 0 0 1px var(--sd-accent); }
+.sdx-brand-lead-swatch { display: grid; place-items: center; width: 32px; height: 32px; border-radius: var(--sd-radius-sm); box-shadow: inset 0 0 0 1px var(--sdx-edge); }
+/* The check sits on any logo color: a panel disc with ink, so it reads on light and dark swatches alike. */
+.sdx-brand-lead-swatch svg { padding: 2px; border-radius: 99px; color: var(--sd-ink); background: var(--sd-panel); box-shadow: var(--sd-shadow-sm); box-sizing: content-box; }
+/* The samples: one frame per appearance under its caption, each reading the --brand-<mode>-* values that the card sets
+   on the frame element (previewProperties). The samples rebuild the tokens of globals.css from them. */
+.sdx-brand-previews { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sd-space-4); }
+.sdx-brand-sample { display: grid; gap: var(--sd-space-1); min-width: 0; }
+.sdx-brand-sample > p { margin: 0; font-size: 12px; color: var(--sd-muted); }
+.sdx-branding-frame-light.sdx-brand-preview { --sdx-preview-accent: var(--brand-light-accent); --sdx-preview-on-accent: var(--brand-light-on-accent); --sdx-preview-from: var(--brand-light-from); --sdx-preview-to: var(--brand-light-to); --sdx-preview-panel: var(--sd-panel); --sdx-preview-strong: 80%; --sdx-preview-soft: 9%; }
+.sdx-branding-frame-dark.sdx-brand-preview { --sdx-preview-accent: var(--brand-dark-accent); --sdx-preview-on-accent: var(--brand-dark-on-accent); --sdx-preview-from: var(--brand-dark-from); --sdx-preview-to: var(--brand-dark-to); --sdx-preview-panel: var(--brand-dark-panel); --sdx-preview-strong: 55%; --sdx-preview-soft: 20%; }
+.sdx-brand-preview { flex-wrap: wrap; justify-content: flex-start; background: var(--sdx-preview-panel); font-size: 12.5px; }
+.sdx-brand-sample-glyph { display: inline-grid; color: var(--sdx-preview-accent); }
+.sdx-brand-sample-button { display: inline-flex; align-items: center; height: 32px; padding: 0 var(--sd-space-3); border-radius: var(--sd-radius-sm); color: var(--sdx-preview-on-accent); background: linear-gradient(135deg, var(--sdx-preview-from), var(--sdx-preview-to)); font-weight: 600; }
+.sdx-brand-sample-link { color: color-mix(in srgb, var(--sdx-preview-accent) var(--sdx-preview-strong), var(--sd-contrast)); font-weight: 500; text-decoration: underline; text-underline-offset: 2px; }
+.sdx-brand-sample-selected { display: inline-flex; align-items: center; height: 32px; padding: 0 var(--sd-space-3); border-radius: var(--sd-radius-sm); color: var(--sd-ink); background: color-mix(in srgb, var(--sdx-preview-accent) var(--sdx-preview-soft), var(--sdx-preview-panel)); box-shadow: inset 3px 0 0 var(--sdx-preview-accent); }
+.sdx-brand-facts { display: grid; gap: var(--sd-space-1); }
+.sdx-brand-facts p { margin: 0; font-size: 12px; color: var(--sd-muted); }
+/* What is in use now (the default colors, or the stored swatches), then Apply and the way back to the default. */
+.sdx-brand-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sd-space-2) var(--sd-space-3); padding-top: var(--sd-space-3); border-top: 1px solid var(--sd-soft-line); }
+.sdx-brand-applied { display: inline-flex; align-items: center; gap: var(--sd-space-2); margin: 0; color: var(--sd-muted); font-size: 12px; }
+.sdx-brand-applied-swatches { display: inline-flex; }
+.sdx-brand-applied-swatches span { width: 16px; height: 16px; border-radius: 99px; box-shadow: 0 0 0 2px var(--sd-panel), inset 0 0 0 1px var(--sdx-edge); }
+.sdx-brand-applied-swatches span + span { margin-left: calc(-1 * var(--sd-space-1)); }
+
+/* ---- Sign-in page and Console (ui/settings/branding-backgrounds.tsx) ---- */
+.sdx-bg-card { display: grid; gap: var(--sd-space-3); min-width: 0; }
+/* The tile picker: four tiles per row at every width, so the eight choices are two even rows. The chosen tile has
+   the selection ring and a check; a request shows the spinner on its tile. */
+.sdx-bg-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--sd-space-3) var(--sd-space-2); }
+.sdx-bg-tile { display: grid; gap: var(--sd-space-1); min-width: 0; padding: 0; border: 0; color: var(--sd-ink); background: transparent; font: 12px var(--sd-font); text-align: left; cursor: pointer; }
+.sdx-bg-tile[aria-disabled="true"] { cursor: not-allowed; opacity: .6; }
+.sdx-bg-tile-thumb { position: relative; display: grid; place-items: center; align-content: center; gap: var(--sd-space-1); aspect-ratio: 16 / 10; overflow: hidden; border: 1px solid var(--sd-line); border-radius: var(--sd-radius-sm); color: var(--sd-muted); background: var(--sd-bg); transition: border-color var(--sd-dur-fast) var(--sd-ease-out), box-shadow var(--sd-dur-fast) var(--sd-ease-out), transform .22s var(--sd-ease-spring); }
+.sdx-bg-tile-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.sdx-bg-tile-thumb small { padding: 0 var(--sd-space-1); font-size: 11px; line-height: 1.25; text-align: center; }
+.sdx-bg-tile-thumb.is-upload { gap: 2px; border-style: dashed; }
+.sdx-bg-tile:hover:not([aria-disabled="true"]) .sdx-bg-tile-thumb { border-color: var(--sdx-edge); box-shadow: var(--sd-shadow-sm); }
+.sdx-bg-tile:active:not([aria-disabled="true"]) .sdx-bg-tile-thumb { transform: scale(.96); }
+.sdx-bg-tile.is-checked .sdx-bg-tile-thumb { border-color: var(--sd-accent); box-shadow: 0 0 0 1px var(--sd-accent); }
+.sdx-bg-tile.is-checked .sdx-bg-tile-label { color: var(--sd-accent-strong); font-weight: 600; }
+.sdx-bg-tile:focus-visible { outline: none; }
+.sdx-bg-tile:focus-visible .sdx-bg-tile-thumb { outline: 2px solid var(--sd-accent); outline-offset: 2px; }
+.sdx-bg-tile-check { position: absolute; top: var(--sd-space-1); right: var(--sd-space-1); display: grid; place-items: center; width: 20px; height: 20px; border-radius: 99px; color: var(--sd-on-accent); background: var(--sd-accent); box-shadow: var(--sd-shadow-sm); animation: sdx-pop var(--sd-dur) var(--sd-ease-spring); }
+.sdx-bg-tile-check.is-loading { color: var(--sd-ink); background: var(--sd-panel); }
+.sdx-bg-tile-spinner { width: 12px; height: 12px; border: 2px solid var(--sd-line); border-top-color: var(--sd-accent); border-radius: 99px; }
+.sdx-bg-tile-label { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sdx-bg-waiting { margin: 0; font-size: 12px; color: var(--sd-muted); }
+/* The fitting line of the card Console: a small spinner and one sentence, while the page measures an upload. */
+.sdx-bg-measuring { display: flex; align-items: center; gap: var(--sd-space-2); margin: 0; font-size: 12px; color: var(--sd-muted); animation: sdx-fade var(--sd-dur) var(--sd-ease-out); }
+.sdx-bg-measuring-spinner { flex: none; width: 12px; height: 12px; border: 2px solid var(--sd-line); border-top-color: var(--sd-accent); border-radius: 99px; }
+.sdx-bg-upload { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sd-space-2) var(--sd-space-3); padding-top: var(--sd-space-3); border-top: 1px solid var(--sd-soft-line); }
+.sdx-bg-upload .sdx-branding-facts { margin: 0; font-size: 12px; color: var(--sd-muted); }
+
+@container (max-width: 480px) {
+  .sdx-brand-row { grid-template-columns: 96px minmax(0, 1fr); gap: var(--sd-space-3); }
+  .sdx-brand-previews { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---- Preview (ui/settings/branding-preview.tsx) ----
+   One browser window in miniature. The window keeps the appearance of its switch (.sdx-branding-frame-light|dark, the
+   fixed-scheme rules of app/globals.css) and carries data-scheme-swatch="brand": the scheme block of globals.css sets
+   the --scheme-<mode>-* variables on it from the --brand-* values (the stored scheme, an unapplied selection set on
+   the window, else Aurora). The --sdx-pv-* values below rebuild the scheme-able tokens from them, so the miniature
+   shows the brand colors whatever color scheme the Owner uses. Sizes follow the window width (cqi), so the miniature
+   keeps its proportions from 268px to 728px. */
+.sdx-stage { display: grid; gap: var(--sd-space-3); min-width: 0; }
+.sdx-stage-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sd-space-2); }
+.sdx-stage-window {
+  --sdx-pv-bg: light-dark(var(--scheme-light-bg), var(--scheme-dark-bg));
+  --sdx-pv-panel: light-dark(var(--sd-panel), var(--scheme-dark-panel));
+  --sdx-pv-accent: light-dark(var(--scheme-light-accent), var(--scheme-dark-accent));
+  --sdx-pv-on-accent: light-dark(var(--scheme-light-on-accent), var(--scheme-dark-on-accent));
+  --sdx-pv-soft: light-dark(color-mix(in srgb, var(--sdx-pv-accent) var(--scheme-light-soft), var(--sdx-pv-panel)), color-mix(in srgb, var(--sdx-pv-accent) var(--scheme-dark-soft), var(--sdx-pv-panel)));
+  --sdx-pv-glow: light-dark(var(--scheme-light-glow), var(--scheme-dark-glow));
+  --sdx-pv-grad: linear-gradient(135deg, light-dark(var(--scheme-light-from), var(--scheme-dark-from)), light-dark(var(--scheme-light-to), var(--scheme-dark-to)));
+  container-type: inline-size; overflow: hidden; border: 1px solid var(--sd-line); border-radius: var(--sd-radius); color: var(--sd-ink); background: var(--sdx-pv-bg); box-shadow: var(--sd-shadow-md);
+}
+/* The tab strip is browser chrome: neutral, with the tab icon and the page title. */
+.sdx-stage-tabstrip { display: flex; align-items: flex-end; height: 32px; padding: var(--sd-space-1) var(--sd-space-2) 0; border-bottom: 1px solid var(--sd-line); background: color-mix(in srgb, var(--sd-ink) 8%, var(--sd-panel)); }
+.sdx-stage-tab { display: inline-flex; align-items: center; gap: var(--sd-space-2); min-width: 0; max-width: min(100%, 220px); height: 28px; padding: 0 var(--sd-space-3) 0 var(--sd-space-2); border-radius: var(--sd-radius-sm) var(--sd-radius-sm) 0 0; background: var(--sd-panel); font-size: 11px; font-weight: 550; }
+.sdx-stage-tab > img { flex: none; display: block; width: 16px; height: 16px; object-fit: contain; }
+.sdx-stage-tab > span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sdx-stage-screen { position: relative; aspect-ratio: 16 / 10; overflow: hidden; isolation: isolate; }
+.sdx-stage-image { position: absolute; inset: 0; z-index: -1; display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+/* Shared parts: the logo, the mark on the gradient, the product name, a heading bar and the primary button. */
+.sdx-stage-brand { display: flex; align-items: center; gap: 1.6cqi; min-width: 0; font-size: clamp(9px, 2.8cqi, 13px); line-height: 1; white-space: nowrap; }
+.sdx-stage-brand > i { flex: none; align-self: stretch; width: 1px; background: var(--sd-line); }
+.sdx-stage-brand > strong { font-weight: 650; }
+.sdx-stage-name { overflow: hidden; color: var(--sd-muted); font-weight: 600; text-overflow: ellipsis; }
+.sdx-stage-logo { flex: 0 1 auto; display: block; width: auto; min-width: 0; height: clamp(14px, 5cqi, 24px); max-width: 60%; object-fit: contain; object-position: left center; }
+.sdx-stage-mark { flex: none; display: grid; place-items: center; width: clamp(16px, 5cqi, 24px); height: clamp(16px, 5cqi, 24px); border-radius: var(--sd-radius-sm); color: var(--sdx-pv-on-accent); background: var(--sdx-pv-grad); }
+.sdx-stage-heading { height: clamp(4px, 1.6cqi, 8px); width: 55%; border-radius: 99px; background: color-mix(in srgb, var(--sd-ink) 60%, transparent); }
+.sdx-stage-primary { height: clamp(12px, 4.4cqi, 24px); border-radius: var(--sd-radius-sm); background: var(--sdx-pv-grad); }
+/* Sign-in page: the image under a light scrim (else the glow surface), and the card on the opaque panel. */
+.sdx-stage-signin { position: absolute; inset: 0; display: grid; place-items: center; background: radial-gradient(70% 60% at 85% -5%, color-mix(in srgb, var(--sdx-pv-glow) 12%, transparent), transparent 62%), var(--sdx-pv-bg); }
+.sdx-stage-signin.is-image { background: none; }
+.sdx-stage-signin.is-image::after { content: ""; position: absolute; inset: 0; z-index: -1; background: color-mix(in srgb, var(--sdx-pv-bg) 24%, transparent); }
+.sdx-stage-signin-card { display: grid; gap: 2.4cqi; width: 46cqi; padding: 4cqi; border: 1px solid var(--sd-line); border-radius: var(--sd-radius-sm); background: var(--sdx-pv-panel); box-shadow: var(--sd-shadow-md); }
+.sdx-stage-field { height: clamp(10px, 4cqi, 20px); border: 1px solid var(--sd-line); border-radius: var(--sd-radius-sm); }
+/* Console: the top bar, the rail, the navigator and the workspace. With a background, the image sits blurred behind
+   the whole miniature (the console filter of each appearance at the miniature's scale: 48px of 1440px is 3.3cqi),
+   the bars in the glass over the bars scrim, the navigator in the strong glass over its scrim, and the workspace over
+   its scrim with opaque cards. The scrims are the console's (--sdx-backdrop-* from ui/shell/console-backdrop.css, fed
+   by the --sdx-scrim-* properties on the miniature). */
+.sdx-stage-console { position: absolute; inset: 0; display: grid; grid-template-columns: 7cqi 20cqi minmax(0, 1fr); grid-template-rows: 8cqi minmax(0, 1fr); background: var(--sdx-pv-bg); }
+.sdx-stage-console.is-image { background: none; }
+.sdx-stage-wallpaper { position: absolute; inset: 0; z-index: -1; overflow: hidden; }
+.sdx-stage-wallpaper .sdx-stage-image { z-index: auto; filter: blur(3.3cqi) saturate(1.4); transform: scale(1.15); }
+.sdx-branding-frame-dark .sdx-stage-wallpaper .sdx-stage-image { filter: blur(3.3cqi) saturate(1.2) brightness(.9); }
+.sdx-stage-topbar { grid-column: 1 / -1; display: flex; align-items: center; gap: 2cqi; min-width: 0; padding: 0 2cqi; border-bottom: 1px solid var(--sdx-edge); background: var(--sd-glass); }
+.sdx-stage-topbar .sdx-stage-logo { height: clamp(12px, 4cqi, 20px); max-width: 30%; }
+.sdx-stage-topbar .sdx-stage-mark { width: clamp(14px, 4.4cqi, 20px); height: clamp(14px, 4.4cqi, 20px); }
+.sdx-stage-search { flex: none; width: 24cqi; height: clamp(8px, 3.2cqi, 16px); margin-inline: auto; border-radius: 99px; background: color-mix(in srgb, var(--sd-ink) 8%, transparent); }
+.sdx-stage-avatar { flex: none; width: clamp(10px, 3.6cqi, 16px); height: clamp(10px, 3.6cqi, 16px); border-radius: 99px; background: color-mix(in srgb, var(--sd-ink) 20%, transparent); }
+.sdx-stage-rail { display: grid; align-content: start; justify-items: center; gap: 2cqi; padding-top: 2.4cqi; border-right: 1px solid var(--sdx-edge); background: var(--sd-glass); }
+.sdx-stage-rail > i { width: 3.6cqi; height: 3.6cqi; border-radius: var(--sd-radius-sm); background: color-mix(in srgb, var(--sd-ink) 14%, transparent); }
+.sdx-stage-rail > i.is-active { background: var(--sdx-pv-accent); }
+.sdx-stage-navigator { display: grid; align-content: start; gap: 1.2cqi; padding: 2.4cqi 1.6cqi; border-right: 1px solid var(--sdx-edge); background: var(--sd-glass-strong); }
+.sdx-stage-navigator > b { height: clamp(6px, 3cqi, 14px); border-radius: var(--sd-radius-sm); background: color-mix(in srgb, var(--sd-ink) 8%, transparent); }
+.sdx-stage-navigator > b.is-selected { background: var(--sdx-pv-soft); box-shadow: inset 2px 0 0 var(--sdx-pv-accent); }
+.sdx-stage-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 14cqi; align-content: start; align-items: center; gap: 2.4cqi; padding: 3.2cqi; }
+.sdx-stage-panel { grid-column: 1 / -1; height: 13cqi; border: 1px solid var(--sd-line); border-radius: var(--sd-radius-sm); background: var(--sdx-pv-panel); box-shadow: var(--sd-shadow-sm); }
+.sdx-stage-console.is-image :is(.sdx-stage-topbar, .sdx-stage-rail) { background: linear-gradient(var(--sd-glass), var(--sd-glass)), var(--sdx-backdrop-bars); }
+.sdx-stage-console.is-image .sdx-stage-navigator { background: linear-gradient(var(--sd-glass-strong), var(--sd-glass-strong)), var(--sdx-backdrop-navigator); }
+.sdx-stage-console.is-image .sdx-stage-workspace { background: var(--sdx-backdrop-workspace); }
+/* Below the window: the note of an unapplied color selection, then what the shown page is. */
+.sdx-stage-pending { display: flex; align-items: center; gap: var(--sd-space-2); margin: 0; color: var(--sd-ink); font-size: 12px; font-weight: 600; }
+.sdx-stage-pending > i { flex: none; width: 8px; height: 8px; border-radius: 99px; background: var(--sd-accent); }
+.sdx-stage-caption { margin: 0; color: var(--sd-muted); font-size: 12px; }

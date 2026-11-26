@@ -1,0 +1,8 @@
+{
+  "version": "4.17.2",
+  "features": [],
+  "fixes": [
+    "After a graphics driver update, the agent reports the new NVIDIA driver version without a restart.",
+    "When Windows reports a new driver version for an NVIDIA card, the agent loads the NVIDIA library again."
+  ]
+}

@@ -1,0 +1,27 @@
+/* Management → System on the console kit (ui/devices/management/device-system.tsx): one page with the KPI row and the
+   cards Page file, Restart and shut down, Scheduled maintenance, Computer & domain, Firewall rules
+   and Scheduled tasks. Cards, tables, meters and drawers come from the kit; this file only lays out
+   what sits around them. Tokens only, spacing on the 4px grid, no own keyframes. The editor rule does
+   not depend on .sdx-system, because the drawers render in a portal. */
+.sdx-system { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.sdx-system-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.sdx-system-muted { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--sd-muted); font-size: 12px; }
+.sdx-system-files { display: grid; gap: 16px; }
+.sdx-system-file { display: grid; gap: 8px; min-width: 0; }
+.sdx-system-file > strong { font-size: 13px; overflow-wrap: anywhere; }
+.sdx-system-file > small { color: var(--sd-muted); font-size: 12px; }
+.sdx-system-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.sdx-system-schedule > :not(.sdx-card-head) + :not(.sdx-card-head) { margin-top: 12px; }
+.sdx-system-plan { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px 16px; }
+.sdx-system-plan > .sdx-facts { flex: 1 1 320px; }
+.sdx-system-schedule-form { display: grid; gap: 12px; }
+.sdx-system-schedule-fields { display: grid; grid-template-columns: minmax(140px, 1fr) minmax(200px, 1.2fr) minmax(200px, 2fr); align-items: start; gap: 12px; }
+.sdx-system-schedule-submit { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.sdx-system-list > .sdx-toolbar { margin: 0; padding: 0 16px 12px; }
+/* A list card without a head (Scheduled tasks): the toolbar keeps the card padding at the top. */
+.sdx-system-list-bare > .sdx-toolbar { padding-top: 12px; }
+.sdx-system-editor { display: grid; gap: 16px; }
+
+@media (max-width: 900px) {
+  .sdx-system-grid, .sdx-system-schedule-fields { grid-template-columns: minmax(0, 1fr); }
+}

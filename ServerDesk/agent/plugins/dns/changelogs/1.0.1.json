@@ -1,0 +1,7 @@
+{
+  "version": "1.0.1",
+  "features": [],
+  "fixes": [
+    "Reading the DNS server from the portal works: the read data reach the portal. Needs agent 4.21.2 or later."
+  ]
+}

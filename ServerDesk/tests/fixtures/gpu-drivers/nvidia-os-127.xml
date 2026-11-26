@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?><LookupValueSearch><LookupValues>
+<LookupValue Code="10.0"><Name>Windows 10 64-bit</Name><Value>57</Value></LookupValue>
+<LookupValue Code="10.0"><Name>Windows 11</Name><Value>135</Value></LookupValue>
+<LookupValue Code="Linux aarch64"><Name>Linux aarch64</Name><Value>124</Value></LookupValue>
+<LookupValue Code="linux64"><Name>Linux 64-bit</Name><Value>12</Value></LookupValue>
+<LookupValue Code="freebsd"><Name>FreeBSD x64</Name><Value>22</Value></LookupValue>
+</LookupValues></LookupValueSearch>

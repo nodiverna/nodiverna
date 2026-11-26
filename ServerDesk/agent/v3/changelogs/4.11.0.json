@@ -1,0 +1,11 @@
+{
+  "version": "4.11.0",
+  "features": [
+    "The agent reports devices with an error in Device Manager and the driver inventory with version, date and signature. It sends the driver list only when it changes.",
+    "The agent reports the stability index of Windows and program crashes, hangs and failed installations of the last 30 days. Where Windows collects no data, it reports the reason.",
+    "The agent reports the health, wear and temperature of physical disks, disk errors of the last 30 days and the battery capacity. Missing values stay empty instead of 0.",
+    "The agent reports the machine certificates of the stores My, WebHosting and Remote Desktop with expiry and bindings. Private keys and certificate files never leave the device.",
+    "The agent reports programs that start automatically, with signature and masked command lines. It sends the list only when it changes."
+  ],
+  "fixes": []
+}

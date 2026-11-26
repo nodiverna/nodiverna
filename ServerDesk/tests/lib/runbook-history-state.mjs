@@ -1,0 +1,31 @@
+// The progress of a runbook run (lib/server/automation/runbook-history.ts): the parent job, the device states, failures,
+// cancellations, interrupted jobs and redacted output.
+import '../support/register.mjs';
+import '../support/german-default.mjs';
+import assert from 'node:assert/strict';
+const {runbookHistoryJob}=await import('../../lib/server/automation/runbook-history.ts');
+const {currentJob,jobProgress}=await import('../../lib/job-display.ts');
+const now=1800000000000;
+const definition=JSON.stringify({steps:[{name:'Inspect',kind:'powershell',script:'PRIVATE-SOURCE'},{name:'Refresh',kind:'diagnosis'},{name:'Finish',kind:'diagnosis'}]});
+const row={runId:'run',serverId:'a',name:'Maintenance',definition,actor:'private:test',state:'running',runState:'running',cancelRequested:0,stepIndex:1,createdAt:now-15000,startedAt:now-12000,finishedAt:null,runFinishedAt:null,jobId:'second',currentJobState:'running'};
+const step=(index,state,extra={})=>({runId:'run',serverId:'a',stepIndex:index,state,claimedAt:now-10000+index*1000,lastProgress:now-5000+index*1000,completedAt:state==='succeeded'?now-8000+index*1000:null,outputSecurity:0,...extra});
+const first=step(0,'succeeded'),second=step(1,'running');
+const active=runbookHistoryJob(row,[first,second],false);
+assert.equal(active.id,'runbook:run:a');assert.equal(active.action,'runbook-run');assert.equal(active.state,'running');
+assert.equal(active.claimedAt,first.claimedAt);assert.equal(active.lastProgress,second.lastProgress);
+assert.equal(active.metadata.completedSteps,1);assert.equal(active.metadata.totalSteps,3);assert.equal(active.metadata.currentStep,2);
+assert.equal(jobProgress(active),'1/3 Schritte · Schritt 2: Refresh');
+assert.equal(active.outputRedacted,true);assert.equal(active.result,null);assert.ok(!JSON.stringify(active).includes('PRIVATE-SOURCE'));
+assert.equal(runbookHistoryJob({...row,currentJobState:'pending'},[first,step(1,'pending',{claimedAt:null,lastProgress:null})],true).state,'pending','current child is still waiting for dispatch');
+assert.equal(runbookHistoryJob({...row,state:'queued',jobId:null,currentJobState:null},[first],true).state,'running','started run remains active between steps');
+assert.equal(runbookHistoryJob({...row,state:'queued',jobId:null,currentJobState:null,startedAt:null,stepIndex:0},[],true).state,'pending');
+for(const state of ['failed','cancelled','expired'])assert.equal(runbookHistoryJob({...row,currentJobState:state},[first,step(1,state)],true).state,state==='expired'?'unknown':state,'live child failure/cancellation must not wait for automation tick');
+assert.equal(runbookHistoryJob({...row,currentJobState:null},[first],true).state,'unknown','missing claimed child is interrupted, never replayed');
+assert.equal(runbookHistoryJob({...row,state:'succeeded',runState:'failed',jobId:null,currentJobState:null,finishedAt:now},[first,step(1,'succeeded'),step(2,'succeeded')],true).state,'succeeded','another target failing does not overwrite this device result');
+assert.equal(runbookHistoryJob({...row,state:'cancelled',jobId:null,currentJobState:null},[first],true).state,'cancelled');
+const finishing=runbookHistoryJob({...row,stepIndex:2,currentJobState:'succeeded'},[first,step(1,'succeeded'),step(2,'succeeded')],true);
+assert.equal(finishing.state,'succeeded','final succeeded child reflected before parent tick');assert.equal(finishing.metadata.completedSteps,3);assert.equal(finishing.metadata.currentStep,undefined);
+const cancelled=runbookHistoryJob({...row,cancelRequested:1},[first,second],true);assert.equal(jobProgress(cancelled),'1/3 Schritte · Abbruch angefordert');
+assert.equal(currentJob([active,runbookHistoryJob({...row,serverId:'b'},[first,second],true)],now,'b').serverId,'b','collapsed banner retains device preference');
+assert.equal(runbookHistoryJob({...row,definition:'{malformed'},[first],false).outputRedacted,true,'unknown step kind defaults to restricted output');
+console.log('PASS: runbook parent progress, independent device states, live child failure/cancellation, interrupted jobs, active run selection and output/source redaction.');

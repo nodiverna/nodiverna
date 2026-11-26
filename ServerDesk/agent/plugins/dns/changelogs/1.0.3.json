@@ -1,0 +1,8 @@
+{
+  "version": "1.0.3",
+  "features": [],
+  "fixes": [
+    "Creating a DNS zone works when the classic DNS WMI provider fails with a generic error: the plugin checks for the new zone and else creates it through the modern DNS provider.",
+    "A failed DNS read or change shows the DNS server's own error number instead of the generic WMI error number 2147749889 when WMI reports one."
+  ]
+}

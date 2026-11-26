@@ -1,0 +1,45 @@
+# Dependency installation policy for the application and its pipelines.
+minimumReleaseAge: 10080
+minimumReleaseAgeIgnoreMissingTime: false
+trustLockfile: false
+strictDepBuilds: true
+allowBuilds:
+  esbuild: true
+  fsevents: true
+  sharp: true
+  unrs-resolver: true
+  workerd: set this to true or false
+storeDir: ${PNPM_SHARED_STORE:-.build/pnpm-store}
+cacheDir: ${PNPM_SHARED_STORE:-.build/pnpm-store}/policy-cache
+enableGlobalVirtualStore: false
+# Reuse store files with clones or hardlinks before falling back to copies.
+packageImportMethod: auto
+# The explicit installer owns dependency setup, including restored workspaces.
+verifyDepsBeforeRun: false
+optimisticRepeatInstall: false
+overrides:
+  '@babel/core': 7.29.6
+  browserslist: 4.28.7
+  baseline-browser-mapping: 2.11.0
+  fast-uri: 3.1.8
+  source-map-js: 1.2.2
+  sharp: 0.35.5
+  react: 19.2.8
+  react-dom: 19.2.8
+  ws: 8.21.0
+  undici: 7.29.1
+  js-yaml: 4.3.2
+  'brace-expansion@^1': 1.1.21
+  'brace-expansion@^5': 5.0.12
+  'fflate@^0.7': 0.7.5
+  image-size: 2.0.3
+  'esbuild@>=0.25.0': 0.28.1
+  # drizzle-kit pulls esbuild 0.18 through @esbuild-kit (GHSA-67mh-4wv8-2f99).
+  'esbuild@<0.25.0': 0.28.1
+# Advisories that `pnpm audit` skips. Keep this list narrow; tests/repo/dependency-security.mjs enforces it.
+audit:
+  ignore:
+    # braces <=3.0.3 (GHSA-vfj7-8cjw-p6xm) has no fixed release. It is reached only through the
+    # lint toolchain (@next/eslint-plugin-next -> fast-glob -> micromatch -> braces), and the
+    # patterns it expands come from this repository. Remove the entry when a fix exists.
+    - GHSA-vfj7-8cjw-p6xm

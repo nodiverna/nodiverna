@@ -1,0 +1,4 @@
+ALTER TABLE "entra_settings" DROP CONSTRAINT "entra_settings_test_result";--> statement-breakpoint
+ALTER TABLE "entra_sign_in_flows" DROP CONSTRAINT "entra_sign_in_flows_outcome";--> statement-breakpoint
+ALTER TABLE "entra_settings" ADD CONSTRAINT "entra_settings_test_result" CHECK (test_result IS NULL OR test_result IN ('ok','tenantNotFound','discoveryFailed','credentialRefused','secretExpired','certificateRefused','unreachable','graphPermissionMissing','graphUnreachable','apiNotExposed','apiTokenVersion'));--> statement-breakpoint
+ALTER TABLE "entra_sign_in_flows" ADD CONSTRAINT "entra_sign_in_flows_outcome" CHECK (outcome IS NULL OR outcome IN ('cancelled','expired','mfaMissing','apiSetupMissing','wrongTenant','wrongAccount','staleSignIn','accountDisabled','tokenRejected','unavailable','notConfigured'));

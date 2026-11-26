@@ -1,0 +1,8 @@
+{
+  "version": "4.7.1",
+  "features": [],
+  "fixes": [
+    "Die Neuinstallation startet den Worker-Dienst wieder: Der Installer gibt die Agent-EXE jetzt ausdrücklich für das Worker-Konto frei, statt nur den Ordner.",
+    "--uninstall bricht nicht mehr ab, wenn die Update-Wiederherstellungsaufgabe fehlt, etwa beim Umstieg von 4.6.x."
+  ]
+}

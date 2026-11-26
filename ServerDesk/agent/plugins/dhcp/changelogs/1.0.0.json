@@ -1,0 +1,8 @@
+{
+  "version": "1.0.0",
+  "features": [
+    "Reads the DHCP server: IPv4 and IPv6 scopes, superscopes, exclusions, reservations, leases, options, policies, failover, AD authorization and scope usage.",
+    "Runs only under agent 4.16.0 or later, without network access of its own, and changes nothing on the DHCP server."
+  ],
+  "fixes": []
+}

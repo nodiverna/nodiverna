@@ -1,0 +1,30 @@
+/* Management → Roles & features on the console kit (ui/devices/management/roles-features.tsx). The head, tabs,
+   cards, pills, buttons and drawer come from the kit; this file only lays out the tree rows. Tokens
+   only, spacing on the 4px grid, fonts from 12px, no own keyframes. */
+.sdx-rf { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.sdx-rf-content { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.sdx-rf-list, .sdx-rf-children { margin: 0; padding: 0; list-style: none; }
+.sdx-rf-row { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 12px 16px; border-top: 1px solid var(--sd-soft-line); }
+.sdx-rf-list > .sdx-rf-node:first-child > .sdx-rf-row { border-top: 0; }
+.sdx-rf-label { display: grid; flex: 1; gap: 4px; min-width: 0; }
+.sdx-rf-label strong { font-weight: 600; overflow-wrap: break-word; }
+.sdx-rf-child .sdx-rf-label strong { font-weight: 500; }
+.sdx-rf-label small { display: flex; flex-wrap: wrap; gap: 4px 12px; color: var(--sd-muted); font-size: 12px; }
+.sdx-rf-row > .sdx-pill, .sdx-rf-row > .sdx-icon-btn { flex-shrink: 0; }
+.sdx-rf-expand { display: grid; flex-shrink: 0; place-items: center; width: 32px; height: 32px; border: 0; border-radius: var(--sd-radius-sm); background: transparent; color: var(--sd-muted); }
+.sdx-rf-expand:hover { background: var(--sdx-hover); color: var(--sd-ink); }
+.sdx-rf-expand-placeholder { flex-shrink: 0; width: 32px; }
+.sdx-rf-children { margin-left: 24px; border-left: 1px solid var(--sd-soft-line); }
+.sdx-rf-children .sdx-rf-children .sdx-rf-children .sdx-rf-children { margin-left: 0; }
+.sdx-rf-orphans { border-top: 1px solid var(--sd-soft-line); }
+.sdx-rf-orphans-head { display: grid; gap: 4px; padding: 12px 16px; background: color-mix(in srgb, var(--sd-ink) 3%, var(--sd-panel)); }
+.sdx-rf-orphans-head h3 { font-size: 13px; font-weight: 650; }
+.sdx-rf-orphans-head small { color: var(--sd-muted); font-size: 12px; }
+.sdx-rf-form { display: grid; gap: 16px; }
+@media (max-width: 760px) {
+  .sdx-rf-row { flex-wrap: wrap; gap: 8px; padding: 12px; }
+  .sdx-rf-label { flex-basis: calc(100% - 44px); }
+  .sdx-rf-row > .sdx-pill { margin-left: 40px; }
+  .sdx-rf-row > .sdx-icon-btn { margin-left: auto; }
+  .sdx-rf-children { margin-left: 12px; }
+}

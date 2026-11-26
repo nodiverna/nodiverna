@@ -1,0 +1,7 @@
+{
+  "version": "4.15.0",
+  "features": [
+    "The agent runs Microsoft Defender actions from the portal: quick scan, full scan, signature update and clean all active detections, as typed WMI calls in Management mode."
+  ],
+  "fixes": []
+}

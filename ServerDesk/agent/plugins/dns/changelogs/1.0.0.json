@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0",
+  "features": [
+    "Reads the Windows DNS server: zones with their settings, forwarders, conditional forwarders, aging and scavenging every 15 minutes, and the records of one zone on request.",
+    "Changes the DNS server from the portal: zones, zone settings, records (A, AAAA, CNAME, MX, PTR, TXT, SRV, NS), forwarders, conditional forwarders, scavenging and the cache.",
+    "Runs only under agent 4.20.0 or later, talks only to the local DNS server and has no network access of its own."
+  ],
+  "fixes": []
+}

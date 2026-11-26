@@ -1,0 +1,71 @@
+/* Desired State (ui/automation/desired-state-panel.tsx, ui/automation/desired-state-components.tsx) on the console kit:
+   cards, tables, fields and dialogs are kit parts; these rules lay out the library, the assignment
+   and schedule sections, the editor and the source view. Tokens only, 4px rhythm. */
+.ds-help { margin: 0; color: var(--sd-muted); font-size: 12px; line-height: 1.5; }
+.ds-reason { color: var(--sd-danger); }
+.ds-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.ds-actions-spacer { flex: 1 1 0; }
+.ds-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); align-items: start; gap: 12px; }
+.ds-device-state { display: grid; gap: 16px; min-width: 0; padding: 16px; }
+.ds-subsection { display: grid; gap: 12px; min-width: 0; padding: 16px; border: 1px solid var(--sd-soft-line); border-radius: var(--sd-radius); background: color-mix(in srgb, var(--sd-ink) 2%, var(--sd-panel)); }
+.ds-subsection h4, .ds-source-head h4 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 13px; font-weight: 650; overflow-wrap: anywhere; }
+.ds-subsection-head, .ds-subsection-foot, .ds-source-head { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; min-width: 0; }
+.ds-subsection-foot { align-items: center; padding-top: 12px; border-top: 1px solid var(--sd-soft-line); }
+.ds-subsection-foot > p { flex: 1 1 240px; }
+.ds-consent { display: grid; gap: 8px; margin-top: 12px; }
+
+/* Success feedback with the "View job" link. */
+.ds-feedback { display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 16px; border: 1px solid color-mix(in srgb, var(--sd-success) 30%, var(--sd-line)); border-radius: var(--sd-radius); background: var(--sd-success-bg); font-size: 13px; }
+.ds-feedback > span { display: grid; flex: none; color: var(--sd-success); }
+.ds-feedback > div { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; flex: 1; min-width: 0; }
+.ds-feedback-warning { border-color: color-mix(in srgb, var(--sd-warn) 30%, var(--sd-line)); background: var(--sd-warn-bg); }
+.ds-feedback-warning > span { color: var(--sd-warn); }
+
+/* Configuration library: the list beside the selected configuration. */
+.ds-library-layout { display: grid; grid-template-columns: minmax(220px, 280px) minmax(0, 1fr); align-items: start; gap: 16px; min-width: 0; }
+.ds-library { display: grid; gap: 8px; min-width: 0; padding: 12px; border: 1px solid var(--sd-line); border-radius: var(--sd-radius); background: var(--sd-panel); box-shadow: var(--sd-shadow-sm); }
+.ds-library-list { display: grid; gap: 4px; }
+.ds-library-item { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 44px; padding: 8px 12px; border: 1px solid transparent; border-radius: var(--sd-radius-sm); color: var(--sd-ink); background: transparent; font: inherit; text-align: left; cursor: pointer; transition: background-color .16s var(--sd-ease-out); }
+.ds-library-item:hover { background: var(--sdx-hover, color-mix(in srgb, var(--sd-ink) 4%, var(--sd-panel))); }
+.ds-library-item:active { transform: scale(.98); }
+.ds-library-item > svg { flex: none; color: var(--sd-muted); }
+.ds-library-item > span { display: grid; min-width: 0; }
+.ds-library-item strong { overflow: hidden; font-size: 13px; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
+.ds-library-item small { color: var(--sd-muted); font-size: 12px; }
+.ds-library-item[aria-current="true"] { border-color: color-mix(in srgb, var(--sd-accent) 30%, transparent); box-shadow: inset 3px 0 0 var(--sd-accent); background: var(--sd-accent-soft); }
+.ds-library-item[aria-current="true"] > svg { color: var(--sd-accent); }
+.ds-library-detail { display: grid; gap: 16px; min-width: 0; }
+.ds-targets { gap: 4px; }
+.ds-target { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ds-target > .sdx-pick-row { flex: 1; min-width: 0; }
+
+/* Source, disclosures and the editor. */
+.ds-source-viewer { display: grid; gap: 12px; min-width: 0; }
+.ds-source-code { max-height: 360px; margin: 0; padding: 12px; overflow: auto; border: 1px solid var(--sd-line); border-radius: var(--sd-radius-sm); background: color-mix(in srgb, var(--sd-ink) 3%, var(--sd-panel)); font: 12px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre; }
+.ds-disclosure > summary { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; cursor: pointer; font-size: 12px; font-weight: 600; }
+.ds-disclosure > summary > span:nth-child(2) { color: var(--sd-muted); font-weight: 400; }
+.ds-disclosure[open] > summary { margin-bottom: 8px; }
+.ds-resource-result { display: grid; gap: 12px; min-width: 0; }
+.ds-run-summary { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0; color: var(--sd-muted); font-size: 12px; }
+.ds-run-summary > span { display: inline-flex; align-items: center; gap: 4px; }
+.ds-editor { min-width: 0; padding: 16px; }
+.ds-fieldset { display: grid; gap: 8px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.ds-fieldset > legend { margin-bottom: 8px; padding: 0; font-size: 12.5px; font-weight: 600; }
+.ds-formats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 8px; }
+.ds-formats > button { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 8px 12px; border: 1px solid var(--sd-line); border-radius: var(--sd-radius-sm); color: var(--sd-ink); background: var(--sd-panel); font: inherit; text-align: left; cursor: pointer; transition: border-color .16s var(--sd-ease-out), background-color .16s var(--sd-ease-out); }
+.ds-formats > button:active { transform: scale(.98); }
+.ds-formats > button > span { display: grid; flex: 1; min-width: 0; }
+.ds-formats > button small { color: var(--sd-muted); font-size: 12px; }
+.ds-formats > button > svg { flex: none; color: var(--sd-muted); }
+.ds-formats > button[aria-pressed="true"] { border-color: var(--sd-accent); background: var(--sd-accent-soft); }
+.ds-formats > button[aria-pressed="true"] > svg { color: var(--sd-accent); }
+.ds-code { min-height: 240px; font: 12px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre; overflow: auto; overflow-wrap: normal; resize: vertical; }
+.ds-code.ds-parameters { min-height: 120px; }
+@media (max-width: 900px) {
+  .ds-library-layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .ds-device-state, .ds-editor, .ds-subsection { padding: 12px; }
+  .ds-actions-spacer { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .ds-library-item, .ds-formats > button { transition: none; } }

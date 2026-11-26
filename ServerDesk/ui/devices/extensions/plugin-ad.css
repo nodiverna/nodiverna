@@ -1,0 +1,29 @@
+/* AD sign-in for plugin changes (plugin-ad.tsx, docs/plugin-ad-sign-in.md): the sign-in dialog,
+   the account chip of a plugin view head and the "Server sign-ins" card. Tokens only, 4px rhythm,
+   shared keyframes from motion.css; the global reduced-motion rules stop every transition here. */
+
+/* The dialog: the kit confirm dialog with a form; the focal point is the title with the domain. */
+.sdx-ad-form { display: grid; gap: 16px; }
+.sdx-ad-head { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.sdx-ad-head .sdx-confirm-title { margin: 0; min-width: 0; }
+.sdx-ad-body { margin: 0; color: var(--sd-muted); }
+.sdx-ad-meta { margin: -8px 0 0; color: var(--sd-muted); font-size: 12px; }
+.sdx-ad-form .sdx-field input { font-family: var(--sd-font); }
+
+/* The chip: quiet ghost chrome before "Read again"; the two states cross-fade (sdx-fade, under 240 ms). */
+.sdx-ad-chip { display: inline-flex; min-width: 0; animation: sdx-fade var(--sd-dur) var(--sd-ease-out); }
+.sdx-ad-chip-trigger { display: inline-flex; align-items: center; gap: 8px; min-width: 0; max-width: 320px; }
+.sdx-ad-chip-trigger .mono { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--sd-ink); }
+.sdx-ad-chip-trigger small { flex: none; color: var(--sd-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+@media (max-width: 760px) { .sdx-ad-chip-trigger small { display: none; } }
+
+/* The account card: one row per sign-in; a signed-out row fades and collapses its height. */
+.sdx-ad-list { display: grid; margin: 0; padding: 0; list-style: none; }
+.sdx-ad-row { display: grid; grid-template-rows: 1fr; opacity: 1; transition: grid-template-rows var(--sd-dur) var(--sd-ease-out), opacity var(--sd-dur) var(--sd-ease-out); }
+.sdx-ad-row + .sdx-ad-row .sdx-ad-row-inner { border-top: 1px solid var(--sd-soft-line); }
+.sdx-ad-row-inner { display: flex; align-items: center; gap: 12px; min-height: 0; overflow: hidden; padding: 8px 0; }
+.sdx-ad-row-leaving { grid-template-rows: 0fr; opacity: 0; pointer-events: none; }
+.sdx-ad-row-text { display: grid; gap: 4px; flex: 1 1 auto; min-width: 0; }
+.sdx-ad-row-text strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--sd-ink); font-size: 13px; font-weight: 600; }
+.sdx-ad-row-text small { color: var(--sd-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.sdx-ad-card { margin-top: 16px; }

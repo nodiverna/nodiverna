@@ -1,0 +1,19 @@
+{
+    auto_https disable_redirects
+    # IP clients may omit SNI; use the configured certificate name then.
+    default_sni {$CADDY_SERVER_NAME:localhost}
+}
+
+http://{$CADDY_SERVER_NAME:localhost} {
+    # Preserve the externally published HTTPS port, e.g. NAS :8443.
+    redir {$SITE_ORIGIN:https://localhost:8443}{uri} permanent
+}
+
+{$CADDY_ADDRESS:https://localhost} {
+    tls {$CADDY_TLS:internal}
+    encode zstd gzip
+    reverse_proxy app:3000 {
+        # App has no published port: this header is supplied only by this proxy.
+        header_up X-ServerDesk-Client-IP {remote_host}
+    }
+}

@@ -1,0 +1,23 @@
+/* Remote › Terminal (ui/devices/remote/terminal-panel.tsx, docs/terminal-live.md): the kit head with the status pill, the viewport
+   with its input bar as one framed surface, then the sessions DataTable. The viewport stays fixed dark
+   (globals.css): the tokens below resolve to their dark values in both modes. Tokens only, 4px rhythm. */
+.v3-terminal-panel { display: grid; gap: var(--sd-space-3); min-width: 0; }
+.v3-terminal-panel > .sdx-notice { margin: 0; }
+/* The status pill changes its color on connect instead of jumping. */
+.sd-terminal-state .sdx-pill { transition: color var(--sd-dur) var(--sd-ease-out), background-color var(--sd-dur) var(--sd-ease-out); }
+.sd-terminal-frame { overflow: hidden; border: 1px solid var(--sd-line); border-radius: var(--sd-radius); background: var(--sd-panel); box-shadow: var(--sd-shadow-sm); }
+/* The xterm theme reads background, color, caret-color and outline-color of .v3-terminal (ui/devices/remote/terminal-panel.tsx). */
+.sd-console .v3-terminal-panel .v3-terminal-viewport { height: clamp(280px, 48vh, 540px); min-height: 0; min-width: 0; padding: 16px; overflow: hidden; border-radius: 0; background: var(--sd-bg); }
+.sd-console .v3-terminal-panel .v3-terminal { border-radius: 0; background: var(--sd-bg); color: var(--sd-ink); caret-color: var(--sd-accent); outline-color: var(--sd-accent-soft); }
+.sd-console .v3-terminal-panel .v3-terminal .xterm { padding: 0; }
+.sd-console .v3-terminal-panel .xterm-viewport { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--sd-line) 70%, var(--sd-ink)) var(--sd-bg); border-radius: 0; }
+.sd-console .v3-terminal-panel .sd-terminal-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--sd-line); background: color-mix(in srgb, var(--sd-bg) 50%, var(--sd-panel)); }
+.sd-terminal-sessions { display: grid; gap: 8px; min-width: 0; }
+.sd-terminal-account { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.sd-terminal-you { color: var(--sd-muted); font-size: 12px; }
+.sd-terminal-note { margin: 0; color: var(--sd-muted); font-size: 12px; }
+@media (max-width: 640px) {
+  .sd-console .v3-terminal-panel .v3-terminal-viewport { height: clamp(260px, 45vh, 400px); padding: 12px; }
+  .sd-console .v3-terminal-panel .sd-terminal-toolbar { padding: 8px 12px; }
+}
+@media (prefers-reduced-motion: reduce) { .sd-terminal-state .sdx-pill { transition: none; } }

@@ -1,0 +1,25 @@
+// The file operations (lib/file-operations.ts): paths, names, modes, channel bounds and the security scope.
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import fs from 'node:fs';
+const require=createRequire(import.meta.url),ts=require('typescript');
+const source=ts.transpileModule(fs.readFileSync('lib/file-operations.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
+const mod={exports:{}};new Function('require','module','exports',source)(require,mod,mod.exports);
+const {fileDefinitions:definitions,fileSecurityAccess,fileNameSchema,validFilePath}=mod.exports;
+let checks=0;const check=(condition,label)=>{assert.ok(condition,label);checks++;};
+for(const value of ['C:\\','D:\\Temp','D:\\Temp\\file.log','C:\\Program Files\\App'])check(validFilePath(value),'accepts '+value);
+for(const value of ['\\\\server\\share','C:relative','C:\\Temp\\..\\private','C:\\Temp\\.\\file','C:\\Temp\\file:stream','C:\\Temp\\*.log','C:\\Temp\\folder.','C:\\Temp\\folder ','C:\\ProgramData\\ServerDesk\\config.bin','C:\\ServerDeskAgent','C:\\Temp\\file\0'])check(!validFilePath(value),'rejects '+value);
+for(const value of ['report.log','Neuer Ordner','café.txt'])check(fileNameSchema.safeParse(value).success,'accepts name '+value);
+for(const value of ['', '..','x\\y','x/y','CON','COM1.txt','NUL','ServerDesk','foo:bar','foo.','foo ','a\n'])check(!fileNameSchema.safeParse(value).success,'rejects name '+value);
+check(definitions['list-files'].readOnly,'listing is ReadOnly');
+for(const action of ['create-directory','rename-file','delete-file'])check(!definitions[action].readOnly,action+' requires Management');
+check(definitions['list-files'].schema.safeParse({}).success,'drive listing accepts defaults');
+check(!definitions['list-files'].schema.safeParse({path:'C:\\',offset:19801}).success,'offset bound');
+check(!definitions['list-files'].schema.safeParse({path:'C:\\',limit:201}).success,'channel page bound');
+check(!definitions['list-files'].schema.safeParse({path:'C:\\',recursive:true}).success,'no unbounded recursion');
+check(!fileSecurityAccess('list-files',{path:'C:\\Temp'}),'standard list has no Security scope');
+check(fileSecurityAccess('list-files',{includeSecurity:true}),'explicit Security listing scope');
+check(fileSecurityAccess('delete-file',{path:'C:\\Temp\\Security.evtx'}),'Security file mutation scope');
+check(fileSecurityAccess('rename-file',{path:'C:\\Temp\\new.txt',name:'Security.evtx'}),'Security rename destination scope');
+check(!fileSecurityAccess('rename-file',{path:'C:\\Temp\\normal.txt',name:'other.txt'}),'standard rename scope');
+console.log(`PASS file operations: ${checks} path, name, mode, channel bounds and security-scope assertions`);

@@ -1,0 +1,36 @@
+/* The sign-in, invitation, MFA and session screens (SessionCard in ui/session/session-card.tsx). The screen
+   root carries the kit scope (.sdx-layer), so Btn, Field, Notice, CopyValue and Skeleton keep their
+   kit look here; this file only places them in the glass card. */
+.sd-session-screen{min-height:100dvh;display:grid;place-items:center;padding:32px 20px;color:var(--sd-ink);background:radial-gradient(900px 480px at 85% -5%,color-mix(in srgb,var(--sd-glow) 12%,transparent),transparent 62%),radial-gradient(800px 480px at 0% 105%,color-mix(in srgb, var(--sd-ink) 8%, transparent),transparent 60%),var(--sd-bg)}
+.sd-session-card{width:100%;max-width:520px;border:1px solid var(--sd-glass-edge);border-radius:var(--sd-radius-lg);padding:32px;display:flex;flex-direction:column;gap:16px;background:var(--sd-glass-strong);-webkit-backdrop-filter:blur(28px) saturate(180%);backdrop-filter:blur(28px) saturate(180%);box-shadow:0 2px 6px color-mix(in srgb, var(--sd-shadow-color) 5%, transparent),0 28px 56px -18px color-mix(in srgb, var(--sd-shadow-color) 22%, transparent),inset 0 1px 0 var(--sd-glass-edge)}
+.sd-session-brand{display:flex;align-items:center;gap:12px;font-size:19px;min-height:40px}
+/* An uploaded portal logo (BrandLogo), a hairline, then the product name in muted type. */
+.sd-session-logo{display:flex;align-items:center;gap:12px;min-width:0}.sd-session-logo>i{align-self:stretch;width:1px;margin-block:4px;background:var(--sd-line)}.sd-session-logo strong{font-size:15px;font-weight:600;color:var(--sd-muted)}
+.sd-session-brand>span{display:grid;place-items:center;width:40px;height:40px;border-radius:var(--sd-radius);background:var(--sd-accent-grad);color:var(--sd-on-accent);box-shadow:0 1px 2px color-mix(in srgb,var(--sd-accent-strong) 35%,transparent),inset 0 1px 0 color-mix(in srgb, var(--sd-on-accent) 28%, transparent)}
+.sd-session-heading{display:flex;align-items:center;gap:12px;margin-top:8px}.sd-session-heading>svg{color:var(--sd-accent);flex-shrink:0}.sd-session-heading h1{font-size:26px;line-height:1.2;font-weight:650;margin:0}
+.sd-session-account{font-size:13px;color:var(--sd-muted);overflow-wrap:anywhere;margin:0}.sd-session-card p{line-height:1.6;margin:0}.sd-session-card small{font-size:12px;color:var(--sd-muted);line-height:1.6}
+.sd-session-card form{display:flex;flex-direction:column;gap:12px}
+/* The one primary and the full-width secondaries span the card; the text actions (ghost) sit centred. */
+.sd-session-card .sdx-btn.sd-session-primary{width:100%;height:auto;min-height:40px;padding-block:8px;white-space:normal;line-height:1.35}
+.sd-session-card a.sdx-btn.sd-session-primary{text-decoration:none}
+.sd-session-card .sdx-btn.sd-session-link{align-self:center;color:var(--sd-muted);font-weight:500}
+.sd-session-card .sdx-btn.sd-session-link:hover:not([aria-disabled="true"]){color:var(--sd-ink)}
+/* The code input: mono with wide spacing, so six digits read at a glance. */
+.sd-session-card .sdx-field input.sd-session-code{height:44px;font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:20px;letter-spacing:.12em}
+.sd-session-secret,.sd-session-copy{display:grid;gap:8px;padding:16px;border-radius:var(--sd-radius);background:color-mix(in srgb,var(--sd-accent) 6%,var(--sd-panel))}
+.sd-session-secret a{width:fit-content;font-size:13px;color:var(--sd-accent-strong)}
+.sd-session-status{font-size:12px;color:var(--sd-muted)}
+.sd-session-codes{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}.sd-session-codes li{padding:8px;border-radius:var(--sd-radius-sm);background:var(--sd-panel);font-size:12px;overflow-wrap:anywhere;text-align:center}
+@media(max-width:520px){.sd-session-screen{padding:16px}.sd-session-card{padding:24px 20px}.sd-session-heading h1{font-size:23px}.sd-session-codes{grid-template-columns:1fr}}
+/* The polite waiting line of "Continue with Microsoft" (EntraSessionExpired; the step-up dialog uses .sdx-stepup-status). It keeps its height, so the actions do not move when it fills. */
+.sd-session-secret>.sdx-field-label,.sd-session-copy>.sdx-field-label{font-size:12.5px;font-weight:600;color:var(--sd-ink)}
+/* The sign-in background (SessionBackdrop, docs/branding.md): a centred cover image fixed behind the screen, not
+   blurred, under a light --sd-bg scrim. It fades in once loaded and takes no space, so nothing moves. While it shows,
+   the card is the opaque panel without the glass blur: its texts keep the panel contrast whatever the image shows
+   (tests/ui/styles/theme-backdrop.mjs). Off under forced colors. */
+.sd-session-screen-image{position:relative;isolation:isolate}
+.sd-session-backdrop{position:fixed;inset:0;z-index:-2;display:block;width:100%;height:100%;object-fit:cover;object-position:center;opacity:0;pointer-events:none}
+.sd-session-backdrop[data-loaded]{opacity:1;animation:sdx-fade var(--sd-dur-slow) var(--sd-ease-out)}
+.sd-session-screen-image::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:color-mix(in srgb,var(--sd-bg) 24%,transparent)}
+.sd-session-screen-image .sd-session-card{background:var(--sd-panel);-webkit-backdrop-filter:none;backdrop-filter:none}
+@media(forced-colors:active){.sd-session-backdrop,.sd-session-screen-image::before{display:none}}

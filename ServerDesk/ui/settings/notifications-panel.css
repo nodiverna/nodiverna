@@ -1,0 +1,47 @@
+/* Settings → Notifications (ui/settings/notifications-panel.tsx) and the Notifications tab
+   (ui/devices/monitoring/notification-rules.tsx). Kit classes do the rest; tokens only. */
+/* One column that never grows with its content: a wide table scrolls inside its
+   .sdx-table-wrap on narrow screens, and the page never scrolls sideways. */
+.sdx-notifications { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; }
+/* The Notifications tab: the head, then the Direct card and the Inherited card, 16px apart. */
+.sdx-notification-rules { gap: 16px; }
+/* Settings → Notification channels: the tabs, then the tab panel. The tables keep their columns
+   readable and scroll inside their wrap down to 761px; from 760px they are cards. */
+.sdx-notifications-panel { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; min-width: 0; }
+/* The page: the header with its own gap, then the grid of the tabs and the tab panel. */
+.sdx-notifications-page { min-width: 0; }
+:is(.sdx-notification-channels, .sdx-notification-log) > .sdx-table { min-width: 680px; }
+:is(.sdx, .sdx-layer) :is(.sdx-notification-channels, .sdx-notification-log) tbody tr { cursor: default; }
+/* The On/Off pill of a channel fades to its new color after a change. */
+.sdx-notification-channels .sdx-pill { transition: color var(--sd-dur) var(--sd-ease-out), background-color var(--sd-dur) var(--sd-ease-out); }
+.sdx-notification-type { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.sdx-notification-type > svg { flex: none; color: var(--sd-muted); }
+.sdx-notification-level, .sdx-notification-error { display: block; margin-top: 2px; color: var(--sd-muted); font-size: 12px; }
+.sdx-notification-error { max-width: 280px; white-space: normal; }
+.sdx-notification-log td { vertical-align: top; }
+/* Two fields in one row of a drawer: server and port, user name and password, tenant
+   and client ID. The cells align to the top, so a hint or an error under one field never
+   pushes the input of the other field down. Stacked on a phone with the form's 16px rhythm. */
+.sdx-notification-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 140px); align-items: start; gap: 12px; }
+.sdx-notification-pair:has(input[type="password"]), .sdx-notification-pair-even { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+@media (max-width: 560px) {
+  .sdx-notification-pair, .sdx-notification-pair:has(input[type="password"]), .sdx-notification-pair-even { grid-template-columns: minmax(0, 1fr); row-gap: 16px; }
+}
+/* The secret drawer: the warning, then the secret with its copy button; a long secret wraps. */
+.sdx-notification-secret code { overflow-wrap: anywhere; }
+.sdx-notification-checks { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 0; padding: 0; border: 0; }
+.sdx-notification-checks legend { margin-bottom: 6px; padding: 0; color: var(--sd-ink); font-size: 12.5px; font-weight: 600; }
+.sdx-notification-checks label { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; font-size: 13px; cursor: pointer; }
+.sdx-notification-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+/* The fields of one sign-in of an email channel. A new sign-in fades its fields
+   in (shared sdx-fade, --sd-dur); the first render and reduced motion show them at once. */
+.sdx-notification-mode { min-width: 0; }
+.sdx-notification-mode-enter { animation: sdx-fade var(--sd-dur) var(--sd-ease-out); }
+.sdx-notification-mode-hint { margin: 0; color: var(--sd-muted); font-size: 12px; }
+/* The service account key and its "Choose key file" row: one block, the button 8px under the field. */
+.sdx-notification-key { display: grid; gap: 8px; min-width: 0; }
+.sdx-notification-keyfile { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+@media (prefers-reduced-motion: reduce) {
+  .sdx-notification-mode-enter { animation: none; }
+  .sdx-notification-channels .sdx-pill { transition: none; }
+}

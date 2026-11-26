@@ -1,0 +1,42 @@
+/* The DHCP server of the DHCP plugin (docs/dhcp-server.md): the device view
+   (device-dhcp.tsx) and the fleet card "DHCP scope usage" (server-roles-tab.tsx).
+   Tokens only, 4px rhythm; motion comes from the DataTable entrance, the Kpi lift and Meter. */
+.sdx-dhcp { display: grid; gap: 16px; }
+
+/* A scope cell: the name over its id. */
+.sdx-dhcp-scope { display: grid; gap: 4px; min-width: 0; }
+.sdx-dhcp-scope strong { color: var(--sd-ink); font-size: 13px; font-weight: 600; }
+.sdx-dhcp-scope small { color: var(--sd-muted); font-size: 12px; font-weight: 400; }
+
+/* Usage: the small meter next to its figures, so fullness shows its shape in every row. */
+.sdx-dhcp-usage { display: flex; align-items: center; gap: 8px; min-width: 160px; }
+.sdx-dhcp-usage .sdx-meter { flex: 0 0 72px; }
+.sdx-dhcp-usage .mono { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.sdx-dhcp-panel { display: grid; gap: 12px; }
+.sdx-dhcp-subhead { margin: 8px 0 0; color: var(--sd-muted); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.sdx-dhcp-subhead-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.sdx-dhcp-subhead-row .sdx-dhcp-subhead { margin: 0; }
+.sdx-dhcp-drawer { display: grid; gap: 12px; }
+
+/* Change controls (plugin 1.1.0): the drawer head keeps the scope id next to its menu. */
+.sdx-dhcp-drawer-head { display: inline-flex; align-items: center; gap: 8px; }
+.sdx-dhcp-subhead-row .sdx-btn { flex: 0 0 auto; }
+
+/* The change forms: two fields side by side, a lease duration of number, unit and switch,
+   grouped rows (conditions, ranges, scope lists) inside a quiet fieldset. */
+.sdx-dhcp-form .sdx-dhcp-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.sdx-dhcp-form .sdx-dhcp-duration { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 12px; align-items: end; }
+.sdx-dhcp-form .sdx-dhcp-duration .sdx-field-inline { grid-column: 1 / -1; }
+.sdx-dhcp-fieldset { display: grid; gap: 8px; margin: 0; padding: 12px; border: 1px solid var(--sd-soft-line); border-radius: var(--sd-radius); }
+.sdx-dhcp-fieldset legend { padding: 0 4px; color: var(--sd-ink); font-size: 12.5px; font-weight: 600; }
+.sdx-dhcp-fieldset .sdx-pick-list { max-height: 240px; overflow: auto; }
+.sdx-dhcp-fieldset > .sdx-btn { justify-self: start; }
+.sdx-dhcp-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr) auto; gap: 8px; align-items: center; }
+.sdx-dhcp-fieldset .sdx-dhcp-row:has(> input:nth-child(2)) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; }
+
+@media (max-width: 760px) {
+  .sdx-dhcp-usage { min-width: 128px; }
+  .sdx-dhcp-usage .sdx-meter { flex-basis: 48px; }
+  .sdx-dhcp-form .sdx-dhcp-pair, .sdx-dhcp-fieldset .sdx-dhcp-row, .sdx-dhcp-fieldset .sdx-dhcp-row:has(> input:nth-child(2)) { grid-template-columns: 1fr; }
+}

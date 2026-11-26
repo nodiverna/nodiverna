@@ -1,0 +1,9 @@
+{
+  "version": "1.0.4",
+  "features": [],
+  "fixes": [
+    "Creating a DNS zone works on servers where only the modern DNS WMI provider works: the plugin creates the zone through it first and uses the classic provider as the fallback.",
+    "The DNS zone list also shows the zones that only the modern DNS provider reports, and you can delete these zones.",
+    "A failed DNS change shows the Windows error text when Windows gives one, and the job result names each call that the plugin tried."
+  ]
+}

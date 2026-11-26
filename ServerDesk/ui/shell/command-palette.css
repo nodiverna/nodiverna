@@ -1,0 +1,74 @@
+/* The command palette inside the kit Dialog (variant="search", ui/styles/console.css): the field, the result list and the foot hints. */
+.sd-palette { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.sd-palette-search {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 14px 16px;
+  border-bottom: 1px solid color-mix(in srgb, var(--sd-ink) 8%, transparent);
+  color: var(--sd-muted);
+}
+.sd-palette-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--sd-ink);
+  font: inherit;
+  font-size: 15px;
+}
+.sd-palette-search input::placeholder { color: var(--sd-muted); }
+.sd-palette-results { flex: 1; min-height: 0; overflow-y: auto; padding: 6px; scrollbar-width: thin; }
+/* A row (with its group heading) outside the visible part of the list is skipped for style, layout and paint until it
+   scrolls near the view: opening the palette with hundreds of devices builds only the rows on screen. */
+.sd-palette-results > div { content-visibility: auto; contain-intrinsic-size: auto 38px; }
+/* A row that opens a group also holds the heading (29px above the 38px row), so the list height and its scrollbar thumb are
+   right before the row was ever shown. */
+.sd-palette-results > div:has(> .sd-palette-group) { contain-intrinsic-size: auto 67px; }
+.sd-palette-group { padding: 10px 10px 4px; color: var(--sd-muted); font-size: 10px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; }
+.sd-palette-results button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 38px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: var(--sd-radius-sm);
+  background: transparent;
+  color: var(--sd-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.sd-palette-results button[aria-selected="true"] { background: var(--sd-accent-grad); color: var(--sd-on-accent); }
+.sd-palette-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--sd-radius-sm);
+  background: color-mix(in srgb, var(--sd-ink) 6%, transparent);
+  color: color-mix(in srgb, var(--sd-ink) 25%, var(--sd-muted));
+}
+.sd-palette-results button[aria-selected="true"] .sd-palette-icon { background: color-mix(in srgb, var(--sd-on-accent) 20%, transparent); color: var(--sd-on-accent); }
+.sd-palette-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.sd-palette-results small { margin-left: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--sd-muted); font-size: 11px; }
+.sd-palette-results button[aria-selected="true"] small { color: color-mix(in srgb, var(--sd-on-accent) 80%, transparent); }
+.sd-palette-enter { flex-shrink: 0; opacity: .8; }
+.sd-palette-results small + .sd-palette-enter { margin-left: 0; }
+.sd-palette-results .sd-palette-label + .sd-palette-enter { margin-left: auto; }
+.sd-palette-empty { margin: 0; padding: 26px 18px; color: var(--sd-muted); text-align: center; }
+.sd-palette-foot {
+  display: flex;
+  gap: 18px;
+  padding: 9px 16px;
+  border-top: 1px solid color-mix(in srgb, var(--sd-ink) 8%, transparent);
+  background: color-mix(in srgb, var(--sd-bg) 70%, transparent);
+  color: var(--sd-muted);
+  font-size: 11px;
+}
+.sd-palette-foot span { display: inline-flex; align-items: center; gap: 4px; }
+@media (max-width: 650px) { .sd-palette-foot { display: none; } }

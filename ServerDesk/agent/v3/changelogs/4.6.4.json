@@ -1,0 +1,11 @@
+{
+  "version": "4.6.4",
+  "features": [
+    "Der Agent meldet konkrete Neustartgründe und vorgemerkte Dateibereinigungen getrennt."
+  ],
+  "fixes": [
+    "Fehlende ServerDesk-Aufgaben in der Windows-Aufgabenplanung verursachen keinen Inventarfehler mehr.",
+    "Reine Löschaufträge werden nicht mehr als erforderlicher Neustart gemeldet; echte Neustartgründe bleiben erhalten.",
+    "Inventar und Desired State verwenden dieselbe Erkennung ausstehender Neustarts."
+  ]
+}

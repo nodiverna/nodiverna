@@ -1,0 +1,28 @@
+/* Management → Storage on the console kit (ui/devices/management/storage-panel.tsx). Cards, tables, menus, notices and
+   the edit drawer come from the kit; this file lays out the partition map and what sits around the
+   kit parts. Tokens only, spacing on the 4px grid, no own keyframes. The editor rules do not depend on
+   .sdx-storage, because the drawer renders in a portal. */
+.sdx-storage { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.sdx-storage-focus-label { margin-left: 8px; color: var(--sd-muted); font-size: 12px; font-weight: 400; overflow-wrap: anywhere; }
+.sdx-storage-job { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; color: var(--sd-muted); font-size: 12px; }
+.sdx-storage-job-message { min-width: 0; overflow-wrap: anywhere; }
+.sdx-storage-inventory > :not(.sdx-card-head) + :not(.sdx-card-head) { margin-top: 12px; }
+.sdx-storage-disk > .sdx-card-head .sdx-tag { margin-left: 8px; }
+.sdx-storage-focused { border-color: color-mix(in srgb, var(--sd-accent) 40%, var(--sd-line)); }
+.sdx-storage-protected { display: inline-flex; margin-left: 8px; color: var(--sd-muted); }
+.sdx-storage-protection { display: flex; align-items: center; gap: 8px; margin: 0; padding: 0 16px 12px; color: var(--sd-muted); font-size: 12px; overflow-wrap: anywhere; }
+
+/* The partition map: one block per partition, sized by its share of the disk. */
+.sdx-storage-map { display: flex; gap: 4px; min-height: 76px; padding: 0 16px 16px; overflow-x: auto; }
+.sdx-storage-map > div { flex-basis: 0; min-width: 96px; padding: 8px 12px; overflow: hidden; border: 1px solid var(--sd-line); border-top: 4px solid var(--sd-accent); border-radius: var(--sd-radius-sm); background: var(--sd-panel); }
+.sdx-storage-map > div.protected, .sdx-storage-map > div.unallocated { border-top-color: var(--sd-muted); background: color-mix(in srgb, var(--sd-ink) 4%, var(--sd-panel)); }
+.sdx-storage-map > div.focused { border-color: var(--sd-accent); background: var(--sd-accent-soft); }
+.sdx-storage-map strong, .sdx-storage-map small { display: block; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.sdx-storage-map small { margin-top: 4px; color: var(--sd-muted); }
+
+/* The edit drawer: the size row puts the field, the unit and "Use maximum" side by side. */
+.sdx-storage-editor { display: grid; gap: 16px; }
+.sdx-storage-size { display: grid; gap: 12px; }
+.sdx-storage-size-input { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 12px; }
+.sdx-storage-size-input > .sdx-field:first-child { flex: 1 1 160px; }
+.sdx-storage-size-input > .sdx-field:nth-child(2) { flex: 0 0 96px; }

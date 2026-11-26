@@ -1,0 +1,9 @@
+{
+  "version": "4.20.0",
+  "features": [
+    "The broker runs the reads of the DNS plugin: dns-read every 15 minutes under the signed plugin policy and dns-zone-read on request, both in ReadOnly mode and as SYSTEM.",
+    "The policy still drops every plugin change; DNS changes run as jobs with the AD account of the technician.",
+    "The refusal of a change for an account names both role groups, DnsAdmins and DHCP Administrators."
+  ],
+  "fixes": []
+}

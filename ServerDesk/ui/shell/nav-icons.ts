@@ -1,0 +1,5 @@
+// The lucide-react components of the navigation model's icon names (ui/shell/nav-model.ts).
+import {Activity,BadgeCheck,BellRing,ChartColumn,Building2,CalendarClock,ChevronRight,CircuitBoard,ClipboardCheck,Cpu,Download,GitCompareArrows,HeartPulse,History,KeyRound,LayoutDashboard,LifeBuoy,Lock,LogIn,Monitor,MonitorSmartphone,Package,PackageX,Palette,Play,Puzzle,Rocket,ScrollText,Send,Server,ServerCog,Settings,Settings2,ShieldAlert,ShieldCheck,Siren,Sparkles,Tag,UserRound,Users,Wrench,type LucideIcon} from 'lucide-react';
+import type {NavIcon} from '@/ui/shell/nav-model';
+
+export const navIcons:Readonly<Record<NavIcon,LucideIcon>>={Activity,BadgeCheck,BellRing,ChartColumn,Building2,CalendarClock,ChevronRight,CircuitBoard,ClipboardCheck,Cpu,Download,GitCompareArrows,HeartPulse,History,KeyRound,LayoutDashboard,LifeBuoy,Lock,LogIn,Monitor,MonitorSmartphone,Package,PackageX,Palette,Play,Puzzle,Rocket,ScrollText,Send,Server,ServerCog,Settings,Settings2,ShieldAlert,ShieldCheck,Siren,Sparkles,Tag,UserRound,Users,Wrench};

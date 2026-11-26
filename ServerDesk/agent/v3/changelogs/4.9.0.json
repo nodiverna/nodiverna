@@ -1,0 +1,7 @@
+{
+  "version": "4.9.0",
+  "features": [
+    "An Owner removes the device in the portal. The agent checks local --uninstall conditions and reports the start before it runs a detached uninstaller outside its folder. Revocation follows the report."
+  ],
+  "fixes": []
+}

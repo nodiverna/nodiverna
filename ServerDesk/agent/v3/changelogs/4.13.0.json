@@ -1,0 +1,8 @@
+{
+  "version": "4.13.0",
+  "features": [
+    "The agent installs NVIDIA and AMD graphics driver updates from Hardware → GPU. It checks the vendor signature, installs silently and never restarts the device.",
+    "The agent reports the installed AMD Software (Adrenalin) version of AMD graphics cards."
+  ],
+  "fixes": []
+}

@@ -1,0 +1,9 @@
+{
+  "version": "4.12.0",
+  "features": [
+    "The agent accepts origin-independent release manifests. Each file is a path below /downloads/ on the registered portal, so one publisher signature is valid on every portal.",
+    "The agent reports the capability release-paths. The portal then sends it the path form of a release.",
+    "The native installer requests the path form of the current release and still accepts the absolute form."
+  ],
+  "fixes": []
+}

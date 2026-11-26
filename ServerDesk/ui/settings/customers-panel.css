@@ -1,0 +1,19 @@
+/* Settings › Customers (ui/settings/customers-panel.tsx) and the customer drawers (ui/settings/customer-drawers.tsx). */
+.sdx-customer-name { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--sd-space-2); min-width: 0; }
+.sdx-customer-name > strong { font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
+
+/* Manage drawer: two fields per row, a section per switch, the weekday toggles. */
+.sdx-customer-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sd-space-3); }
+.sdx-customer-window { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.sdx-customer-window > :last-child { grid-column: 1 / -1; }
+.sdx-customer-section { display: grid; gap: var(--sd-space-3); min-width: 0; margin: 0; padding: var(--sd-space-4) 0 0; border: 0; border-top: 1px solid var(--sd-soft-line); }
+.sdx-customer-section > legend { float: left; width: 100%; padding: 0; color: var(--sd-ink); font-size: 13px; font-weight: 650; }
+.sdx-customer-days-field input { max-width: 160px; }
+.sdx-customer-weekdays > [role="group"] { display: flex; flex-wrap: wrap; gap: var(--sd-space-2); }
+.sdx-customer-weekdays .sdx-btn { min-width: 44px; }
+/* The delete drawer: what stays after the delete reads as secondary text below what goes with it. */
+.sdx-customer-delete-kept { margin: 0; color: var(--sd-muted); }
+.sdx-customer-empty { margin: 0; padding: var(--sd-space-3); color: var(--sd-muted); font-size: 12px; }
+@media (max-width: 560px) {
+  .sdx-customer-columns { grid-template-columns: minmax(0, 1fr); }
+}

@@ -1,0 +1,295 @@
+[
+  {
+    "version": "4.21.4",
+    "features": [],
+    "fixes": [
+      "A runbook diagnosis with invalid operation parameters now counts as a change on the agent too, as in the portal, so it no longer runs next to another change."
+    ]
+  },
+  {
+    "version": "4.21.3",
+    "features": [],
+    "fixes": [
+      "Devices no longer show 'Inventory incomplete' when Windows Update lists an update without a severity. The update list is read again, and such updates show with the priority 'Not specified'."
+    ]
+  },
+  {
+    "version": "4.21.2",
+    "features": [],
+    "fixes": [
+      "Plugin reads reach the portal again: the read data no longer fail with 'The node already has a parent'. This fixes the DNS and DHCP reads from the portal and the periodic reads.",
+      "A plugin job that fails in the agent reports a translated message instead of a raw error text."
+    ]
+  },
+  {
+    "version": "4.21.1",
+    "features": [],
+    "fixes": [
+      "After a plugin install or removal, the status report no longer leaves out a plugin that runs a read at that moment, and a new plugin shows in the next heartbeat."
+    ]
+  },
+  {
+    "version": "4.21.0",
+    "features": [
+      "Jobs that change nothing on the device, for example inventory refresh, update search, Defender scans and diagnostic reads, run next to each other and next to one changing job.",
+      "Changing jobs stay one at a time. An agent update, an uninstall, a plugin installation and a restart or shutdown need the device alone."
+    ],
+    "fixes": []
+  },
+  {
+    "version": "4.20.0",
+    "features": [
+      "The broker runs the reads of the DNS plugin: dns-read every 15 minutes under the signed plugin policy and dns-zone-read on request, both in ReadOnly mode and as SYSTEM.",
+      "The policy still drops every plugin change; DNS changes run as jobs with the AD account of the technician.",
+      "The refusal of a change for an account names both role groups, DnsAdmins and DHCP Administrators."
+    ],
+    "fixes": []
+  },
+  {
+    "version": "4.19.0",
+    "features": [
+      "Plugin changes run with the technician's AD account, not as LocalSystem (capability plugin-ad-identity).",
+      "The server checks the account's own rights, and the Windows Security log names the account.",
+      "The new job ad-sign-in checks an AD account and its password once. The password comes sealed to the device key, is used once and is never stored or logged.",
+      "The security telemetry reports the directory of the device: the AD domain, or the computer of a workgroup server, read locally without network.",
+      "The plugin folder grants Authenticated Users read and execute, so a plugin can start with the account's token. Installs from 4.16 to 4.18 get this once."
+    ],
+    "fixes": []
+  },
+  {
+    "version": "4.18.0",
+    "features": [
+      "Recovery: Windows restarts a crashed or killed agent service after 5 s, 30 s and 60 s. The setup applies and verifies this on install and at every broker start.",
+      "Tamper check: the broker checks the service permissions, the service SIDs, the recovery and the agent folders at start, every 5 minutes and after a service change.",
+      "The broker restores a changed protection and reports it. It reports a changed start type, but never changes it back.",
+      "Tamper alarms: the agent reports a stopped, ended, hung or removed agent and a changed protection to the portal (capability agent-integrity).",
+      "Watchdog: the broker starts a stopped worker and ends a worker that hangs for 3 minutes. The worker reports a broker that does not answer.",
+      "A local --uninstall informs the portal before it removes the agent. Updates, portal uninstalls and reboots create no alarm.",
+      "New self-tests --integrity-self-test and --service-lifecycle-self-test (install, kill, stop and remove two test services)."
+    ],
+    "fixes": [
+      "The update staging folder keeps its protected permissions."
+    ]
+  },
+  {
+    "version": "4.17.2",
+    "features": [],
+    "fixes": [
+      "After a graphics driver update, the agent reports the new NVIDIA driver version without a restart.",
+      "When Windows reports a new driver version for an NVIDIA card, the agent loads the NVIDIA library again."
+    ]
+  },
+  {
+    "version": "4.17.1",
+    "features": [],
+    "fixes": [
+      "GPU driver updates check every signature of the package, also nested ones, and pin the vendor on the verified signature. One valid vendor signature with SHA-256 or stronger is necessary.",
+      "A read of a GPU driver download that the worker removed as stale fails with \"Unknown GPU driver download.\" instead of an internal error."
+    ]
+  },
+  {
+    "version": "4.17.0",
+    "features": [
+      "Device assistant scripts: the broker runs a PowerShell script that a user started from the assistant, only in Management mode (capability assistant-powershell).",
+      "An assistant script has a time limit of 10 to 600 seconds and keeps at most 32 KiB of output and 8 KiB of errors.",
+      "Plugin jobs get their sealed secrets: the broker opens them with the device key and hands them to the plugin, for example a DHCP failover secret (capability plugin-secrets).",
+      "The broker masks these secrets in the job result, the message and the logged plugin errors."
+    ],
+    "fixes": []
+  },
+  {
+    "version": "4.16.0",
+    "features": [
+      "Agent plugins: the SYSTEM broker installs, checks and runs signed plugin EXEs from a protected folder, without network access, and reports them (capability plugin-host).",
+      "The broker reads the DHCP server through the DHCP plugin every 15 minutes under a signed plugin policy, and for each Read DHCP server job."
+    ],
+    "fixes": []
+  },
+  {
+    "version": "4.15.0",
+    "features": [
+      "The agent runs Microsoft Defender actions from the portal: quick scan, full scan, signature update and clean all active detections, as typed WMI calls in Management mode."
+    ],
+    "fixes": []
+  },
+  {
+    "version": "4.14.0",
+    "features": [
+      "The agent reports the Microsoft Defender state: mode, real-time and tamper protection, scans, signatures, detections, exclusions and other antivirus products. It only reads and changes nothing."
+    ],
+    "fixes": []
+  },
+  {
+    "version": "4.13.2",
+    "features": [],
+    "fixes": [
+      "While the broker service is not available, the terminal, relay and channel connections of the worker wait 2 to 30 seconds and log at most one line per 30 seconds.",
+      "After a broker restart, a broker call on a connection that was idle opens a new connection once, instead of failing with \"broker unavailable\"."
+    ]
+  },
+  {
+    "version": "4.13.1",
+    "features": [],
+    "fixes": [
+      "The agent opens each minidump without following junctions or symbolic links and checks the opened file before it reads it.",
+      "The agent no longer looks up a driver file whose name is a reserved Windows device name such as CON or NUL."
+    ]
+  },
+  {
+    "version": "4.13.0",
+    "features": [
+      "The agent installs NVIDIA and AMD graphics driver updates from Hardware → GPU. It checks the vendor signature, installs silently and never restarts the device.",
+      "The agent reports the installed AMD Software (Adrenalin) version of AMD graphics cards."
+    ],
+    "fixes": []
+  },
+  {
+    "version": "4.12.0",
+    "features": [
+      "The agent accepts origin-independent release manifests. Each file is a path below /downloads/ on the registered portal, so one publisher signature is valid on every portal.",
+      "The agent reports the capability release-paths. The portal then sends it the path form of a release.",
+      "The native installer requests the path form of the current release and still accepts the absolute form."
+    ],
+    "fixes": []
+  },
+  {
+    "version": "4.11.1",
+    "features": [],
+    "fixes": [
+      "The agent reads drivers and Device Manager errors without WMI and checks driver signatures offline. The driver list now arrives on devices where the WMI query timed out.",
+      "When an inventory fails, the agent reports a coded error. The portal shows that the driver list is not available or out of date instead of an empty area.",
+      "Log lines for failed inventories name the collector, the exception type, the error code and the elapsed time instead of only the Windows message.",
+      "After a proxy or portal failure, the terminal and channel connections wait longer with each attempt, up to 30 seconds, instead of retrying at once."
+    ]
+  },
+  {
+    "version": "4.11.0",
+    "features": [
+      "The agent reports devices with an error in Device Manager and the driver inventory with version, date and signature. It sends the driver list only when it changes.",
+      "The agent reports the stability index of Windows and program crashes, hangs and failed installations of the last 30 days. Where Windows collects no data, it reports the reason.",
+      "The agent reports the health, wear and temperature of physical disks, disk errors of the last 30 days and the battery capacity. Missing values stay empty instead of 0.",
+      "The agent reports the machine certificates of the stores My, WebHosting and Remote Desktop with expiry and bindings. Private keys and certificate files never leave the device.",
+      "The agent reports programs that start automatically, with signature and masked command lines. It sends the list only when it changes."
+    ],
+    "fixes": []
+  },
+  {
+    "version": "4.10.1",
+    "features": [],
+    "fixes": [
+      "The portal uninstall refuses a staging folder that already exists. The broker creates it in one step, checks its owner and permissions and does not change an existing item with that name.",
+      "The broker no longer follows a junction or symbolic link when it deletes an uninstall staging folder in %SystemRoot%\\Temp. It checks and deletes each entry through the same handle.",
+      "On a credential refusal, the uninstaller starts only if the portal confirms it revoked the named uninstall job, not on a proxy 401/403. The broker rechecks the staged copy SHA-256 before the start.",
+      "The agent does not start its uninstaller when the portal did not revoke the device because the uninstall job had stopped. The portal answers with 409 and the agent stays installed."
+    ]
+  },
+  {
+    "version": "4.10.0",
+    "features": [
+      "The agent reports 30 days of crashes: blue screens with stop code and parameters, unexpected shutdowns, WHEA hardware errors. Stop code and probable driver come from minidumps that stay on the device.",
+      "The agent reports the edition, installation type, display version, update revision, product name and build of Windows, so that the portal can show the support status of the operating system.",
+      "The agent reports the installed programs from the uninstall keys of the registry, without paths or user names. It sends the list only when its checksum changes.",
+      "The agent reports the BitLocker state of every volume: encryption, protection, method and the kinds of key protectors. It never reads recovery passwords or other secrets."
+    ],
+    "fixes": []
+  },
+  {
+    "version": "4.9.0",
+    "features": [
+      "An Owner removes the device in the portal. The agent checks local --uninstall conditions and reports the start before it runs a detached uninstaller outside its folder. Revocation follows the report."
+    ],
+    "fixes": []
+  },
+  {
+    "version": "4.8.0",
+    "features": [
+      "Job results now carry a stable message code and its arguments next to the English text. The portal shows the message in the language of the user. Results of older agents keep their stored text.",
+      "Agent output is English: job messages, inventory warnings, storage protection reasons, diagnostics placeholders and log lines."
+    ],
+    "fixes": [
+      "A role or feature that does not exist now fails with a clear message instead of a ServerManager provider error.",
+      "Process termination and session actions report their own result message instead of a general diagnostic message."
+    ]
+  },
+  {
+    "version": "4.7.3",
+    "features": [],
+    "fixes": [
+      "Der Worker baut wieder HTTPS-Verbindungen zum Portal auf: Sein Dienst läuft mit eigener, nicht schreibbeschränkter Service-SID, weil Schannel sonst keine Anmeldeinformationen erhält.",
+      "Der Auftragskanal übergibt Ergebnisse und Übertragungsstände wieder an den Broker, statt bei jedem Durchlauf mit einem JSON-Fehler abzubrechen."
+    ]
+  },
+  {
+    "version": "4.7.2",
+    "features": [],
+    "fixes": [
+      "Das Worker-Log nennt bei Verbindungsfehlern zum Portal auch die eigentliche Ursache, etwa einen TLS- oder Zertifikatsfehler."
+    ]
+  },
+  {
+    "version": "4.7.1",
+    "features": [],
+    "fixes": [
+      "Die Neuinstallation startet den Worker-Dienst wieder: Der Installer gibt die Agent-EXE jetzt ausdrücklich für das Worker-Konto frei, statt nur den Ordner.",
+      "--uninstall bricht nicht mehr ab, wenn die Update-Wiederherstellungsaufgabe fehlt, etwa beim Umstieg von 4.6.x."
+    ]
+  },
+  {
+    "version": "4.7.0",
+    "features": [
+      "Getrennter Agent: ein SYSTEM-Broker ohne Netzwerkzugriff führt nur portal-signierte Aufträge aus; ein eingeschränkter Worker übernimmt die Portalkommunikation.",
+      "Aufträge, Dateiübertragungen, Drift-Richtlinien und Terminal-Freigaben tragen eine ECDSA-Signatur des Portals, die an Gerät und kurze Gültigkeit gebunden ist."
+    ],
+    "fixes": [
+      "Der Geräteschlüssel verlässt den SYSTEM-Prozess nicht mehr; Tokenerneuerungen signiert der Broker nur nach Prüfung der Portal-Challenge.",
+      "Remotedesktop wird vom getrennten Agenten vorerst nicht angeboten; Installation erfordert eine neue Registrierungsdatei mit Job-Signierschlüssel."
+    ]
+  },
+  {
+    "version": "4.6.8",
+    "features": [],
+    "fixes": [
+      "Eingebundene Kryptografiebibliotheken (System.Security.Cryptography.Xml/.Pkcs) auf 10.0.13 aktualisiert; behebt aktuelle Sicherheitsmeldungen zur XML-/CMS-Verarbeitung."
+    ]
+  },
+  {
+    "version": "4.6.7",
+    "features": [
+      "Hardwareinventar für Prozessoren, RAM-Module, physische Datenträger, Mainboard/System, BIOS und Netzwerkadapter.",
+      "Der Hardwarebereich ergänzt vorhandene GPU-Daten um Komponenten, Kapazitäten, Steckplätze und verfügbare Datenträgerzustände."
+    ],
+    "fixes": [
+      "Statische Hardwareinformationen werden mit Zeitlimits getrennt von der laufenden Telemetrie erfasst und zwischengespeichert.",
+      "Fehlende Hardwareprovider oder nicht verfügbare Angaben verhindern keine Agentmeldung; unbekannte Werte bleiben unbekannt."
+    ]
+  },
+  {
+    "version": "4.6.6",
+    "features": [
+      "Eine eigene GPU-Diagnose zeigt Modell, Treiber, PCI-Adresse und Grafikspeicher erkannter Grafikkarten.",
+      "NVIDIA-Grafikkarten melden verfügbare Treibersensoren für Temperatur, Takt, Leistung, Lüfter und PCIe-Verbindung."
+    ],
+    "fixes": [
+      "Hardware- und Sensordaten werden der passenden physischen GPU zugeordnet; nicht verfügbare Werte bleiben unbekannt."
+    ]
+  },
+  {
+    "version": "4.6.5",
+    "features": [
+      "Der Agent erfasst die GPU-Auslastung von NVIDIA-, AMD- und Intel-Arc-Grafikkarten.",
+      "Erkannte Grafikkarten erscheinen einzeln mit ihren aktuellen Messwerten auf der Geräteübersicht."
+    ],
+    "fixes": []
+  },
+  {
+    "version": "4.6.4",
+    "features": [
+      "Der Agent meldet konkrete Neustartgründe und vorgemerkte Dateibereinigungen getrennt."
+    ],
+    "fixes": [
+      "Fehlende ServerDesk-Aufgaben in der Windows-Aufgabenplanung verursachen keinen Inventarfehler mehr.",
+      "Reine Löschaufträge werden nicht mehr als erforderlicher Neustart gemeldet; echte Neustartgründe bleiben erhalten.",
+      "Inventar und Desired State verwenden dieselbe Erkennung ausstehender Neustarts."
+    ]
+  }
+]

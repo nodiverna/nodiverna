@@ -1,0 +1,36 @@
+/* Extensions (docs/extensions.md): the device area Extensions, the scope tab Extensions and the release rows.
+   Tokens only, 4px rhythm; motion comes from EntranceList, DataTable entranceId and the state pill (color
+   transition, pulse while an install job runs). */
+.sdx-extension-name { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.sdx-extension-name > span:last-child { display: grid; gap: 2px; min-width: 0; }
+.sdx-extension-name strong { color: var(--sd-ink); font-size: 13px; font-weight: 600; }
+.sdx-extension-name small { color: var(--sd-muted); font-size: 12px; white-space: normal; overflow-wrap: anywhere; }
+/* The sources line may be long (RDS lists up to six role services): it wraps inside the name cell. */
+.sdx-health-tab .sdx-table td.sdx-extension-name-cell { min-width: 240px; max-width: 480px; white-space: normal; }
+/* The extension state pill: installing, reporting and installed cross-fade their color; the running install pulses its dot. */
+.sdx-extension-state { display: inline-flex; }
+.sdx-extension-state .sdx-pill { transition: color var(--sd-dur) var(--sd-ease-out), background-color var(--sd-dur) var(--sd-ease-out); }
+.sdx-extension-state[data-state="installing"] .sdx-pill > i { animation: sdx-pulse 1.6s ease-in-out infinite; }
+/* A reporting extension says why it waits in one meta line below the pill, visible on touch and to the keyboard. */
+.sdx-extension-state[data-state="reporting"] { flex-direction: column; align-items: flex-start; gap: var(--sd-space-1); }
+.sdx-extension-state-hint { max-width: 36ch; color: var(--sd-muted); font-size: 12px; font-weight: 400; line-height: 1.4; white-space: normal; }
+
+/* The focal point of the device area and the scope tab: a group label, then the cards in two columns of equal height. */
+.sdx-extension-section { display: grid; gap: var(--sd-space-2); min-width: 0; }
+.sdx-extension-section-title { color: var(--sd-muted); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.sdx-extension-offers, .sdx-extension-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sd-space-3); align-items: stretch; }
+/* A summary card: the coverage meter with its label, then the counts. */
+.sdx-extension-summary .sdx-card > .sdx-extension-coverage { display: grid; gap: var(--sd-space-2); }
+.sdx-extension-coverage > span:first-child { color: var(--sd-ink); font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* The scope DHCP and DNS cards: the table is the flush card body; the load error and the first-load skeleton keep the card padding. */
+.sdx-extensions-fleet-card.sdx-card-flush > :is(.sdx-notice, .sdx-skeleton-set) { margin: 0 16px 16px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sdx-extension-state .sdx-pill { transition: none; }
+}
+
+@media (max-width: 760px) {
+  .sdx-health-tab .sdx-table td.sdx-extension-name-cell { min-width: 200px; }
+  .sdx-extension-offers, .sdx-extension-summary { grid-template-columns: minmax(0, 1fr); }
+}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?><LookupValueSearch><LookupValues>
+<LookupValue Code="10.0"><Name>Windows 10 64-bit</Name><Value>57</Value></LookupValue>
+<LookupValue Code="10.0"><Name>Windows 11</Name><Value>135</Value></LookupValue>
+<LookupValue Code="6.1"><Name>Windows 7 64-bit</Name><Value>19</Value></LookupValue>
+<LookupValue Code="6.3"><Name>Windows 8.1 64-bit</Name><Value>41</Value></LookupValue>
+<LookupValue Code="6.2"><Name>Windows 8 64-bit</Name><Value>28</Value></LookupValue>
+<LookupValue Code="6.2-R2"><Name>Windows Server 2012 R2 64</Name><Value>44</Value></LookupValue>
+<LookupValue Code="10.0-NT"><Name>Windows Server 2016</Name><Value>74</Value></LookupValue>
+<LookupValue Code="10.0-NT"><Name>Windows Server 2019</Name><Value>119</Value></LookupValue>
+<LookupValue Code="10.0-NT"><Name>Windows Server 2022</Name><Value>134</Value></LookupValue>
+<LookupValue Code="10.0-NT"><Name>Windows Server 2025</Name><Value>153</Value></LookupValue>
+<LookupValue Code="linux64"><Name>Linux 64-bit</Name><Value>12</Value></LookupValue>
+</LookupValues></LookupValueSearch>

@@ -1,0 +1,1 @@
+ALTER TABLE "agent_release_source" ADD COLUMN "dev_builds" boolean DEFAULT false NOT NULL;

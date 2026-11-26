@@ -1,0 +1,28 @@
+# Every text file has LF line endings in the index and in every working tree,
+# including Windows checkouts with core.autocrlf=true. Checksummed migrations,
+# NAS shell scripts and shipped scripts are therefore byte-identical everywhere.
+* text=auto eol=lf
+
+# PowerShell scripts: deliberately LF as well. Git only converts line endings
+# and leaves the UTF-8 BOM untouched (no working-tree-encoding is set), and
+# Windows PowerShell 5.1 runs LF scripts. tests/repo/line-endings.mjs checks the BOM.
+*.ps1 text eol=lf
+
+# Binary files: never converted, diffed or merged as text.
+*.exe binary
+*.dll binary
+*.zip binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.pfx binary
+*.p12 binary
+*.snk binary
+*.der binary
+*.db binary
+*.sqlite binary

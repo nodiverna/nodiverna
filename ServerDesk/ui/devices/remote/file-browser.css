@@ -1,0 +1,29 @@
+/* Remote › Files and the Drift path picker (file-browser.tsx, docs/file-browser.md): the path line, the drive
+   cards with their used-space Meter and the listing DataTable. At 760px or narrower the path form keeps its submit as an icon-only Open button
+   (file-browser.tsx, useNarrowLayout). Tokens only, 4px rhythm; the listing rises in
+   through the DataTable entrance, the drive cards lift on hover (sdx-lift). */
+.file-browser { display: grid; gap: var(--sd-space-3); min-width: 0; }
+.file-navigation { display: flex; align-items: flex-end; gap: 8px; }
+.file-path-form { display: flex; flex: 1; align-items: flex-end; gap: 8px; min-width: 0; }
+.file-path-field { flex: 1; min-width: 0; }
+.file-path-field input { width: 100%; min-width: 0; }
+.file-breadcrumb { display: flex; align-items: center; gap: 4px; overflow: auto; white-space: nowrap; }
+.file-breadcrumb > span { display: inline-flex; align-items: center; gap: 4px; }
+.file-drives { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.file-drive { display: flex; align-items: center; gap: 12px; width: 100%; padding: 16px; border: 1px solid var(--sd-line); border-radius: var(--sd-radius); color: var(--sd-ink); background: var(--sd-panel); box-shadow: var(--sd-shadow-sm); font: inherit; text-align: left; cursor: pointer; }
+.file-drive > svg { flex: none; color: var(--sd-muted); }
+.file-drive > svg:first-child { color: var(--sd-accent); }
+.file-drive:disabled { opacity: .5; cursor: default; }
+.file-drive-text { display: grid; flex: 1; gap: 4px; min-width: 0; }
+.file-drive-text strong { font-size: 13px; font-weight: 600; }
+.file-drive-text > span { color: var(--sd-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.file-entry { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.file-entry > svg:first-child { flex: none; color: var(--sd-accent); }
+.file-entry > span { overflow: hidden; text-overflow: ellipsis; }
+.file-entry-blocked { color: var(--sd-muted); }
+.file-loading { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: var(--sd-radius-sm); color: var(--sd-accent-strong); background: var(--sd-accent-soft); font-size: 12px; }
+.file-footer { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--sd-muted); font-size: 12px; }
+.file-footer > button { margin-left: auto; }
+.file-inline-editor { display: flex; align-items: flex-end; gap: 8px; }
+.file-inline-editor .sdx-field { flex: 1; min-width: 0; }
+.file-inline-editor .sdx-field small { overflow-wrap: anywhere; }

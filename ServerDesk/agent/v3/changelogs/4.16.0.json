@@ -1,0 +1,8 @@
+{
+  "version": "4.16.0",
+  "features": [
+    "Agent plugins: the SYSTEM broker installs, checks and runs signed plugin EXEs from a protected folder, without network access, and reports them (capability plugin-host).",
+    "The broker reads the DHCP server through the DHCP plugin every 15 minutes under a signed plugin policy, and for each Read DHCP server job."
+  ],
+  "fixes": []
+}

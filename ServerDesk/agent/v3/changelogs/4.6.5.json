@@ -1,0 +1,8 @@
+{
+  "version": "4.6.5",
+  "features": [
+    "Der Agent erfasst die GPU-Auslastung von NVIDIA-, AMD- und Intel-Arc-Grafikkarten.",
+    "Erkannte Grafikkarten erscheinen einzeln mit ihren aktuellen Messwerten auf der Geräteübersicht."
+  ],
+  "fixes": []
+}

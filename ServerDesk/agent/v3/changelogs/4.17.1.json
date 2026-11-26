@@ -1,0 +1,8 @@
+{
+  "version": "4.17.1",
+  "features": [],
+  "fixes": [
+    "GPU driver updates check every signature of the package, also nested ones, and pin the vendor on the verified signature. One valid vendor signature with SHA-256 or stronger is necessary.",
+    "A read of a GPU driver download that the worker removed as stale fails with \"Unknown GPU driver download.\" instead of an internal error."
+  ]
+}

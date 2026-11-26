@@ -1,0 +1,7 @@
+{
+  "version": "4.21.4",
+  "features": [],
+  "fixes": [
+    "A runbook diagnosis with invalid operation parameters now counts as a change on the agent too, as in the portal, so it no longer runs next to another change."
+  ]
+}

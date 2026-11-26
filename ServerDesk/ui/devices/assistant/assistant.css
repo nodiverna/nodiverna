@@ -1,0 +1,102 @@
+/* The device assistant (ui/devices/assistant/device-assistant.tsx) and its key
+   settings (ui/settings/assistant-settings-panel.tsx, personal-assistant-key.tsx).
+   Tokens only; the motion uses the shared keyframes of ui/styles/motion.css, which
+   switches them off under reduced motion. */
+
+/* ---- Device panel: the conversation is the focal point ---- */
+/* The conversation card has a fixed height: the thread scrolls, the field stays at the bottom. */
+.sdx-assistant.sdx-card-flush { height: clamp(440px, calc(100dvh - 280px), 780px); min-height: 0; }
+.sdx-assistant > .sdx-card-head { flex: none; }
+/* In the non-modal "Ask assistant" drawer (kit Drawer flush) the panel fills the body: the thread scrolls, the field stays at the bottom. */
+.sdx-assistant-panel { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; }
+.sdx-assistant-panel-padded { padding: 16px; }
+.sdx-assistant-panel > .sdx-assistant-thread { border-top: 0; }
+.sdx-assistant-thread { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 16px; border-top: 1px solid var(--sd-soft-line); }
+.sdx-assistant-thread > .sdx-empty { min-height: 100%; justify-content: center; }
+.sdx-assistant-suggestions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 560px; }
+.sdx-assistant-turns { display: grid; gap: 24px; margin: 0; padding: 0; list-style: none; }
+.sdx-assistant-turn { display: grid; gap: 12px; min-width: 0; }
+.sdx-assistant-question { justify-self: end; max-width: min(560px, 88%); padding: 8px 12px; border-radius: var(--sd-radius) var(--sd-radius) var(--sd-radius-sm) var(--sd-radius); color: var(--sd-ink); background: var(--sd-accent-soft); white-space: pre-wrap; overflow-wrap: anywhere; }
+.sdx-assistant-reply { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px; align-items: start; }
+.sdx-assistant-avatar { display: grid; place-items: center; width: 28px; height: 28px; border-radius: var(--sd-radius-sm); color: var(--sd-accent-strong); background: var(--sd-accent-soft); }
+.sdx-assistant-reply-body { min-width: 0; }
+.sdx-assistant-answer-text { color: var(--sd-ink); line-height: 1.6; overflow-wrap: anywhere; }
+.sdx-assistant-answer-text > * { margin: 0 0 8px; }
+.sdx-assistant-answer-text > :last-child { margin-bottom: 0; }
+.sdx-assistant-answer-text :is(ul, ol) { padding-left: 20px; }
+.sdx-assistant-answer-text li + li { margin-top: 4px; }
+.sdx-assistant-answer-text code { padding: 0 4px; border-radius: 99px; background: color-mix(in srgb, var(--sd-ink) 6%, var(--sd-panel)); font-family: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace; font-size: 12px; }
+.sdx-assistant-answer-text pre { overflow-x: auto; padding: 12px; border: 1px solid var(--sd-soft-line); border-radius: var(--sd-radius-sm); background: color-mix(in srgb, var(--sd-ink) 4%, var(--sd-panel)); }
+.sdx-assistant-answer-text pre code { padding: 0; background: none; white-space: pre; }
+.sdx-assistant-reply-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; }
+.sdx-assistant-sources { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; }
+.sdx-assistant-sources-label { color: var(--sd-muted); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.sdx-assistant-chip { display: inline-flex; align-items: center; gap: 4px; min-height: 28px; padding: 4px 8px 4px 12px; border: 1px solid var(--sd-line); border-radius: 99px; color: var(--sd-ink); background: var(--sd-panel); font: 600 12px var(--sd-font); cursor: pointer;
+  transition: border-color var(--sd-dur-fast) var(--sd-ease-out), background-color var(--sd-dur-fast) var(--sd-ease-out), transform var(--sd-dur) var(--sd-ease-spring); }
+.sdx-assistant-chip:hover { border-color: color-mix(in srgb, var(--sd-accent) 40%, var(--sd-line)); background: var(--sd-accent-soft); }
+.sdx-assistant-chip:active { transform: scale(.96); }
+.sdx-assistant-chip > svg { color: var(--sd-muted); }
+.sdx-assistant-copy.is-copied { color: var(--sd-success); }
+.sdx-assistant-pending { display: inline-flex; align-items: center; gap: 8px; color: var(--sd-muted); font-size: 12.5px; }
+/* The live indicator of §8: the only loop of the panel, on the pending row only. */
+.sdx-assistant-pulse { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--sd-accent); animation: sdx-pulse 1.6s ease-in-out infinite; }
+/* New messages rise in once (6 px, --sd-dur); a remount or a refresh shows them at once. */
+.sdx-assistant-enter { --sdx-rise-from: 6px; animation: sdx-rise var(--sd-dur) var(--sd-ease-out) backwards; }
+/* ---- Proposal cards: the one place in an answer where a decision waits ---- */
+.sdx-assistant-proposals { display: grid; gap: 12px; margin-top: 12px; }
+.sdx-assistant-proposal { display: grid; gap: 12px; min-width: 0; padding: 12px 16px 16px; border: 1px solid var(--sd-line); border-radius: var(--sd-radius); background: var(--sd-panel); box-shadow: var(--sd-shadow-sm); }
+.sdx-assistant-proposal.is-started { gap: 8px; }
+.sdx-assistant-proposal-head { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.sdx-assistant-proposal-title { display: flex; flex: 1 1 auto; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; min-width: 0; margin: 0; color: var(--sd-ink); }
+.sdx-assistant-proposal-title .mono { color: var(--sd-muted); font-size: 12px; overflow-wrap: anywhere; }
+/* The pill cross-fades when the risk gives way to Finished or Failed (a new key). */
+.sdx-assistant-proposal-pill { flex: none; animation: sdx-fade var(--sd-dur) var(--sd-ease-out) backwards; }
+.sdx-assistant-proposal .sdx-assistant-answer-text { color: var(--sd-muted); }
+.sdx-assistant-proposal-params { max-height: 200px; overflow: auto; overscroll-behavior: contain; }
+.sdx-assistant-proposal-script { display: grid; gap: 8px; min-width: 0; }
+.sdx-assistant-proposal-note { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 0; color: var(--sd-muted); font-size: 12px; }
+.sdx-assistant-proposal-note > svg { color: var(--sd-warn); }
+.sdx-assistant-proposal-lines { margin-left: auto; font-variant-numeric: tabular-nums; }
+.sdx-assistant-proposal-script pre { max-height: 280px; margin: 0; overflow: auto; overscroll-behavior: contain; padding: 12px; border: 1px solid var(--sd-soft-line); border-radius: var(--sd-radius-sm); color: var(--sd-ink); background: color-mix(in srgb, var(--sd-ink) 4%, var(--sd-panel)); font: 12px/1.5 ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace; white-space: pre; tab-size: 4; }
+.sdx-assistant-proposal-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.sdx-assistant-proposal-result { display: flex; align-items: flex-start; gap: 8px; margin: 0; color: var(--sd-ink); overflow-wrap: anywhere; white-space: pre-wrap; }
+.sdx-assistant-proposal-result.is-muted { color: var(--sd-muted); }
+.sdx-assistant-proposal-result > svg { flex: none; margin-top: 3px; }
+/* "Don't run": the card collapses into one muted line. */
+.sdx-assistant-proposal.is-dismissed { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; padding: 8px 12px; border-style: dashed; color: var(--sd-muted); background: transparent; box-shadow: none; font-size: 12.5px; animation: sdx-fade var(--sd-dur) var(--sd-ease-out) backwards; }
+
+.sdx-assistant-composer { flex: none; display: grid; gap: 8px; padding: 12px 16px 16px; border-top: 1px solid var(--sd-soft-line); }
+.sdx-assistant-composer textarea { width: 100%; min-height: 64px; max-height: 200px; resize: vertical; line-height: 1.5; }
+.sdx-assistant-composer-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.sdx-assistant-composer-foot > .sdx-btn { flex: none; }
+.sdx-assistant-note { max-width: 680px; margin: 0; color: var(--sd-muted); font-size: 12px; line-height: 1.5; }
+
+/* ---- Earlier conversations: the drawer list, the newest conversation on top ---- */
+/* One button per row: icon tile, the first question (2 lines), the meta line and the "This device" tag.
+   The row lifts on hover (.sdx-lift); the first 8 rows rise in once per page load (EntranceList, .sdx-enter). */
+.sdx-assistant-earlier { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.sdx-assistant-earlier-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: 12px; width: 100%; min-height: 44px; padding: 12px; border: 1px solid var(--sd-line); border-radius: var(--sd-radius); color: var(--sd-ink); background: var(--sd-panel); box-shadow: var(--sd-shadow-sm); font: inherit; text-align: left; cursor: pointer; }
+/* The drawer is a portal outside .sdx, where --sdx-edge is not set: the lifted row takes the accent edge of the device cards. */
+.sdx-assistant-earlier-row.sdx-lift:is(:hover, :focus-within) { border-color: color-mix(in srgb, var(--sd-accent) 25%, var(--sd-line)); }
+.sdx-assistant-earlier-body { display: grid; gap: 4px; min-width: 0; }
+.sdx-assistant-earlier-title { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; font-weight: 600; overflow-wrap: anywhere; white-space: pre-line; }
+.sdx-assistant-earlier-meta { color: var(--sd-muted); font-size: 12px; overflow-wrap: anywhere; }
+
+/* ---- Key settings ---- */
+.sdx-assistant-count { padding: 4px 8px; color: var(--sd-ink); font-size: 13px; font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sdx-assistant-search { padding: 0 16px 12px; }
+.sdx-assistant-customer { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; font-weight: 600; }
+.sdx-assistant-keycell, .sdx-assistant-drawer-status { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.sdx-assistant-keycell .mono, .sdx-assistant-drawer-status .mono { color: var(--sd-muted); font-size: 12px; }
+.sdx-assistant-settings .sdx-pill, .sdx-assistant-personal .sdx-pill { transition: color var(--sd-dur) var(--sd-ease-out), background-color var(--sd-dur) var(--sd-ease-out); }
+.sdx-assistant-personal { max-width: 760px; margin-top: 16px; }
+
+@media (max-width: 640px) {
+  .sdx-assistant.sdx-card-flush { height: max(420px, calc(100dvh - 220px)); }
+  .sdx-assistant-composer-foot { flex-direction: column; align-items: stretch; }
+  .sdx-assistant-question { max-width: 100%; }
+  /* The buttons stack, Run on device first. */
+  .sdx-assistant-proposal-actions { flex-direction: column; align-items: stretch; }
+  .sdx-assistant-proposal-head { flex-wrap: wrap; }
+  .sdx-assistant-proposal { padding: 12px; }
+}

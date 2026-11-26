@@ -1,0 +1,4 @@
+/* Owner of a runbook, automation template or role: the MSP library or
+   one customer. Shown only once catalogs are separated. Tokens only. */
+.sd-catalog-owner { display: inline-flex; align-items: center; width: fit-content; max-width: 100%; padding: 1px 7px; border: 1px solid color-mix(in srgb, var(--sd-accent) 25%, transparent); border-radius: var(--sd-radius-sm); background: var(--sd-accent-soft); color: var(--sd-accent-strong); font-size: 10px; font-weight: 600; line-height: 1.6; overflow-wrap: anywhere; }
+.sd-catalog-owner[data-owner=library] { border-color: var(--sd-line); background: var(--sd-soft-line); color: color-mix(in srgb, var(--sd-ink) 25%, var(--sd-muted)); }

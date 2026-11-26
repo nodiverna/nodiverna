@@ -1,0 +1,7 @@
+{
+  "version": "1.0.2",
+  "features": [],
+  "fixes": [
+    "Release manifest carries the detection target."
+  ]
+}

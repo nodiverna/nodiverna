@@ -1,0 +1,38 @@
+/* Settings → Microsoft Entra ID (ui/settings/entra-settings-panel.tsx). Tokens only, 4px rhythm. */
+.sdx-entra-cards { display: grid; gap: 16px; }
+.sdx-entra-count { font-size: 20px; font-weight: 650; font-variant-numeric: tabular-nums; }
+:is(.sdx, .sdx-layer) .sdx-field textarea.sdx-entra-pem { font-family: Consolas, 'SFMono-Regular', monospace; font-size: 12px; }
+.sdx-entra-credential { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.sdx-entra-credential legend { grid-column: 1 / -1; }
+.sdx-entra-group { display: grid; gap: 4px; }
+.sdx-entra-group small { color: var(--sd-muted); font-size: 12px; }
+.sdx-entra-test-time { color: var(--sd-muted); }
+/* The account check card: tabular counts and the permission names as mono chips (the copy button is the kit CopyValue). */
+/* The pill crossfades when the state changes on a refresh (global reduced-motion rules switch it off). */
+.sdx-entra-check .sdx-pill { transition: color .2s var(--sd-ease-out), background-color .2s var(--sd-ease-out); }
+.sdx-entra-check-count { font-variant-numeric: tabular-nums; font-weight: 650; }
+.sdx-entra-check-off { margin: 0; color: var(--sd-muted); }
+.sdx-entra-permissions { display: grid; gap: 8px; padding-top: 16px; border-top: 1px solid var(--sd-soft-line); }
+.sdx-entra-permissions-label { font-size: 12.5px; font-weight: 600; color: var(--sd-ink); }
+.sdx-entra-permission-list { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; min-width: 0; margin: 0; padding: 0; list-style: none; }
+.sdx-entra-permission-list code { display: inline-block; padding: 4px 8px; border: 1px solid var(--sd-line); border-radius: var(--sd-radius-sm); background: var(--sd-bg); color: var(--sd-ink); font-size: 12px; }
+.sdx-entra-permissions small { color: var(--sd-muted); font-size: 12px; }
+/* Emergency access and Microsoft sign-in only. The pills crossfade on a state change (reduced motion switches it off). */
+:is(.sdx-entra-emergency, .sdx-entra-only) .sdx-pill { transition: color .2s var(--sd-ease-out), background-color .2s var(--sd-ease-out); }
+.sdx-entra-note { margin: 0; padding: 12px 16px; border: 1px solid var(--sd-soft-line); border-radius: var(--sd-radius); color: var(--sd-muted); }
+/* The checklist: one row per check with its icon (shape and text carry the state, the color only repeats it). */
+.sdx-entra-checklist { display: grid; gap: 8px; }
+.sdx-entra-checklist-title { margin: 0; color: var(--sd-muted); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.sdx-entra-checklist ul { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.sdx-entra-check-row { display: grid; grid-template-columns: 16px minmax(0, 1fr); align-items: start; gap: 12px; padding: 8px 0; color: var(--sd-ink); }
+.sdx-entra-check-row > svg { margin-top: 2px; }
+.sdx-entra-check-row + .sdx-entra-check-row { border-top: 1px solid var(--sd-soft-line); }
+.sdx-entra-check-row div { display: grid; gap: 4px; min-width: 0; }
+.sdx-entra-check-row small { color: var(--sd-muted); font-size: 12px; line-height: 1.5; }
+.sdx-entra-check-row.is-met > svg { color: var(--sd-success); }
+.sdx-entra-check-row.is-missing > svg { color: var(--sd-danger); }
+.sdx-entra-check-row.is-warning > svg { color: var(--sd-warn); }
+.sdx-entra-confirm-lines { display: grid; gap: 4px; margin: 0; padding: 12px 16px; border: 1px solid var(--sd-soft-line); border-radius: var(--sd-radius-sm); list-style: none; font-weight: 600; font-variant-numeric: tabular-nums; }
+@media (max-width: 760px) {
+  .sdx-entra-credential { grid-template-columns: 1fr; }
+}

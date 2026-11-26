@@ -1,0 +1,164 @@
+/* The Dashboard (ui/devices/dashboard/, docs/dashboard.md): the status line, the widget grid, the widget parts, the
+   heatmap, the illustrations, the edit mode and the widget catalog. Colors, radii, shadows, spacing and durations come
+   from the tokens; data marks (the heatmap, the day bars, plain shares of a breakdown) use the data color (--sd-meter),
+   never the scheme accent, and the status colors only name a state. The only loop is the online pulse (sdx-pulse of
+   ui/styles/motion.css, listed there for reduced motion). */
+
+/* ---- Status line: the focal point of the page ---- */
+.sdx-dash-status { display: flex; align-items: center; gap: var(--sd-space-4); margin-bottom: var(--sd-space-4); padding: var(--sd-space-4) var(--sd-space-5); border: 1px solid var(--sd-line); border-radius: var(--sd-radius-lg); background: var(--sd-panel); box-shadow: var(--sd-shadow-sm); }
+.sdx-dash-status-text { display: grid; gap: var(--sd-space-1); flex: 1; min-width: 0; }
+/* Scoped like the kit, so the console's generic `.sd-console h2` does not win. */
+:is(.sdx, .sdx-layer) .sdx-dash-status-text h2 { font-size: 18px; font-weight: 650; line-height: 1.25; letter-spacing: -.01em; overflow-wrap: anywhere; }
+:is(.sdx, .sdx-layer) .sdx-dash-status-text p { color: var(--sd-muted); font-size: 12.5px; }
+.sdx-dash-online { display: inline-flex; align-items: center; gap: var(--sd-space-2); flex: none; color: var(--sd-ink); font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sdx-dash-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: color-mix(in srgb, var(--sd-muted) 60%, var(--sd-panel)); }
+.sdx-dash-pulse { background: var(--sd-success); box-shadow: 0 0 0 4px color-mix(in srgb, var(--sd-success) 18%, transparent); animation: sdx-pulse 2s ease-in-out infinite; }
+
+/* ---- Widget grid: 4, 2 or 1 columns by the width of the board (use-grid-columns.ts); every row has one height, so
+   a widget of w by h cells has an exact size and its content can count on it ---- */
+.sdx-dash-board { --sdx-dash-row: 184px; }
+.sdx-dash-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: var(--sdx-dash-row); gap: var(--sd-space-4); }
+.sdx-dash-board[data-columns="2"] .sdx-dash-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+/* One column (a phone): no neighbour to line up with, so a widget is as high as its content. Its height in rows still
+   decides how much it shows. */
+.sdx-dash-board[data-columns="1"] .sdx-dash-grid { grid-template-columns: minmax(0, 1fr); grid-auto-rows: auto; }
+.sdx-dash-board[data-columns="1"] .sdx-dash-cell { grid-row: auto; }
+/* Room for the size and the resize handle below the content. */
+.sdx-dash-board[data-columns="1"][data-editing] .sdx-dash-widget { padding-bottom: var(--sd-space-5); }
+.sdx-dash-cell { position: relative; display: flex; min-width: 0; min-height: 0; }
+.sdx-dash-cell[data-w="2"] { grid-column: span 2; }
+.sdx-dash-cell[data-w="3"] { grid-column: span 3; }
+.sdx-dash-cell[data-w="4"] { grid-column: span 4; }
+.sdx-dash-cell[data-h="2"] { grid-row: span 2; }
+.sdx-dash-cell[data-h="3"] { grid-row: span 3; }
+.sdx-dash-cell > .sdx-dash-widget { flex: 1; min-height: 0; overflow: hidden; }
+.sdx-dash-page-empty { border: 1px dashed var(--sd-line); border-radius: var(--sd-radius-lg); }
+
+/* ---- Widget frame: the head keeps one line, the body fills the rest and never grows out of its cell ---- */
+.sdx-dash-widget > .sdx-card-head { flex-wrap: nowrap; align-items: center; }
+.sdx-dash-widget > .sdx-card-head > .sdx-section-head-text { min-width: 0; }
+:is(.sdx, .sdx-layer) .sdx-dash-widget > .sdx-card-head h2 { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sdx-dash-widget > .sdx-card-head h2 > .sdx-icon-tile { display: inline-grid; margin-right: var(--sd-space-2); vertical-align: middle; }
+.sdx-dash-widget > .sdx-card-head > .sdx-card-actions { flex: none; }
+/* The body clips what its size cannot hold. Its side inset is split into a margin and a padding, so the rows of a
+   list (which carry their own inset) keep their hover fill inside the clip. */
+.sdx-card.sdx-dash-widget > .sdx-dash-body { display: flex; flex: 1; flex-direction: column; gap: var(--sd-space-3); min-height: 0; margin: 0 var(--sd-space-3) var(--sd-space-4); padding: 0 var(--sd-space-1); overflow: hidden; }
+.sdx-card.sdx-dash-widget > .sdx-dash-body-split { flex-direction: row; gap: var(--sd-space-5); }
+.sdx-card.sdx-dash-widget > .sdx-dash-body-empty { justify-content: center; }
+.sdx-dash-body-empty > .sdx-empty { padding: 0 var(--sd-space-2); }
+.sdx-dash-lead { display: flex; flex: none; flex-direction: column; gap: var(--sd-space-2); min-width: 0; }
+.sdx-dash-body-split > .sdx-dash-lead { flex: 0 0 min(280px, 45%); }
+.sdx-dash-main { flex: 1; min-width: 0; min-height: 0; }
+/* The heatmap takes the room and its day totals stand beside it. */
+.sdx-dash-cell[data-widget="alarm-week"] .sdx-dash-body-split > .sdx-dash-lead { flex: 1 1 0; max-width: 648px; }
+.sdx-dash-cell[data-widget="alarm-week"] .sdx-dash-body-split > .sdx-dash-main { flex: 0 1 280px; }
+
+/* ---- Widget parts ---- */
+.sdx-dash-figure { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--sd-space-1) var(--sd-space-3); min-height: 32px; }
+.sdx-dash-number { font: var(--sd-text-kpi); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.sdx-dash-number-warning { color: var(--sd-warn); }
+.sdx-dash-number-danger { color: var(--sd-danger); }
+.sdx-dash-figure-detail { display: inline-flex; align-items: center; flex-wrap: wrap; gap: var(--sd-space-1) var(--sd-space-2); min-width: 0; color: var(--sd-muted); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+/* The rows carry their own inset, so their text lines up with the lead number. */
+.sdx-dash-list { margin: 0 calc(-1 * var(--sd-space-1)); padding: 0; list-style: none; }
+.sdx-dash-row { display: flex; align-items: center; gap: var(--sd-space-3); min-height: var(--sd-row-h-2); padding: var(--sd-space-1); border-radius: var(--sd-radius-sm); color: inherit; text-decoration: none; transition: background var(--sd-dur-fast) var(--sd-ease-out); }
+.sdx-dash-row:not(.sdx-dash-row-static):hover { background: var(--sdx-hover); }
+.sdx-dash-row:not(.sdx-dash-row-static):active { background: var(--sdx-press); }
+.sdx-dash-row-text { display: grid; flex: 1; min-width: 0; }
+.sdx-dash-row-text strong { overflow: hidden; font-size: 13px; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
+.sdx-dash-row-text small { overflow: hidden; color: var(--sd-muted); font-size: 12px; white-space: nowrap; text-overflow: ellipsis; }
+.sdx-dash-row-text > .sdx-meter { margin-top: var(--sd-space-1); }
+.sdx-dash-row-meta { display: inline-flex; align-items: center; flex: none; gap: var(--sd-space-1); color: var(--sd-muted); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sdx-dash-more { padding: var(--sd-space-1) var(--sd-space-1) 0; color: var(--sd-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.sdx-dash-more a { color: var(--sd-accent-strong); font-weight: 600; text-decoration: none; }
+.sdx-dash-more a:hover { text-decoration: underline; }
+.sdx-dash-level { display: grid; place-items: center; flex: none; width: 28px; height: 28px; border-radius: var(--sd-radius-sm); color: var(--sd-muted); background: var(--sdx-hover); }
+.sdx-dash-level-critical { color: var(--sd-danger); background: var(--sd-danger-bg); }
+.sdx-dash-level-warning { color: var(--sd-warn); background: var(--sd-warn-bg); }
+.sdx-dash-jobs { margin: 0 calc(-1 * var(--sd-space-2)); }
+.sdx-dash-jobs > .sdx-job-list { padding: 0; }
+.sdx-dash-cell[data-w="1"] .sdx-dash-jobs .sdx-job-row { grid-template-columns: minmax(0, 1fr) auto; }
+.sdx-dash-cell[data-w="1"] .sdx-dash-jobs .sdx-job-row .sdx-job-state { grid-column: 1 / -1; }
+
+/* ---- Breakdown: one bar with a segment per part, and the parts in words ---- */
+.sdx-dash-break { display: grid; gap: var(--sd-space-2); min-width: 0; }
+.sdx-dash-break-bar { display: flex; gap: 2px; height: 8px; overflow: hidden; border-radius: 99px; background: var(--sd-meter-track); }
+.sdx-dash-break-bar > i { min-width: 4px; background: var(--sd-meter); }
+.sdx-dash-break-legend { display: flex; flex-wrap: wrap; gap: var(--sd-space-1) var(--sd-space-3); margin: 0; padding: 0; color: var(--sd-muted); font-size: 12px; list-style: none; }
+.sdx-dash-break-legend li { display: inline-flex; align-items: center; gap: var(--sd-space-1); white-space: nowrap; }
+.sdx-dash-break-legend i { flex: none; width: 8px; height: 8px; border-radius: 99px; background: var(--sd-meter); }
+.sdx-dash-break-legend b { color: var(--sd-ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+:is(.sdx-dash-break-bar, .sdx-dash-break-legend) i[data-tone="ok"] { background: var(--sd-success); }
+:is(.sdx-dash-break-bar, .sdx-dash-break-legend) i[data-tone="warning"] { background: var(--sd-warn); }
+:is(.sdx-dash-break-bar, .sdx-dash-break-legend) i[data-tone="critical"] { background: var(--sd-danger); }
+:is(.sdx-dash-break-bar, .sdx-dash-break-legend) i[data-tone="neutral"] { background: color-mix(in srgb, var(--sd-muted) 45%, var(--sd-panel)); }
+.sdx-dash-body-split .sdx-dash-break-legend { flex-direction: column; flex-wrap: nowrap; }
+
+/* ---- Day bars: seven days in the data color ---- */
+.sdx-dash-days { display: flex; align-items: stretch; gap: var(--sd-space-2); height: 100%; min-height: 40px; max-height: 200px; }
+.sdx-dash-days-labelled { min-height: 120px; }
+.sdx-dash-day { display: flex; flex: 1; flex-direction: column; align-items: center; gap: var(--sd-space-1); min-width: 0; color: var(--sd-muted); font-size: 11px; }
+.sdx-dash-day b { color: var(--sd-ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.sdx-dash-day small { font-size: 11px; white-space: nowrap; }
+.sdx-dash-day-track { display: flex; flex: 1; align-items: flex-end; width: 100%; max-width: 32px; min-height: 0; overflow: hidden; border-radius: var(--sd-radius-sm); background: var(--sd-meter-track); }
+.sdx-dash-day-track > i { display: block; width: 100%; min-height: 2px; background: var(--sd-meter); }
+.sdx-dash-day-track > i[data-empty] { min-height: 0; }
+
+/* ---- Heatmap: 7 days by 24 hours in the data color ---- */
+.sdx-dash-week { display: grid; gap: var(--sd-space-3); min-width: 0; }
+.sdx-dash-week-scroll { overflow-x: auto; padding: var(--sd-space-1); border-radius: var(--sd-radius-sm); }
+.sdx-dash-heat { display: grid; grid-template-columns: 36px repeat(24, minmax(10px, 1fr)); gap: 2px; min-width: 320px; max-width: 640px; }
+.sdx-dash-heat-row { display: contents; }
+.sdx-dash-heat-corner { grid-column: 1; }
+.sdx-dash-heat-hour { grid-column: span 6; color: var(--sd-muted); font-size: 11px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sdx-dash-heat-day { align-self: center; color: var(--sd-muted); font-size: 11px; white-space: nowrap; }
+.sdx-dash-heat-cell { display: block; aspect-ratio: 1; min-width: 10px; border-radius: 99px; background: var(--sd-meter-track); }
+.sdx-dash-heat-cell[data-step="1"] { background: color-mix(in srgb, var(--sd-meter) 30%, var(--sd-panel)); }
+.sdx-dash-heat-cell[data-step="2"] { background: color-mix(in srgb, var(--sd-meter) 52%, var(--sd-panel)); }
+.sdx-dash-heat-cell[data-step="3"] { background: color-mix(in srgb, var(--sd-meter) 76%, var(--sd-panel)); }
+.sdx-dash-heat-cell[data-step="4"] { background: var(--sd-meter); }
+.sdx-dash-heat-cell[data-future] { background: transparent; box-shadow: inset 0 0 0 1px var(--sd-soft-line); }
+.sdx-dash-week-foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--sd-space-2) var(--sd-space-4); color: var(--sd-muted); font-size: 12px; }
+.sdx-dash-heat-legend { display: inline-flex; align-items: center; gap: var(--sd-space-1); }
+.sdx-dash-heat-legend .sdx-dash-heat-cell { width: 10px; }
+
+/* ---- Illustrations of the empty states: token colors only ---- */
+.sdx-dash-art { display: block; fill: none; stroke: none; }
+.sdx-dash-art-soft { fill: var(--sd-accent-soft); }
+.sdx-dash-art-panel { fill: var(--sd-panel); stroke: var(--sd-line); stroke-width: 1.5; }
+.sdx-dash-art-slot { fill: none; stroke: var(--sd-line); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.sdx-dash-art-cell { fill: var(--sd-meter-track); }
+.sdx-dash-art-line { fill: none; stroke: var(--sd-muted); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.sdx-dash-art-mark { fill: none; stroke: var(--sd-accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.sdx-dash-art-dot { fill: var(--sd-success); }
+
+/* ---- Edit mode: the widgets show that they can be arranged, their content rests, and the handles take the pointer ---- */
+.sdx-dash-edit-note { margin-bottom: var(--sd-space-4); }
+.sdx-dash-board[data-editing] .sdx-dash-grid { user-select: none; }
+.sdx-dash-board[data-editing] .sdx-dash-widget { border-style: dashed; border-color: color-mix(in srgb, var(--sd-ink) 24%, transparent); transition: border-color var(--sd-dur-fast) var(--sd-ease-out), box-shadow var(--sd-dur-fast) var(--sd-ease-out); }
+.sdx-dash-board[data-editing] .sdx-dash-widget > .sdx-card-head { cursor: grab; }
+.sdx-dash-board[data-editing] .sdx-dash-body { opacity: .64; }
+.sdx-dash-cell:is([data-moving], [data-resizing]) { z-index: 1; }
+.sdx-dash-board[data-editing] .sdx-dash-cell:is([data-moving], [data-resizing]) > .sdx-dash-widget { border-style: solid; border-color: var(--sd-accent); box-shadow: var(--sd-shadow-md); }
+.sdx-dash-board[data-moving], .sdx-dash-board[data-moving] * { cursor: grabbing; }
+:is(.sdx, .sdx-layer) .sdx-dash-grip { cursor: grab; touch-action: none; }
+:is(.sdx, .sdx-layer) .sdx-dash-cell > .sdx-dash-resize { position: absolute; right: var(--sd-space-1); bottom: var(--sd-space-1); cursor: nwse-resize; touch-action: none; }
+/* The drag image: the name of the moving widget at the pointer. It takes no pointer events, so the widget below it is found. */
+.sdx-dash-ghost { position: fixed; top: 0; left: 0; z-index: 60; display: inline-flex; align-items: center; gap: var(--sd-space-2); padding: var(--sd-space-2) var(--sd-space-3); border: 1px solid var(--sd-accent); border-radius: var(--sd-radius); color: var(--sd-ink); background: var(--sd-panel); box-shadow: var(--sd-shadow-lg); font-size: 13px; font-weight: 600; white-space: nowrap; opacity: .94; pointer-events: none; }
+.sdx-dash-size { position: absolute; bottom: var(--sd-space-2); left: var(--sd-space-3); padding: 0 var(--sd-space-2); border-radius: 99px; color: var(--sd-accent-strong); background: var(--sd-accent-soft); font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 20px; pointer-events: none; }
+
+/* ---- Widget catalog ---- */
+.sdx-dash-catalog { display: grid; gap: var(--sd-space-4); }
+.sdx-dash-catalog > .sdx-toolbar { margin-bottom: 0; }
+.sdx-dash-catalog-group { display: grid; gap: var(--sd-space-2); }
+:is(.sdx, .sdx-layer) .sdx-dash-catalog-group h3 { color: var(--sd-muted); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.sdx-dash-catalog-group ul { display: grid; gap: var(--sd-space-2); margin: 0; padding: 0; list-style: none; }
+.sdx-dash-catalog-row { display: flex; align-items: center; gap: var(--sd-space-3); padding: var(--sd-space-3); border: 1px solid var(--sd-line); border-radius: var(--sd-radius); background: var(--sd-panel); }
+.sdx-dash-catalog-text { display: grid; flex: 1; gap: var(--sd-space-1); justify-items: start; min-width: 0; }
+.sdx-dash-catalog-text strong { font-size: 13px; font-weight: 600; }
+.sdx-dash-catalog-text small { color: var(--sd-muted); font-size: 12px; }
+
+@media (max-width: 760px) {
+  .sdx-dash-status { align-items: flex-start; flex-wrap: wrap; gap: var(--sd-space-3); padding: var(--sd-space-4); }
+  .sdx-dash-status-text { flex-basis: calc(100% - 48px); }
+}

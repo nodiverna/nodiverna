@@ -1,0 +1,26 @@
+/* BrandLogo (ui/kit/brand-logo.tsx): an uploaded logo at the size of its place.
+   The height is fixed and the width follows the image up to the cap;
+   object-fit keeps the proportions when the cap applies. A new logo fades in. */
+.sdx-brand-logo { display: inline-flex; align-items: center; flex: none; min-width: 0; animation: sdx-fade var(--sd-dur) var(--sd-ease-out) backwards; }
+/* The same fade for a preview or a mark that takes the place of a logo. */
+.sdx-branding-fade { animation: sdx-fade var(--sd-dur) var(--sd-ease-out) backwards; }
+.sdx-brand-logo img { display: block; width: auto; object-fit: contain; object-position: left center; }
+.sdx-brand-logo-size-topbar img { height: 24px; max-width: 160px; }
+.sdx-brand-logo-size-session img { height: 40px; max-width: 200px; }
+/* avatar: the image contained in a 20×20 square on the panel with an inset edge ring (the customer avatar). */
+.sdx-brand-logo-size-avatar { position: relative; justify-content: center; width: 20px; height: 20px; border-radius: var(--sd-radius-sm); background: var(--sd-panel); overflow: hidden; }
+.sdx-brand-logo-size-avatar::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--sdx-edge); pointer-events: none; }
+.sdx-brand-logo-size-avatar img { width: 100%; height: 100%; max-width: none; object-fit: contain; object-position: center; }
+@media (max-width: 760px) {
+  .sdx-brand-logo-size-topbar img { max-width: 112px; }
+}
+
+/* The variant of the resolved appearance: light and dark from data-theme,
+   system from prefers-color-scheme. */
+:root[data-theme="light"] .sdx-brand-logo-dark,
+:root[data-theme="dark"] .sdx-brand-logo-light { display: none; }
+:root[data-theme="system"] .sdx-brand-logo-dark { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] .sdx-brand-logo-light { display: none; }
+  :root[data-theme="system"] .sdx-brand-logo-dark { display: block; }
+}

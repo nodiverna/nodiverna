@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The DNS plugin of the ServerDesk agent (docs/agent-plugins.md, docs/dns-server.md).
+       scripts/build-plugin.mjs reads Version and the Plugin* properties into the signed manifest. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
+    <AssemblyName>ServerDesk.Plugin.Dns</AssemblyName><RootNamespace>ServerDesk.Plugin.Dns</RootNamespace><Version>1.0.4</Version>
+    <PluginRole>dns</PluginRole><PluginMinAgentVersion>4.21.2</PluginMinAgentVersion><PluginCapabilities>dns-read;dns-zone-read;dns-zone-create;dns-zone-edit;dns-zone-delete;dns-zone-transfer;dns-record-add;dns-record-edit;dns-record-delete;dns-conditional-create;dns-conditional-edit;dns-conditional-delete;dns-forwarders-set;dns-scavenging-set;dns-scavenge-now;dns-cache-clear</PluginCapabilities>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks><InvariantGlobalization>true</InvariantGlobalization><UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier><SelfContained>true</SelfContained><PublishSingleFile>true</PublishSingleFile>
+    <PublishTrimmed>true</PublishTrimmed><EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <DebugType>embedded</DebugType><NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+  <!-- The broker-plugin protocol, shared with the agent. -->
+  <ItemGroup><Compile Include="../shared/PluginProtocol.cs" Link="PluginProtocol.cs" /></ItemGroup>
+  <!-- BuildVersion.DevSuffix: empty, or -dev.<sha7> on a dev build (scripts/build-plugin.mjs). -->
+  <Import Project="../../BuildVersion.targets" />
+</Project>

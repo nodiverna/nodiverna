@@ -1,0 +1,85 @@
+{
+ "Success": "10",
+ "IDS": [
+  {
+   "downloadInfo": {
+    "Success": "1",
+    "ID": "283798",
+    "Name": "NVIDIA%20RTX%20Driver%20Release%20595",
+    "Release": "595",
+    "Version": "597.30",
+    "DisplayVersion": "R595 U10 (597.30)",
+    "IsBeta": "0",
+    "IsWHQL": "1",
+    "IsRecommended": "0",
+    "IsFeaturePreview": "0",
+    "IsNewest": "1",
+    "IsCRD": "0",
+    "ReleaseDateTime": "Thu Oct 22, 2026",
+    "DetailsURL": "https://www.nvidia.com/en-us/drivers/details/283798/",
+    "DownloadURL": "https://us.download.nvidia.com/Windows/Quadro_Certified/597.30/597.30-quadro-rtx-desktop-notebook-win10-win11-64bit-international-dch-whql.exe",
+    "DownloadURLFileSize": "746.32 MB"
+   }
+  },
+  {
+   "downloadInfo": {
+    "Success": "1",
+    "ID": "282544",
+    "Name": "NVIDIA%20RTX%20Driver%20Release%20580",
+    "Release": "580",
+    "Version": "582.99",
+    "DisplayVersion": "R580 U12 (582.99)",
+    "IsBeta": "0",
+    "IsWHQL": "1",
+    "IsRecommended": "0",
+    "IsFeaturePreview": "0",
+    "IsNewest": "0",
+    "IsCRD": "0",
+    "ReleaseDateTime": "Wed Oct 21, 2026",
+    "DetailsURL": "https://www.nvidia.com/en-us/drivers/details/282544/",
+    "DownloadURL": "https://us.download.nvidia.com/Windows/Quadro_Certified/582.99/582.99-quadro-rtx-desktop-notebook-win10-win11-64bit-international-dch-whql.exe",
+    "DownloadURLFileSize": "723.35 MB"
+   }
+  },
+  {
+   "downloadInfo": {
+    "Success": "1",
+    "ID": "279805",
+    "Name": "NVIDIA%20RTX%20Driver%20Release%20595",
+    "Release": "595",
+    "Version": "597.16",
+    "DisplayVersion": "R595 U9 (597.16)",
+    "IsBeta": "0",
+    "IsWHQL": "1",
+    "IsRecommended": "0",
+    "IsFeaturePreview": "0",
+    "IsNewest": "1",
+    "IsCRD": "0",
+    "ReleaseDateTime": "Tue Sep 22, 2026",
+    "DetailsURL": "https://www.nvidia.com/en-us/drivers/details/279805/",
+    "DownloadURL": "https://us.download.nvidia.com/Windows/Quadro_Certified/597.16/597.16-quadro-rtx-desktop-notebook-win10-win11-64bit-international-dch-whql.exe",
+    "DownloadURLFileSize": "746.27 MB"
+   }
+  },
+  {
+   "downloadInfo": {
+    "Success": "1",
+    "ID": "278220",
+    "Name": "NVIDIA%20RTX%20Driver%20Release%20595",
+    "Release": "595",
+    "Version": "597.06",
+    "DisplayVersion": "R595 U8 (597.06)",
+    "IsBeta": "0",
+    "IsWHQL": "1",
+    "IsRecommended": "0",
+    "IsFeaturePreview": "0",
+    "IsNewest": "1",
+    "IsCRD": "0",
+    "ReleaseDateTime": "Thu Aug 27, 2026",
+    "DetailsURL": "https://www.nvidia.com/en-us/drivers/details/278220/",
+    "DownloadURL": "https://us.download.nvidia.com/Windows/Quadro_Certified/597.06/597.06-quadro-rtx-desktop-notebook-win10-win11-64bit-international-dch-whql.exe",
+    "DownloadURLFileSize": "746.21 MB"
+   }
+  }
+ ]
+}

@@ -1,0 +1,30 @@
+/* Alarms (docs/alert-rules.md): the scope tab Alarms, the device history
+   segment Alarms and the column Alarm of the alert rules. Tokens only. */
+.sdx-alarm-cell { display: block; min-width: 200px; max-width: 380px; white-space: normal; }
+.sdx-alarm-cell strong { display: block; font-weight: 600; }
+.sdx-alarm-cell small, .sdx-alarm-status { display: block; margin-top: 2px; color: var(--sd-muted); font-size: 12px; }
+/* The device history is an AnalysisTab section (.sdx-health-tab gives the grid). Its rows open nothing and
+   its cells wrap as before, so it undoes the pointer cursor and the nowrap cells of the analysis tabs. */
+.sdx-health-tab.sdx-alarm-history .sdx-table td { white-space: normal; }
+.sdx-health-tab.sdx-alarm-history .sdx-table tbody tr:not(.sdx-row-clickable) { cursor: default; }
+.sdx-alarm-history .sdx-table-foot { display: flex; justify-content: center; }
+.sdx-alert-alarm-cell { color: var(--sd-muted); }
+
+/* Health and the Alarms tab (docs/alert-rules.md, "Health and the Alarms tab"). */
+/* A reason chip shows its whole title and wraps inside itself; the cell wraps the chips onto more lines. */
+:is(.sdx, .sdx-layer) .sdx-data-table td.sdx-problem-reasons-col { min-width: 280px; }
+.sdx-problem-reasons { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; }
+.sdx-problem-reason { display: inline-flex; align-items: center; gap: 4px; min-width: 0; min-height: 28px; padding: 4px 8px; border: 1px solid var(--sd-line); border-radius: var(--sd-radius-sm); color: var(--sd-ink); background: var(--sd-panel); font: inherit; font-size: 12px; line-height: 1.4; text-align: left; overflow-wrap: anywhere; cursor: pointer; transition: background-color .16s var(--sd-ease-out), transform .16s var(--sd-ease-spring); }
+.sdx-problem-reason svg { flex: none; }
+.sdx-problem-reason.critical svg { color: var(--sd-danger); }
+.sdx-problem-reason.warning svg { color: var(--sd-warn); }
+.sdx-problem-reason.info svg { color: var(--sd-muted); }
+.sdx-problem-reason:hover { background: var(--sdx-hover); }
+.sdx-problem-reason:active, .sdx-problem-more:active { transform: scale(.96); }
+.sdx-problem-reason:focus-visible, .sdx-problem-more:focus-visible { outline: 2px solid var(--sd-accent); outline-offset: 2px; }
+/* "Show N more" / "Show fewer": a quiet text button at the end of the chips. */
+.sdx-problem-more { display: inline-flex; align-items: center; min-height: 28px; padding: 4px 8px; border: 0; border-radius: var(--sd-radius-sm); color: var(--sd-accent-strong); background: none; font: inherit; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: background-color .16s var(--sd-ease-out), transform .16s var(--sd-ease-spring); }
+.sdx-problem-more:hover { background: var(--sdx-hover); }
+/* Narrow screens: touch targets of at least 32px. */
+@media (max-width: 760px) { .sdx-problem-reason, .sdx-problem-more { min-height: 32px; } }
+@media (prefers-reduced-motion: reduce) { .sdx-problem-reason, .sdx-problem-more { transition: none; } .sdx-problem-reason:active, .sdx-problem-more:active { transform: none; } }

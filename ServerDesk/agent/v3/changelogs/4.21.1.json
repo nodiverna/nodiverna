@@ -1,0 +1,7 @@
+{
+  "version": "4.21.1",
+  "features": [],
+  "fixes": [
+    "After a plugin install or removal, the status report no longer leaves out a plugin that runs a read at that moment, and a new plugin shows in the next heartbeat."
+  ]
+}

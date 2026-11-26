@@ -1,0 +1,136 @@
+# Checks every change in ServerDesk. Three jobs run on each push to dev, on
+# each pull request into main or dev, and by hand:
+# - "Typecheck, lint and tests" runs pnpm validate (typecheck, lint, test and
+#   test:selfhost).
+# - "Dependency audit" runs pnpm check:audit against the lockfile.
+# - "HTTP integration" runs pnpm test:http: it copies the tree, pins a throwaway
+#   test publisher in the copy, makes the production build and runs
+#   tests/integration/http-selfhost.mjs against it.
+# The scheduled run audits the default branch main once a day and runs only the
+# job "Dependency audit": a new advisory can make an unchanged lockfile red.
+# A failed run is the signal: GitHub sends an email (for a scheduled run, to the
+# user who last changed the cron line).
+# The jobs use no secrets: PostgreSQL comes from tests/support/postgres.mjs, which
+# starts its own container with a random password on the Docker of the runner,
+# so the workflow holds no database URL and no password.
+# The repository is private on the free plan, so branch protection and rulesets
+# cannot require these checks yet. The job names "Typecheck, lint and tests",
+# "Dependency audit" and "HTTP integration" are the names to require in a main
+# ruleset later. Do not change them without a change of the branch rules.
+# tests/repo/ci-workflow.mjs checks this file.
+name: CI
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [main, dev]
+  schedule:
+    - cron: '17 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A new push to the same ref stops the run that is still busy.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Typecheck, lint and tests
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    # Typecheck, lint and about 450 test files on a small hosted runner.
+    timeout-minutes: 75
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      # The pnpm version of packageManager in ServerDesk/package.json.
+      - name: Select pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.25.0 --activate
+
+      - name: Install the dependencies
+        working-directory: ServerDesk
+        run: node scripts/pipeline.mjs install
+
+      # Without TEST_CONCURRENCY, scripts/test.mjs runs one file at a time on a
+      # small hosted runner.
+      - name: Typecheck, lint and run the tests
+        working-directory: ServerDesk
+        env:
+          TEST_CONCURRENCY: '3'
+          NEXT_TELEMETRY_DISABLED: '1'
+        run: pnpm validate
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      # The pnpm version of packageManager in ServerDesk/package.json.
+      - name: Select pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.25.0 --activate
+
+      # Checks the lockfile against the npm advisory database, with no install.
+      # A critical or high finding or a registry error makes the job red. The
+      # only ignored advisory is in pnpm-workspace.yaml (audit.ignore).
+      - name: Audit dependencies
+        working-directory: ServerDesk
+        run: pnpm check:audit
+
+  http-integration:
+    name: HTTP integration
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    # The production build of Next on a hosted runner takes the most time.
+    timeout-minutes: 45
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      # The pnpm version of packageManager in ServerDesk/package.json.
+      - name: Select pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.25.0 --activate
+
+      - name: Install the dependencies
+        working-directory: ServerDesk
+        run: node scripts/pipeline.mjs install
+
+      - name: Run the HTTP integration test
+        working-directory: ServerDesk
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+        run: pnpm test:http

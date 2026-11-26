@@ -1,0 +1,7 @@
+{
+  "version": "1.1.1",
+  "features": [],
+  "fixes": [
+    "Reading and changing a DHCP server that has scopes works again: the plugin no longer stops with exit code -1073740940 (heap corruption)."
+  ]
+}

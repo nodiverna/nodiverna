@@ -1,0 +1,48 @@
+/* Agents → Troubleshooting (redesigned console). Scoped to .sdx; colours only
+   from --sd-* tokens. The steps, command blocks and the "More tools" section
+   are kit parts (Steps, CommandBlock, Disclosure in ui/styles/console.css); code blocks
+   scroll inside themselves so the page never scrolls horizontally, down to 375 px. */
+
+.sdx .sdx-ts { display: grid; gap: 16px; min-width: 0; max-width: 980px; }
+.sdx .sdx-ts code { padding: 1px 5px; border-radius: var(--sd-radius-sm); background: color-mix(in srgb, var(--sd-ink) 5%, var(--sd-panel)); font: 12px/1.5 ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace; overflow-wrap: anywhere; }
+.sdx .sdx-ts a { color: var(--sd-accent-strong); font-weight: 550; text-underline-offset: 2px; }
+.sdx .sdx-ts .sdx-notice { align-items: flex-start; line-height: 1.5; }
+.sdx .sdx-ts .sdx-notice > svg { margin-top: 2px; }
+
+/* Inline action inside running text, styled as a link. */
+.sdx .sdx-ts-link {
+  display: inline; padding: 0; border: 0; border-radius: var(--sd-radius-sm); color: var(--sd-accent-strong); background: none;
+  font: inherit; font-weight: 550; text-decoration: underline; text-underline-offset: 2px; cursor: pointer;
+}
+.sdx .sdx-ts-link:hover { color: var(--sd-accent-strong); }
+
+/* ---------- Devices without a current report ---------- */
+.sdx .sdx-ts-devices { margin: 0; padding: 0 8px 8px; list-style: none; }
+.sdx .sdx-ts-devices li {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 12px;
+  min-height: 52px; padding: 8px 8px 8px 10px; border-top: 1px solid var(--sd-soft-line);
+}
+.sdx .sdx-ts-devices li:first-child { border-top-color: var(--sd-line); }
+.sdx .sdx-ts-device-text { display: grid; gap: 2px; min-width: 0; }
+.sdx .sdx-ts-device-text strong { overflow: hidden; color: var(--sd-ink); font-size: 13px; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
+.sdx .sdx-ts-device-text span { overflow: hidden; color: var(--sd-muted); font-size: 12px; white-space: nowrap; text-overflow: ellipsis; }
+.sdx .sdx-ts-devices-more { display: flex; justify-content: center; padding: 0 8px 10px; }
+.sdx .sdx-ts-ok .sdx-empty { padding: 22px 20px 24px; }
+.sdx .sdx-ts-ok .sdx-empty-icon { color: var(--sd-success); background: var(--sd-success-bg); }
+
+/* ---------- Guided diagnosis (kit Steps) ---------- */
+.sdx .sdx-ts-check, .sdx .sdx-ts-result { color: var(--sd-muted); font-size: 13px; line-height: 1.55; }
+.sdx .sdx-ts-result strong { color: var(--sd-ink); font-weight: 600; }
+
+/* ---------- Further tools (kit Disclosure) ---------- */
+.sdx .sdx-ts-tool { display: grid; gap: 10px; min-width: 0; padding: 16px 0 18px; }
+.sdx .sdx-ts-tool + .sdx-ts-tool { border-top: 1px solid var(--sd-soft-line); }
+.sdx .sdx-ts-tool h3 { color: var(--sd-ink); font-size: 13.5px; font-weight: 650; }
+.sdx .sdx-ts-tool > p { color: var(--sd-muted); font-size: 13px; line-height: 1.55; }
+
+/* ---------- Small screens ---------- */
+@media (max-width: 560px) {
+  .sdx .sdx-ts-devices li { grid-template-columns: minmax(0, 1fr) auto; row-gap: 6px; }
+  .sdx .sdx-ts-device-text { grid-column: 1 / -1; }
+  .sdx .sdx-ts-devices li .sdx-pill { justify-self: start; }
+}

@@ -1,0 +1,8 @@
+/* Management → Accounts on the console kit (ui/devices/management/device-accounts.tsx). The head, tiles, tables and
+   drawer come from the kit; this file only lays out what sits around them. Tokens only, spacing on
+   the 4px grid, no own keyframes. The form rules do not depend on .sdx-accounts, because drawers
+   render in a portal. */
+.sdx-accounts { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.sdx-accounts-card > .sdx-toolbar { padding: 12px 16px; }
+.sdx-accounts-form { display: grid; gap: 16px; }
+.sdx-accounts-subject { color: var(--sd-muted); font-size: 12px; }

@@ -1,0 +1,4 @@
+/* CustomerAvatar (ui/devices/fleet/customer-avatar.tsx): the 20x20 tile of a customer folder in the navigator, with
+   the square customer logo (BrandLogo size="avatar") or the initials on the accent-soft fill. */
+.sdx-customer-avatar { display: grid; place-items: center; width: 20px; height: 20px; border-radius: var(--sd-radius-sm); color: var(--sd-accent-strong); background: var(--sd-accent-soft); font-size: 10px; font-weight: 700; line-height: 1; overflow: hidden; }
+.sdx-customer-avatar-logo { background: none; }

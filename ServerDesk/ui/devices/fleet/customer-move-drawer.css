@@ -1,0 +1,9 @@
+/* CustomerMoveDrawer (ui/devices/fleet/customer-move-drawer.tsx): the sections stack on the 4px rhythm; the focal
+   "from → to" line sits on a soft panel and wraps below the avatars on a narrow drawer. */
+.sdx-customer-move { display: grid; gap: var(--sd-space-4); }
+.sdx-customer-move-route { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sd-space-2) var(--sd-space-3); margin: 0; padding: var(--sd-space-3) var(--sd-space-4); border: 1px solid var(--sd-soft-line); border-radius: var(--sd-radius); background: var(--sd-bg); font-size: 14px; }
+.sdx-customer-move-ends { display: inline-flex; min-width: 0; }
+.sdx-customer-move-end { display: inline-flex; align-items: center; gap: var(--sd-space-2); min-width: 0; overflow-wrap: anywhere; }
+.sdx-customer-move-end strong { font-weight: 650; }
+.sdx-customer-move-arrow { flex: none; color: var(--sd-muted); }
+.sdx-customer-move-access { margin: 0; font-size: 12.5px; }

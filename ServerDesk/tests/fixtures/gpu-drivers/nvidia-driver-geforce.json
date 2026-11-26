@@ -1,0 +1,85 @@
+{
+ "Success": "10",
+ "IDS": [
+  {
+   "downloadInfo": {
+    "Success": "1",
+    "ID": "282412",
+    "Name": "GeForce%20Game%20Ready%20Driver",
+    "Release": "620",
+    "Version": "621.01",
+    "DisplayVersion": "",
+    "IsBeta": "0",
+    "IsWHQL": "1",
+    "IsRecommended": "0",
+    "IsFeaturePreview": "0",
+    "IsNewest": "0",
+    "IsCRD": "0",
+    "ReleaseDateTime": "Wed Oct 21, 2026",
+    "DetailsURL": "https://www.nvidia.com/en-us/drivers/details/282412/",
+    "DownloadURL": "https://us.download.nvidia.com/Windows/621.01/621.01-desktop-win10-win11-64bit-international-dch-whql.exe",
+    "DownloadURLFileSize": "1.04 GB"
+   }
+  },
+  {
+   "downloadInfo": {
+    "Success": "1",
+    "ID": "280103",
+    "Name": "GeForce%20Game%20Ready%20Driver",
+    "Release": "615",
+    "Version": "617.42",
+    "DisplayVersion": "",
+    "IsBeta": "0",
+    "IsWHQL": "1",
+    "IsRecommended": "0",
+    "IsFeaturePreview": "0",
+    "IsNewest": "0",
+    "IsCRD": "0",
+    "ReleaseDateTime": "Tue Oct 06, 2026",
+    "DetailsURL": "https://www.nvidia.com/en-us/drivers/details/280103/",
+    "DownloadURL": "https://us.download.nvidia.com/Windows/617.42/617.42-desktop-win10-win11-64bit-international-dch-whql.exe",
+    "DownloadURLFileSize": "990.85 MB"
+   }
+  },
+  {
+   "downloadInfo": {
+    "Success": "1",
+    "ID": "279803",
+    "Name": "GeForce%20Game%20Ready%20Driver",
+    "Release": "615",
+    "Version": "617.14",
+    "DisplayVersion": "",
+    "IsBeta": "0",
+    "IsWHQL": "1",
+    "IsRecommended": "0",
+    "IsFeaturePreview": "0",
+    "IsNewest": "0",
+    "IsCRD": "0",
+    "ReleaseDateTime": "Tue Sep 22, 2026",
+    "DetailsURL": "https://www.nvidia.com/en-us/drivers/details/279803/",
+    "DownloadURL": "https://us.download.nvidia.com/Windows/617.14/617.14-desktop-win10-win11-64bit-international-dch-whql.exe",
+    "DownloadURLFileSize": "990.85 MB"
+   }
+  },
+  {
+   "downloadInfo": {
+    "Success": "1",
+    "ID": "278453",
+    "Name": "GeForce%20Game%20Ready%20Driver",
+    "Release": "615",
+    "Version": "616.92",
+    "DisplayVersion": "",
+    "IsBeta": "0",
+    "IsWHQL": "1",
+    "IsRecommended": "0",
+    "IsFeaturePreview": "0",
+    "IsNewest": "0",
+    "IsCRD": "0",
+    "ReleaseDateTime": "Wed Sep 09, 2026",
+    "DetailsURL": "https://www.nvidia.com/en-us/drivers/details/278453/",
+    "DownloadURL": "https://us.download.nvidia.com/Windows/616.92/616.92-desktop-win10-win11-64bit-international-dch-whql.exe",
+    "DownloadURLFileSize": "990.85 MB"
+   }
+  }
+ ]
+}

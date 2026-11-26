@@ -1,0 +1,7 @@
+/* ManufacturerMark (ui/devices/hardware/manufacturer-mark.tsx): a small monochrome logo
+   in the ink color next to the manufacturer name; the neutral fallback glyph is muted. */
+.sdx-manufacturer { display: inline-flex; align-items: center; gap: var(--sd-space-2); min-width: 0; max-width: 100%; vertical-align: middle; }
+.sdx-manufacturer-sm { gap: 6px; }
+.sdx-manufacturer-logo { flex: none; color: var(--sd-ink); }
+.sdx-manufacturer-fallback { flex: none; color: var(--sd-muted); }
+.sdx-manufacturer-name { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }

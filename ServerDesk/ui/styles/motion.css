@@ -1,0 +1,69 @@
+/* Shared motion (nodiverna-ui §8): the only keyframes rules under app/ and
+   ui/. Components name these keyframes in their own rules and take the
+   duration from --sd-dur-fast, --sd-dur or --sd-dur-slow for one-shot motion;
+   loops keep their period. No keyframe here holds a color.
+   - sdx-rise: entrance, fade plus a rise from --sdx-rise-from (default 6px).
+   - sdx-fade: overlays and scrims.
+   - sdx-pop: menus and the command palette, opacity plus scale(.96); an
+     optional offset comes from --sdx-pop-from.
+   - sdx-spin, sdx-shimmer, sdx-pulse: loading and live indicators (loops; the
+     online dot of the Dashboard pulses with sdx-pulse).
+   - sdx-progress, sdx-sheet-in, sdx-sheet-out: job dock bar and side panels.
+   No resting state depends on an animation. With reduced motion every element
+   shows at once in its final place. */
+@keyframes sdx-rise { from { opacity: 0; transform: translateY(var(--sdx-rise-from, 6px)); } }
+@keyframes sdx-fade { from { opacity: 0; } }
+@keyframes sdx-pop { from { opacity: 0; transform: scale(.96) translateY(var(--sdx-pop-from, 0px)); } }
+@keyframes sdx-spin { to { transform: rotate(360deg); } }
+@keyframes sdx-shimmer { from { background-position: 0 0; } to { background-position: -200% 0; } }
+@keyframes sdx-pulse { 50% { opacity: .45; } }
+@keyframes sdx-progress { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
+@keyframes sdx-sheet-in { from { opacity: 0; transform: translateX(32px); } }
+@keyframes sdx-sheet-out { to { opacity: 0; transform: translateX(32px); } }
+
+/* EntranceList (ui/kit/kit.tsx): the first 8 items of a list rise in
+   once per page load; the delay comes inline (index × 24 ms). backwards keeps
+   an item hidden only during its delay, so the hover lift is never frozen. */
+.sdx-enter { --sdx-rise-from: 6px; animation: sdx-rise var(--sd-dur) var(--sd-ease-out) backwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* Entrance and pop */
+  .sdx-enter,
+.sdx-tree-row.is-fresh,
+.sdx-title-swap,
+.sdx-add-device-state,
+.sdx-assistant-enter,
+.sdx-assistant-proposal-pill,
+.sdx-assistant-proposal.is-dismissed,
+.sdx-bulkbar,
+.sdx-defender-running,
+.sdx-dock-panel,
+.sdx-menu,
+.sd-suggest-list,
+.sdx-tooltip,
+.sdx-drawer-scrim,
+.sdx-drawer,
+.sdx-confirm-scrim,
+.sdx-confirm-dialog,
+.sdx-idle-pill,
+.sdx-demo-pill,
+.sdx-brand-logo,
+.sdx-branding-fade,
+.sdx-backdrop-image,
+.sd-session-backdrop,
+.sdx-bg-tile-check,
+.sdx-bg-measuring,
+.sdx-rail-badge,
+.sd-identity-emergency,
+.spin,
+.sdx-spin,
+.sd-rdp-spin,
+.sdx-skeleton-bar,
+.sdx-assistant-pulse,
+.sd-device-agent-skeleton,
+.sdx-dock-progress i,
+.sdx-live-dot,
+.sdx-dash-pulse,
+.sdx-live .sdx-pill > i,
+.sdx-extension-state .sdx-pill > i { animation: none !important; }
+}

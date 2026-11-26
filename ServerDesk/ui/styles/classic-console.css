@@ -1,0 +1,71 @@
+/* ServerDesk operational console. Imported after the original panel styles. */
+.sd-console {
+  min-height: 100svh;
+  color: var(--sd-ink);
+  background: var(--sd-bg);
+  font: 13px/1.5 var(--sd-font);
+}
+.sd-console :is(h1, h2, h3, p) { margin: 0; }
+.sd-console h2 { font-size: 14px; font-weight: 600; letter-spacing: -.15px; }
+.sd-console h3 { font-size: 13px; font-weight: 600; }
+.sd-console strong { font-weight: 600; }
+.sd-console :is(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid var(--sd-accent);
+  outline-offset: 3px;
+}
+.sd-console button:disabled { opacity: .55; }
+.sd-console :is(button, input, select, textarea) { font-family: inherit; }
+.sd-console :is(table, .mono) { font-variant-numeric: tabular-nums; }
+.sd-console .v3-help { color: var(--sd-muted); font-size: 12px; }
+.sd-console table { border-collapse: collapse; width: 100%; }
+.sd-console th {
+  height: 39px;
+  padding: 10px 13px;
+  background: color-mix(in srgb, var(--sd-ink) 2%, var(--sd-panel));
+  border-bottom: 1px solid var(--sd-line);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0;
+  color: var(--sd-muted);
+  white-space: nowrap;
+}
+.sd-console td { padding: 11px 13px; color: var(--sd-muted); font-size: 12px; line-height: 1.45; vertical-align: middle; }
+.sd-console tr { border-color: var(--sd-soft-line); }
+.sd-console tbody tr:hover { background: color-mix(in srgb,var(--sd-accent) 3%,var(--sd-panel)); }
+.sd-console td strong { font-size: 12px; color: var(--sd-ink); }
+.sd-console .table-sub { font-size: 11px; color: var(--sd-muted); margin-top: 2px; }
+.sd-console .v3-form :is(input, select, textarea) { border-color: var(--sd-line); border-radius: var(--sd-radius-sm); padding: 7px 9px; font-size: 12px; }
+.sd-console .v3-form { padding: 16px; gap: 13px; }
+.sd-console .v3-form label:where(:not(.sdx-switch-field > label)) { gap: 6px; font-size: 12px; color: var(--sd-muted); font-weight: 500; }
+.sd-console .v3-form small { font-size: 11px; color: var(--sd-muted); }
+.sd-console .v3-output { padding: 14px 16px; font-size: 12px; line-height: 1.65; background: var(--sd-bg); border-color: var(--sd-line); }
+.sd-console .v3-policy { padding: 14px 16px; gap: 8px; border-color: var(--sd-line); }
+.sd-console .v3-disclosure { border-top: 1px solid var(--sd-line); }
+.sd-console .v3-disclosure > summary { padding: 11px 15px; color: var(--sd-muted); font-size: 12px; cursor: pointer; }
+.sd-console .v3-disclosure[open] > summary { border-bottom: 1px solid var(--sd-soft-line); }
+.sd-console .v3-diff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; min-width: 0; }
+.sd-console .v3-diff-grid > div { min-width: 0; }
+.sd-console .v3-diff-grid h3 { font-size: 12px; font-weight: 500; color: var(--sd-muted); margin-bottom: 6px; }
+.sd-console .v3-terminal { border-radius: 0 0 var(--sd-radius-sm) var(--sd-radius-sm); padding: 10px; background: var(--sd-contrast); }
+@media (max-width: 650px) {
+  .sd-console .v3-form { padding: 14px; }
+  .sd-console .v3-diff-grid { grid-template-columns: 1fr; }
+  .sd-console th { padding-inline: 11px; }
+  .sd-console td { padding: 10px 11px; }
+}
+@media (pointer: coarse) {
+  .sd-console :is(input, select) { min-height: 40px; }
+  .sd-console input[type="checkbox"], .sd-console input[type="radio"] { min-height: auto; }
+  .sd-console :is(.v3-form input, .v3-form select) { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sd-console * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+/* Form controls must not inherit icon dimensions. A kit switch (role="switch") keeps its 38x22 track from classic-panels.css. */
+.sd-console .v3-form input:is([type="checkbox"], [type="radio"]):where(:not([role="switch"])) { width: 16px; height: 16px; min-width: 16px; min-height: 16px; padding: 0; flex: 0 0 16px; margin: 2px 0 0; }
+.sd-console .v3-form label.v3-checkbox { display: flex; min-width: 0; align-items: flex-start; }
+.sd-console .v3-terminal-viewport { border-radius: 0 0 var(--sd-radius-sm) var(--sd-radius-sm); background: var(--sd-contrast); }
+
+

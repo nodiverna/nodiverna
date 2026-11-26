@@ -1,0 +1,36 @@
+/* Runbooks (ui/automation/runbook-panel.tsx, ui/automation/runbook-editor.tsx) on the console kit: the "Prepare run"
+   form and the runbook editor. Cards, tables and fields are kit parts; these rules only lay them
+   out. Tokens only, 4px rhythm. */
+.rb-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); align-items: start; gap: 12px; }
+.rb-fieldset { display: grid; gap: 12px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.rb-fieldset > legend { margin-bottom: 8px; padding: 0; font-size: 13px; font-weight: 650; }
+.rb-targets { grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); }
+.rb-help { margin: 0; color: var(--sd-muted); font-size: 12px; font-weight: 400; }
+.rb-danger { color: var(--sd-danger); }
+.rb-preview { display: grid; gap: 12px; min-width: 0; }
+.rb-preview > h3 { margin: 0; font-size: 13px; font-weight: 650; }
+
+/* The editor: a card with a head, the basics and parameters side by side, then the steps. */
+.rb-editor { display: grid; gap: 16px; min-width: 0; padding: 16px; }
+.rb-editor-head, .rb-editor-foot { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.rb-editor-head { padding-bottom: 16px; border-bottom: 1px solid var(--sd-soft-line); }
+.rb-editor-foot { justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--sd-soft-line); }
+.rb-editor-title { flex: 1 1 240px; min-width: 0; }
+.rb-editor-title h3 { margin: 0; font-size: 14px; font-weight: 650; overflow-wrap: anywhere; }
+.rb-editor-title p { margin: 4px 0 0; color: var(--sd-muted); font-size: 12px; }
+.rb-editor-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
+.rb-editor-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); align-items: start; gap: 16px; min-width: 0; }
+.rb-editor-section { padding: 16px; border: 1px solid var(--sd-line); border-radius: var(--sd-radius); background: var(--sd-panel); }
+.rb-editor-section > legend { margin: 0; padding: 0 4px; color: var(--sd-muted); font-size: 12px; font-weight: 600; }
+.rb-code { font: 12px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre; overflow: auto; overflow-wrap: normal; resize: vertical; }
+.rb-editor-steps { display: grid; gap: 16px; min-width: 0; }
+.rb-editor-step-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.rb-editor-step-head h4 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 13px; font-weight: 650; }
+.rb-editor-step-head > strong { flex: 1 1 200px; min-width: 0; overflow-wrap: anywhere; }
+.rb-editor-step-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, .65fr); gap: 12px; }
+.rb-editor-conditions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding-top: 12px; }
+@media (max-width: 760px) {
+  .rb-editor { padding: 12px; }
+  .rb-editor-step-grid, .rb-editor-conditions { grid-template-columns: 1fr; }
+  .rb-editor-head > .rb-editor-actions, .rb-editor-foot > .rb-editor-actions { width: 100%; }
+}

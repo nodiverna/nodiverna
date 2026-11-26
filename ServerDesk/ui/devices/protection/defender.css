@@ -1,0 +1,26 @@
+/* Microsoft Defender (docs/device-health-signals.md): the device area Management → Defender and the scope tab "Protection". Tokens only. */
+/* The device panel: the hidden head, the panel notice, then the report. */
+.sdx-defender-panel { display: grid; gap: var(--sd-space-3); min-width: 0; }
+.sdx-defender-panel > .sdx-notice { margin: 0; }
+.sdx-defender { display: grid; gap: var(--sd-space-3); min-width: 0; }
+.sdx-defender > .sdx-notice { margin: 0; }
+/* Status and Scans side by side; one column on narrow screens. Cards in the pair share their height. */
+.sdx-defender-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sd-space-3); }
+@media (max-width: 900px) { .sdx-defender-pair { grid-template-columns: minmax(0, 1fr); } }
+.sdx-defender .sdx-facts dd .sdx-muted-cell { color: var(--sd-muted); }
+/* The three exclusion groups: paths, file extensions, processes. */
+.sdx-defender-exclusions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sd-space-4); }
+@media (max-width: 760px) { .sdx-defender-exclusions { grid-template-columns: minmax(0, 1fr); } }
+.sdx-defender-exclusions section { display: grid; align-content: start; gap: var(--sd-space-2); min-width: 0; }
+.sdx-defender-exclusions h3 { display: flex; align-items: baseline; gap: var(--sd-space-2); margin: 0; color: var(--sd-muted); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.sdx-defender-exclusions ul { display: grid; gap: var(--sd-space-1); margin: 0; padding: 0; list-style: none; font-size: 12px; }
+.sdx-defender-exclusions li { overflow-wrap: anywhere; }
+.sdx-defender-exclusions p { margin: 0; color: var(--sd-muted); font-size: 12px; }
+/* A state change (a new report) moves the pill color instead of jumping. */
+.sdx-defender .sdx-pill, .sdx-protection-tab .sdx-pill { transition: color var(--sd-dur) var(--sd-ease-out), background-color var(--sd-dur) var(--sd-ease-out); }
+/* Actions of agent 4.15.0 in the card heads: they wrap under the title on narrow cards. */
+.sdx-defender .sdx-card-actions { flex-wrap: wrap; justify-content: flex-end; gap: var(--sd-space-2); }
+/* A scan the portal started that still runs: the live dot is the area's only loop (off under reduced motion, ui/styles/motion.css). */
+.sdx-defender-running { display: flex; align-items: center; gap: var(--sd-space-2); margin-bottom: var(--sd-space-3); padding: var(--sd-space-2) var(--sd-space-3); border-radius: var(--sd-radius-sm); background: var(--sd-accent-soft); color: var(--sd-accent-strong); font-size: 12.5px; font-weight: 600; --sdx-rise-from: 4px; animation: sdx-rise var(--sd-dur) var(--sd-ease-out) backwards; }
+.sdx-live-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: sdx-pulse 1.6s ease-in-out infinite; }
+.sdx-live .sdx-pill > i { animation: sdx-pulse 1.6s ease-in-out infinite; }

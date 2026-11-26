@@ -1,0 +1,51 @@
+/* My account (AccountPanel in ui/account/account-panel.tsx): kit cards in one SettingsPage column. Only the
+   parts the kit has no shape for live here: the avatar beside the profile facts, the four method
+   sections of "Sign-in & security", their rows and the recovery codes. Spacing on the 4px grid. */
+.sdx-account-cards{display:grid;gap:16px;min-width:0}
+.sdx-account-cards>div{min-width:0}
+
+/* Profile: the initials avatar anchors the facts. */
+.sdx-account-identity{display:flex;align-items:flex-start;gap:16px;min-width:0}
+.sdx-account-identity>.sdx-avatar{width:48px;height:48px;font-size:16px;margin-top:4px}
+.sdx-account-identity>.sdx-facts{flex:1;min-width:0}
+.sdx-account-details .sdx-disclosure-body{padding-top:0}
+
+/* Sign-in & security: the methods follow each other, divided by a soft line. */
+.sdx-account-methods{display:grid;min-width:0}
+.sdx-account-method{display:grid;gap:12px;padding:16px 0;border-top:1px solid var(--sd-soft-line);min-width:0}
+.sdx-account-method:first-child{border-top:0;padding-top:4px}
+.sdx-account-method:last-child{padding-bottom:0}
+.sdx-account-method-body{display:grid;gap:12px;margin-left:40px;min-width:0}
+.sdx-account-method-body:empty{display:none}
+.sdx-account-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.sdx-account-row{display:flex;align-items:center;gap:12px;min-width:0;padding:8px 8px 8px 12px;border:1px solid var(--sd-line);border-radius:var(--sd-radius);background:var(--sd-panel)}
+.sdx-account-row-text{display:grid;gap:2px;flex:1;min-width:0;overflow-wrap:anywhere}
+.sdx-account-row-text strong{font-weight:600}
+.sdx-account-row-text small{color:var(--sd-muted);font-size:12px}
+.sdx-account-empty,.sdx-account-note,.sdx-account-status{color:var(--sd-muted);font-size:12px}
+.sdx-account-help p+p{margin-top:8px}
+.sdx-account-help .sdx-disclosure-body{color:var(--sd-muted);font-size:12.5px}
+
+/* Recovery codes, shown once after "Create new codes". */
+.sdx-account-codes{display:grid;gap:8px;padding:16px;border-radius:var(--sd-radius);background:color-mix(in srgb,var(--sd-accent) 6%,var(--sd-panel));min-width:0}
+.sdx-account-codes>p{color:var(--sd-muted);font-size:12.5px}
+.sdx-account-codes>.sdx-field-label,.sdx-account-setup-key>.sdx-field-label{color:var(--sd-ink);font-size:12.5px;font-weight:600}
+.sdx-account-code-list{list-style:none;margin:0;padding:12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 16px;border:1px solid var(--sd-line);border-radius:var(--sd-radius-sm);background:var(--sd-panel)}
+.sdx-account-code-actions{display:flex;flex-wrap:wrap;gap:8px}
+
+/* The authenticator drawer: setup key, link and expiry. */
+.sdx-account-setup-key{display:grid;gap:8px}
+.sdx-account-setup-links{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px}
+.sdx-account-setup-links a{color:var(--sd-accent-strong);font-weight:550}
+.sdx-account-setup-links small{color:var(--sd-muted);font-size:12px}
+
+/* Preferences: two columns of selects on wide screens; the scheme swatch leads its hint. */
+.sdx-account-preferences-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.sdx-account-preferences-grid .sdx-field small{display:flex;align-items:center;gap:8px}
+
+@media(max-width:760px){
+ .sdx-account-method-body{margin-left:0}
+ .sdx-account-preferences-grid{grid-template-columns:minmax(0,1fr)}
+ .sdx-account-code-list{grid-template-columns:minmax(0,1fr)}
+}
+.sdx-account-preferences-grid .sdx-scheme-swatch{display:inline-block;flex:none}

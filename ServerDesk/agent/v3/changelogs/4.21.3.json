@@ -1,0 +1,7 @@
+{
+  "version": "4.21.3",
+  "features": [],
+  "fixes": [
+    "Devices no longer show 'Inventory incomplete' when Windows Update lists an update without a severity. The update list is read again, and such updates show with the priority 'Not specified'."
+  ]
+}

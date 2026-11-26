@@ -1,0 +1,9 @@
+{
+  "version": "1.1.0",
+  "features": [
+    "Changes the DHCP server from the portal: scopes, superscopes, exclusions, reservations, leases, options, policies and failover relationships.",
+    "Reads the server again after each change, and reads the option definitions and the options of the policies.",
+    "Still runs on agent 4.16.0 or later without network access of its own. A failover shared secret needs agent 4.17.0."
+  ],
+  "fixes": []
+}

@@ -1,0 +1,30 @@
+/* Settings → Agent releases (ui/settings/agent-releases-page.tsx, ui/settings/release-source.tsx,
+   ui/settings/extension-releases.tsx). Tokens and the 4px grid only; motion uses the shared
+   keyframes of ui/styles/motion.css. */
+.sdx-release-source { animation: sdx-rise var(--sd-dur) var(--sd-ease-out) backwards; }
+.sdx-release-source-body { display: grid; gap: 16px; padding: 0 16px 16px; }
+/* The focal point: the state pill, then the failure notice. The pill fades its color on each poll. */
+.sdx-release-source-state { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.sdx-release-source-state .sdx-pill { transition: color var(--sd-dur-slow) var(--sd-ease-out), background-color var(--sd-dur-slow) var(--sd-ease-out); }
+.sdx-release-source-state[data-state="running"] .sdx-pill i { animation: sdx-pulse 1.6s ease-in-out infinite; }
+.sdx-release-source-note { display: flex; align-items: flex-start; gap: 8px; margin: 0; color: var(--sd-muted); font-size: 12.5px; }
+.sdx-release-source-note svg { flex: none; margin-top: 4px; }
+.sdx-release-source-heading { margin: 0; padding: 8px; color: var(--sd-muted); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.sdx-release-result { display: inline-flex; align-items: center; gap: 8px; }
+.sdx-release-result strong { display: block; font-weight: 600; }
+.sdx-release-result small { display: block; color: var(--sd-muted); font-size: 12px; }
+.sdx-release-extension { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+/* The full-width table below the settings column. */
+.sdx-release-tables { display: grid; gap: 16px; min-width: 0; }
+.sdx-release-version { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+/* The release drawer: facts, the changelog sections and the SHA-256. */
+.sdx-release-details { display: grid; gap: 24px; }
+.sdx-release-signed { display: inline-flex; align-items: center; gap: 4px; }
+.sdx-release-signed svg { flex: none; color: var(--sd-success); }
+.sdx-release-changelog { display: grid; gap: 8px; }
+.sdx-release-changelog h3 { margin: 0; font-size: 13px; font-weight: 650; }
+.sdx-release-changelog ul { margin: 0; padding-left: 20px; font-size: 12.5px; line-height: 1.6; list-style: disc; }
+.sdx-release-changelog li { overflow-wrap: anywhere; }
+.sdx-release-changelog p, .sdx-release-nolog { margin: 0; color: var(--sd-muted); font-size: 12.5px; }
+.sdx-release-sha code { overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: reduce) { .sdx-release-source, .sdx-release-source-state .sdx-pill i { animation: none; } .sdx-release-source-state .sdx-pill { transition: none; } }

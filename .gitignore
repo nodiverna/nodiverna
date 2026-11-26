@@ -1,0 +1,17 @@
+# Fallback place of the temporary copy of pnpm test:http on Windows when
+# os.tmpdir() is on another drive (ServerDesk/scripts/copy-tree.mjs).
+/.http-test-copy/
+
+# AI and factory files live in a private overlay repo (git --git-dir=.ai-git).
+/.ai-git/
+/.claude/
+/factory/
+/ServerDesk/CLAUDE.md
+/AGENTS.md
+/CLAUDE.md
+/GEMINI.md
+/.github/copilot-instructions.md
+.cursor/
+.codex/
+.agents/
+.openai/

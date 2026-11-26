@@ -1,0 +1,7 @@
+{
+  "version": "4.14.0",
+  "features": [
+    "The agent reports the Microsoft Defender state: mode, real-time and tamper protection, scans, signatures, detections, exclusions and other antivirus products. It only reads and changes nothing."
+  ],
+  "fixes": []
+}

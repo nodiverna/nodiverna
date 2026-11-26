@@ -1,0 +1,37 @@
+/* The DNS server of the DNS plugin (docs/dns-server.md): the device view
+   (device-dns.tsx), its change drawers (dns-forms.tsx) and the fleet card
+   "DNS zones" (server-roles-tab.tsx). Tokens only, 4px rhythm; motion comes
+   from EntranceList, the Kpi lift and the shared sdx-fade (ui/styles/motion.css). */
+.sdx-dns { display: grid; gap: 16px; }
+
+/* Five KPI tiles: the row keeps them on one line on a wide screen. */
+@media (min-width: 1280px) { .sdx-dns-kpis .sdx-kpi-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+
+/* A section swap and a reload cross-fade; nothing rises again. */
+.sdx-dns-panel { display: grid; gap: 12px; animation: sdx-fade var(--sd-dur) var(--sd-ease-out); }
+.sdx-dns-zone { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.sdx-dns-zone strong { color: var(--sd-ink); font-size: 13px; font-weight: 600; }
+.sdx-dns-muted { margin: 0 0 12px; color: var(--sd-muted); font-size: 12px; }
+.sdx-dns-forwarders { display: grid; gap: 4px; margin: 0 0 12px; padding-left: 24px; color: var(--sd-ink); font-size: 13px; }
+
+/* The zone page: back button, zone name and type pill, then the quiet settings card and the records. */
+.sdx-dns-zone-page { display: grid; gap: 16px; animation: sdx-fade var(--sd-dur) var(--sd-ease-out); }
+.sdx-dns-zone-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.sdx-dns-zone-head h3 { margin: 0; color: var(--sd-ink); font-size: 16px; font-weight: 650; }
+.sdx-dns-zone-head small { margin-left: auto; color: var(--sd-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+/* Records of a queued delete fade until the reload removes them. */
+.sdx-dns-records-pending .sdx-row-highlight { opacity: .48; transition: opacity var(--sd-dur) var(--sd-ease-out); }
+
+/* The change forms: fields side by side, the TTL of number, unit and switch. */
+.sdx-dns-form .sdx-dns-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.sdx-dns-form .sdx-dns-triple { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.sdx-dns-form .sdx-dns-ttl { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 12px; align-items: end; }
+.sdx-dns-form .sdx-dns-ttl .sdx-field-inline { grid-column: 1 / -1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sdx-dns-panel, .sdx-dns-zone-page { animation: none; }
+  .sdx-dns-records-pending .sdx-row-highlight { transition: none; }
+}
+@media (max-width: 760px) {
+  .sdx-dns-form .sdx-dns-pair, .sdx-dns-form .sdx-dns-triple { grid-template-columns: 1fr; }
+}

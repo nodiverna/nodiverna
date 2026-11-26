@@ -1,0 +1,17 @@
+/* The help drawer (ui/shell/help-panel.tsx): a non-modal kit Drawer on the solid panel. Three sections, each a small
+   heading with its accent glyph: the tips of the page, the keyboard shortcuts with kit Kbd keys, the documentation.
+   Tokens only; the 4px rhythm of nodiverna-ui §8. */
+.sd-help-body { display: grid; align-content: start; gap: var(--sd-space-5); }
+.sd-help-body h3 { display: flex; align-items: center; gap: var(--sd-space-2); margin: 0 0 var(--sd-space-2); color: var(--sd-ink); font-size: 12px; font-weight: 600; }
+.sd-help-body h3 svg { flex: none; color: var(--sd-accent); }
+.sd-help-tips { display: grid; gap: var(--sd-space-2); margin: 0; padding: 0; list-style: none; }
+.sd-help-tips li { padding: var(--sd-space-2) var(--sd-space-3); border-radius: var(--sd-radius-sm); background: color-mix(in srgb, var(--sd-ink) 4%, transparent); color: var(--sd-ink); line-height: 1.5; }
+.sd-help-shortcuts { display: grid; margin: 0; padding: var(--sd-space-1) var(--sd-space-3); border-radius: var(--sd-radius-sm); background: color-mix(in srgb, var(--sd-ink) 4%, transparent); }
+.sd-help-shortcuts > div { display: flex; align-items: center; justify-content: space-between; gap: var(--sd-space-3); min-height: 32px; padding: var(--sd-space-1) 0; border-bottom: 1px solid var(--sd-soft-line); }
+.sd-help-shortcuts > div:last-child { border-bottom: 0; }
+.sd-help-shortcuts dt { color: var(--sd-ink); }
+.sd-help-shortcuts dt small { margin-left: var(--sd-space-2); padding: 0 var(--sd-space-2); border-radius: 99px; background: color-mix(in srgb, var(--sd-ink) 8%, transparent); color: color-mix(in srgb, var(--sd-ink) 25%, var(--sd-muted)); font-size: 11px; }
+.sd-help-shortcuts dd { display: flex; flex: none; align-items: center; gap: var(--sd-space-1); margin: 0; color: var(--sd-muted); }
+.sd-help-docs { display: grid; gap: var(--sd-space-1); margin: 0; padding: 0; list-style: none; }
+.sd-help-docs a { display: flex; align-items: center; justify-content: space-between; gap: var(--sd-space-2); min-height: 32px; padding: var(--sd-space-1) var(--sd-space-3); border-radius: var(--sd-radius-sm); color: var(--sd-accent-strong); text-decoration: none; transition: background-color var(--sd-dur-fast) var(--sd-ease-out); }
+.sd-help-docs a:hover { background: var(--sd-accent-soft); }

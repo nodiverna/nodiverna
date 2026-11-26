@@ -1,0 +1,41 @@
+/* Management → Network on the console kit (ui/devices/management/device-network-panel.tsx). The head, tiles, cards,
+   notices, tables and the editor drawer come from the kit; this file only lays out what sits around
+   them. Tokens only, spacing on the 4px grid, no own keyframes. The editor rule does not depend on
+   .sdx-network, because the drawer renders in a portal. */
+.sdx-network { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.sdx-network > .sdx-network-toolbar { margin: 0; }
+.sdx-network-adapters { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); align-items: start; gap: 16px; }
+.sdx-network-body { display: grid; gap: 16px; min-width: 0; }
+.sdx-network-block { display: grid; align-content: start; gap: 4px; min-width: 0; font-size: 13px; overflow-wrap: anywhere; }
+.sdx-network-label { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 28px; color: var(--sd-muted); font-size: 12px; font-weight: 600; }
+.sdx-network-label .sdx-icon-btn, .sdx-network-dns .sdx-icon-btn { width: 28px; height: 28px; }
+.sdx-network-address { display: grid; gap: 4px; }
+.sdx-network-address > strong { font: var(--sd-text-kpi); font-size: 20px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.sdx-network-address > strong small { margin-left: 4px; color: var(--sd-muted); font-size: 13px; font-weight: 400; }
+.sdx-network-address > span { color: var(--sd-muted); font-size: 12px; }
+.sdx-network-endpoints { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 16px; padding-top: 12px; border-top: 1px solid var(--sd-soft-line); }
+.sdx-network-dns { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.sdx-network-details > summary, .sdx-network-disclosure > summary { cursor: pointer; color: var(--sd-muted); font-size: 12px; font-weight: 600; }
+.sdx-network-details > .sdx-facts { margin-top: 8px; }
+.sdx-network-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 12px; border-top: 1px solid var(--sd-soft-line); }
+.sdx-network-empty { padding: 16px; border: 1px solid var(--sd-line); border-radius: var(--sd-radius-lg); background: var(--sd-panel); }
+
+/* Diagnostics: the target form, the presets and the result. */
+.sdx-network-check { display: grid; gap: 12px; }
+.sdx-network-check-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(96px, 120px); gap: 12px; }
+.sdx-network-presets, .sdx-network-check-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.sdx-network-result { display: grid; gap: 12px; margin-top: 16px; }
+.sdx-network-outcome { display: grid; gap: 12px; padding-top: 12px; border-top: 1px solid var(--sd-soft-line); }
+.sdx-network-outcome-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; font-size: 13px; }
+.sdx-network-outcome-head > span { color: var(--sd-muted); font-size: 12px; }
+.sdx-network-outcome-head > .sdx-icon-btn { margin-left: auto; }
+.sdx-network-tcp { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; font-size: 13px; }
+.sdx-network-tcp > p { width: 100%; color: var(--sd-danger); font-size: 12px; overflow-wrap: anywhere; }
+.sdx-network-disclosure > .sdx-table-wrap { margin-top: 8px; }
+.sdx-network-disclosure > pre { margin-top: 8px; font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.sdx-network-hint { color: var(--sd-muted); font-size: 12px; }
+.sdx-network-editor { display: grid; gap: 16px; }
+
+@media (max-width: 760px) {
+  .sdx-network-endpoints, .sdx-network-check-fields { grid-template-columns: minmax(0, 1fr); }
+}

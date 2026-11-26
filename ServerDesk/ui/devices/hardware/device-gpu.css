@@ -1,0 +1,35 @@
+/* GPU subarea (device-gpu.tsx): the GPU head card, the sensor line and the fact grid. The cards,
+   KPI row, notices and states are kit parts with their own styles. */
+.sd-console .dgp-workspace { display: grid; gap: 16px; min-width: 0; color: var(--sd-ink); }
+/* The head card has no body, so its head takes the full card padding. */
+.sd-console .dgp-head > .sdx-card-head { padding: 16px; }
+.sd-console .dgp-head .sdx-card-head h2 { overflow-wrap: anywhere; }
+.sd-console .dgp-head .sdx-select { width: auto; max-width: 320px; }
+.sd-console .dgp-sensor-status { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0; color: var(--sd-muted); font-size: 12px; }
+.sd-console .dgp-sensor-status time { font-variant-numeric: tabular-nums; }
+.sd-console .dgp-facts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr)); gap: 16px; min-width: 0; }
+.sd-console .dgp-chart { min-width: 0; }
+@media (max-width: 760px) { .sd-console .dgp-head .sdx-select { width: 100%; max-width: none; } }
+/* Graphics driver card (device-gpu-driver.tsx): the installed version is the focal number. */
+.sd-console .dgd-card{display:grid;gap:12px;min-width:0;padding:16px;border:1px solid var(--sd-line);border-radius:var(--sd-radius-lg);background:var(--sd-panel);box-shadow:var(--sd-shadow-sm);--sdx-rise-from:6px;animation:sdx-rise var(--sd-dur) var(--sd-ease-out)}
+.sd-console .dgd-head{display:flex;align-items:center;gap:12px;min-width:0}.sd-console .dgd-head h3{flex:1;min-width:0;font-size:14px;font-weight:650;color:var(--sd-ink)}
+.sd-console .dgd-head .sdx-pill{transition:color var(--sd-dur) var(--sd-ease-out),background-color var(--sd-dur) var(--sd-ease-out)}
+.sd-console .dgd-tile{display:grid;place-items:center;width:32px;height:32px;flex-shrink:0;border-radius:var(--sd-radius-sm);transition:color var(--sd-dur) var(--sd-ease-out),background-color var(--sd-dur) var(--sd-ease-out)}
+.sd-console .dgd-tone-success{color:var(--sd-success);background:var(--sd-success-bg)}.sd-console .dgd-tone-warn{color:var(--sd-warn);background:var(--sd-warn-bg)}.sd-console .dgd-tone-muted{color:var(--sd-muted);background:var(--sdx-hover)}
+.sd-console .dgd-versions{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 32px;min-width:0}
+.sd-console .dgd-versions>div{display:grid;gap:4px;min-width:0}.sd-console .dgd-versions span{font-size:12px;color:var(--sd-muted)}
+.sd-console .dgd-installed strong{font-size:28px;font-weight:650;line-height:1.1;letter-spacing:-.5px;font-variant-numeric:tabular-nums;color:var(--sd-ink);animation:sdx-fade var(--sd-dur) var(--sd-ease-out)}
+.sd-console .dgd-latest strong{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--sd-ink);animation:sdx-fade var(--sd-dur) var(--sd-ease-out)}.sd-console .dgd-latest small{font-size:12px;color:var(--sd-muted)}
+.sd-console .dgd-sentence{margin:0;font-size:13px;line-height:1.5;color:var(--sd-muted)}
+.sd-console .dgd-inventory{display:flex;align-items:flex-start;gap:8px;padding:8px 12px;border-radius:var(--sd-radius-sm);background:color-mix(in srgb,var(--sd-accent) 8%,var(--sd-panel));font-size:13px;line-height:1.5;color:var(--sd-ink);animation:sdx-fade var(--sd-dur) var(--sd-ease-out)}
+.sd-console .dgd-inventory svg{flex-shrink:0;margin-top:2px;color:var(--sd-accent)}.sd-console .dgd-inventory p{display:grid;gap:4px;min-width:0;margin:0}.sd-console .dgd-inventory small{font-size:12px;color:var(--sd-muted)}
+.sd-console .dgd-running{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 12px;border-radius:var(--sd-radius-sm);background:color-mix(in srgb,var(--sd-accent) 8%,var(--sd-panel));font-size:13px;color:var(--sd-ink)}
+.sd-console .dgd-running i{width:8px;height:8px;border-radius:99px;background:var(--sd-accent);animation:sdx-pulse 1.6s ease-in-out infinite}.sd-console .dgd-running small{margin-left:auto;font-size:12px;color:var(--sd-muted)}
+.sd-console .dgd-result{display:grid;gap:4px;padding:8px 12px;border-radius:var(--sd-radius-sm);font-size:13px;line-height:1.5}.sd-console .dgd-result strong{font-weight:600}
+.sd-console .dgd-result-success{color:var(--sd-success);background:var(--sd-success-bg)}.sd-console .dgd-result-danger{color:var(--sd-danger);background:var(--sd-danger-bg)}.sd-console .dgd-result span{color:var(--sd-ink)}
+.sd-console .dgd-foot{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding-top:12px;border-top:1px solid var(--sd-soft-line)}.sd-console .dgd-checked{flex:1;min-width:0;font-size:12px;color:var(--sd-muted)}
+.sd-console .dgd-blocked{font-size:12px;color:var(--sd-muted);text-align:right}
+/* The first load uses the kit Skeleton; the card itself does not rise until it has values. */
+.sd-console .dgd-pending{animation:none}
+@media(max-width:650px){.sd-console .dgd-installed strong{font-size:24px}.sd-console .dgd-blocked{text-align:left}}
+@media(prefers-reduced-motion:reduce){.sd-console .dgd-card,.sd-console .dgd-card *{animation:none;transition:none}}

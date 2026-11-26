@@ -1,0 +1,125 @@
+name: serverdesk-dev
+services:
+  # PostgreSQL 17 without a published port; only the app reaches it: db is only
+  # on the internal network "database", which only the app-image service joins.
+  db:
+    image: postgres:17-alpine
+    networks: [database]
+    environment:
+      POSTGRES_USER: serverdesk
+      POSTGRES_DB: serverdesk
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?Set DATABASE_PASSWORD in .env.runtime}
+    volumes:
+      - dev-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "serverdesk", "-d", "serverdesk"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    security_opt:
+      - no-new-privileges:true
+
+  app:
+    build:
+      context: .
+      target: development
+    init: true
+    env_file: .env.runtime
+    environment:
+      NODE_ENV: development
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+      SITE_ORIGIN: ${SITE_ORIGIN:-https://localhost:8443}
+      DATABASE_URL: postgres://serverdesk@db:5432/serverdesk
+      OBJECT_STORAGE_DRIVER: filesystem
+      OBJECT_STORAGE_PATH: /data/objects
+      TRUSTED_CLIENT_IP_HEADER: x-serverdesk-client-ip
+      WATCHPACK_POLLING: "true"
+      # The public root of Caddy's local CA, written by ca-export; missing with a public certificate.
+      PORTAL_CA_FILE: /portal-ca/root.crt
+    expose:
+      - "3000"
+    # default: the proxy and outbound access; database: the db service.
+    networks: [default, database]
+    volumes:
+      - .:/app
+      - dev-node-modules:/app/node_modules
+      - dev-next:/app/.next
+      - dev-data:/data
+      - dev-portal-ca:/portal-ca:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+  proxy:
+    image: caddy:2.10-alpine
+    ports:
+      - "127.0.0.1:${CADDY_HTTP_PORT:-8080}:80"
+      - "127.0.0.1:${CADDY_HTTPS_PORT:-8443}:443"
+    environment:
+      CADDY_ADDRESS: ${CADDY_ADDRESS:-https://localhost}
+      CADDY_SERVER_NAME: ${CADDY_SERVER_NAME:-localhost}
+      SITE_ORIGIN: ${SITE_ORIGIN:-https://localhost:8443}
+      CADDY_TLS: ${CADDY_TLS:-internal}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - dev-caddy-data:/data
+      - dev-caddy-config:/config
+    depends_on:
+      - app
+
+  # Copies only the public root certificate of Caddy's local CA (tls internal)
+  # into the volume dev-portal-ca, which the app mounts read-only (PORTAL_CA_FILE).
+  # Install scripts embed it and offer its import (docs/self-hosting.md, "HTTPS
+  # with the local Caddy CA"). Same image as the proxy, no network, read-only
+  # access to Caddy's data; it never reads the private key or the intermediate.
+  # With another CADDY_TLS value (a public certificate) it removes the copy.
+  ca-export:
+    image: caddy:2.10-alpine
+    init: true
+    restart: unless-stopped
+    network_mode: none
+    # The script writes only to the /export volume.
+    read_only: true
+    environment:
+      CADDY_TLS: ${CADDY_TLS:-internal}
+    volumes:
+      - dev-caddy-data:/caddy:ro
+      - dev-portal-ca:/export
+    # $$ keeps Compose from interpolating; the shell reads the variables.
+    command:
+      - /bin/sh
+      - -c
+      - |
+        source=/caddy/caddy/pki/authorities/local/root.crt
+        while :; do
+          if [ "$$CADDY_TLS" = internal ] && [ -f "$$source" ]; then
+            if ! cmp -s "$$source" /export/root.crt; then
+              cp "$$source" /export/root.crt.tmp && chmod 0644 /export/root.crt.tmp && mv -f /export/root.crt.tmp /export/root.crt
+            fi
+          else
+            rm -f /export/root.crt /export/root.crt.tmp
+          fi
+          sleep 60
+        done
+    depends_on:
+      - proxy
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+# Internal: no outbound access, and only the services that list it can connect.
+networks:
+  database:
+    internal: true
+
+volumes:
+  dev-db-data:
+  dev-node-modules:
+  dev-next:
+  dev-data:
+  dev-caddy-data:
+  dev-caddy-config:
+  dev-portal-ca:

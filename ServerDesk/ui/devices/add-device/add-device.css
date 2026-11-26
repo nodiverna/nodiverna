@@ -1,0 +1,41 @@
+/* The page Add device (ui/devices/add-device/add-device.tsx, add-device-installers.tsx): the tab bar, the steps of
+   "One device" and the installer list of "Several devices". Colours only from --sd-* tokens, spacing on
+   the 4px grid; the steps, commands, copy values and the table are kit parts (ui/styles/console.css). */
+
+.sdx-add-device-page { display: grid; gap: var(--sd-space-4); min-width: 0; }
+.sdx-add-device-panel { min-width: 0; }
+.sdx-add-device { display: grid; gap: var(--sd-space-4); min-width: 0; max-width: 820px; }
+.sdx-add-device-installers { max-width: none; }
+
+/* One device: the steps are the focal point, in one card. */
+.sdx-card.sdx-add-device-steps > .sdx-steps { margin: var(--sd-space-4); }
+.sdx-add-device-steps .sdx-step-body > p { margin: 0; color: var(--sd-muted); }
+.sdx-add-device-form { max-width: 520px; }
+.sdx-add-device-note { margin: 0; color: var(--sd-muted); font-size: 12px; }
+.sdx-add-device-form .sdx-form-actions { justify-content: flex-start; }
+.sdx-add-device-done { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sd-space-2) var(--sd-space-3); }
+.sdx-add-device-done > p { margin: 0; color: var(--sd-ink); font-weight: 600; }
+.sdx-add-device-download { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sd-space-2) var(--sd-space-3); }
+.sdx-add-device-download > .mono { color: var(--sd-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.sdx-add-device-steps .sdx-step-body > .sdx-card { margin-top: var(--sd-space-1); }
+.sdx-add-device-repair { display: grid; gap: var(--sd-space-2); padding: var(--sd-space-3) 0; }
+.sdx-add-device-repair > p { margin: 0; color: var(--sd-muted); }
+
+/* Step 4: the waiting pill, then the success state; the change cross-fades (reduced motion: at once, motion.css). */
+.sdx-add-device-wait > p { margin: 0; color: var(--sd-muted); }
+.sdx-add-device-state { display: grid; justify-items: start; gap: var(--sd-space-2); animation: sdx-fade var(--sd-dur) var(--sd-ease-out); }
+.sdx-add-device-state > p { margin: 0; color: var(--sd-muted); }
+.sdx-add-device-state a, .sdx-add-device-page .sdx-notice a:not(.sdx-btn) { color: var(--sd-accent-strong); font-weight: 600; text-underline-offset: 2px; }
+.sdx-add-device-online { grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--sd-space-3); padding: var(--sd-space-3); border: 1px solid color-mix(in srgb, var(--sd-success) 24%, var(--sd-line)); border-radius: var(--sd-radius); background: color-mix(in srgb, var(--sd-success-bg) 60%, var(--sd-panel)); }
+.sdx-add-device-online strong { display: block; color: var(--sd-ink); font-size: 14px; font-weight: 650; }
+.sdx-add-device-online p { margin: 0; color: var(--sd-muted); font-size: 12px; }
+
+/* Several devices: the customer choice above the list, the meter beside the device count. */
+.sdx-add-device-customer { max-width: 360px; }
+.sdx-installer-devices { display: inline-flex; align-items: center; gap: var(--sd-space-2); }
+.sdx-installer-devices .sdx-meter { width: 56px; }
+
+@media (max-width: 760px) {
+  .sdx-add-device-online { grid-template-columns: auto minmax(0, 1fr); }
+  .sdx-add-device-online > .sdx-btn { grid-column: 1 / -1; justify-self: start; }
+}

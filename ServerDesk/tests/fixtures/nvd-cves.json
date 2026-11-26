@@ -1,0 +1,3975 @@
+{
+ "fetchedAt": "2026-11-04",
+ "source": "https://services.nvd.nist.gov/rest/json/cves/2.0?cveId=<id>, the verbatim cve objects",
+ "cves": [
+  {
+   "id": "CVE-2012-4929",
+   "sourceIdentifier": "cve@mitre.org",
+   "published": "2012-09-15T18:55:03.187",
+   "lastModified": "2026-06-16T23:45:55.193",
+   "vulnStatus": "Modified",
+   "cveTags": [],
+   "descriptions": [
+    {
+     "lang": "en",
+     "value": "The TLS protocol 1.2 and earlier, as used in Mozilla Firefox, Google Chrome, Qt, and other products, can encrypt compressed data without properly obfuscating the length of the unencrypted data, which allows man-in-the-middle attackers to obtain plaintext HTTP headers by observing length differences during a series of guesses in which a string in an HTTP request potentially matches an unknown string in an HTTP header, aka a \"CRIME\" attack."
+    },
+    {
+     "lang": "es",
+     "value": "El protocolo TLS 1.2 y versiones anteriores, como el usado en Mozilla Firefox, Google Chrome, y otros productos, puede hacer cifrados TLS de datos comprimidos sin ofuscar de forma adecuada la longitud de los datos no cifrado, lo que permte a atacantes man-in-the-middle obtener cabeceras HTTP en texto plano observando las diferencias de longitud durante una serie de previsiones en la cual una cadena en una petición HTTP potencialmente coincide con una cadena desconocida en una cabecera HTPP, también conocido como ataque \"CRIME\"."
+    }
+   ],
+   "affected": [
+    {
+     "source": "cve@mitre.org",
+     "affectedData": [
+      {
+       "vendor": "n/a",
+       "product": "n/a",
+       "versions": [
+        {
+         "version": "n/a",
+         "status": "affected"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "metrics": {
+    "cvssMetricV2": [
+     {
+      "source": "nvd@nist.gov",
+      "type": "Primary",
+      "cvssData": {
+       "version": "2.0",
+       "vectorString": "AV:N/AC:H/Au:N/C:P/I:N/A:N",
+       "baseScore": 2.6,
+       "accessVector": "NETWORK",
+       "accessComplexity": "HIGH",
+       "authentication": "NONE",
+       "confidentialityImpact": "PARTIAL",
+       "integrityImpact": "NONE",
+       "availabilityImpact": "NONE"
+      },
+      "baseSeverity": "LOW",
+      "exploitabilityScore": 4.9,
+      "impactScore": 2.9,
+      "acInsufInfo": false,
+      "obtainAllPrivilege": false,
+      "obtainUserPrivilege": false,
+      "obtainOtherPrivilege": false,
+      "userInteractionRequired": false
+     }
+    ]
+   },
+   "weaknesses": [
+    {
+     "source": "nvd@nist.gov",
+     "type": "Primary",
+     "description": [
+      {
+       "lang": "en",
+       "value": "CWE-310"
+      }
+     ]
+    }
+   ],
+   "configurations": [
+    {
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:o:debian:debian_linux:7.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "16F59A04-14CF-49E2-9973-645477EA09DA"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:o:debian:debian_linux:8.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "C11E6FB0-C8C0-4527-9AA0-CB9B316F8F43"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:*:*:*:*:*:*:*:*",
+         "matchCriteriaId": "07E9B637-69D8-4E4F-8896-F8F14CC55E03"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:mozilla:firefox:*:*:*:*:*:*:*:*",
+         "matchCriteriaId": "14E6A30E-7577-4569-9309-53A0AF7FE3AC"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "references": [
+    {
+     "url": "http://arstechnica.com/security/2012/09/crime-hijacks-https-sessions/",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://code.google.com/p/chromium/issues/detail?id=139744",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://isecpartners.com/blog/2012/9/14/details-on-the-crime-attack.html",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://jvn.jp/en/jp/JVN65273415/index.html",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://jvndb.jvn.jp/en/contents/2016/JVNDB-2016-000129.html",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://lists.apple.com/archives/security-announce/2013/Jun/msg00000.html",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://lists.fedoraproject.org/pipermail/package-announce/2013-April/101366.html",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://lists.opensuse.org/opensuse-updates/2012-10/msg00096.html",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://lists.opensuse.org/opensuse-updates/2013-01/msg00034.html",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://lists.opensuse.org/opensuse-updates/2013-01/msg00048.html",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://marc.info/?l=bugtraq&m=136612293908376&w=2",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://news.ycombinator.com/item?id=4510829",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://rhn.redhat.com/errata/RHSA-2013-0587.html",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://security.stackexchange.com/questions/19911/crime-how-to-beat-the-beast-successor",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://support.apple.com/kb/HT5784",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://threatpost.com/en_us/blogs/crime-attack-uses-compression-ratio-tls-requests-side-channel-hijack-secure-sessions-091312",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://threatpost.com/en_us/blogs/new-attack-uses-ssltls-information-leak-hijack-https-sessions-090512",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.debian.org/security/2012/dsa-2579",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.debian.org/security/2013/dsa-2627",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.debian.org/security/2015/dsa-3253",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.ekoparty.org/2012/thai-duong.php",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.iacr.org/cryptodb/data/paper.php?pubkey=3091",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.securityfocus.com/bid/55704",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.theregister.co.uk/2012/09/14/crime_tls_attack/",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.ubuntu.com/usn/USN-1627-1",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.ubuntu.com/usn/USN-1628-1",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.ubuntu.com/usn/USN-1898-1",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "https://bugzilla.redhat.com/show_bug.cgi?id=857051",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "https://chromiumcodereview.appspot.com/10825183",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "https://community.qualys.com/blogs/securitylabs/2012/09/14/crime-information-leakage-attack-against-ssltls",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "https://gist.github.com/3696912",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "https://github.com/mpgn/CRIME-poc",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A18920",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "https://threatpost.com/en_us/blogs/demo-crime-tls-attack-091212",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://arstechnica.com/security/2012/09/crime-hijacks-https-sessions/",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://code.google.com/p/chromium/issues/detail?id=139744",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://isecpartners.com/blog/2012/9/14/details-on-the-crime-attack.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://jvn.jp/en/jp/JVN65273415/index.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://jvndb.jvn.jp/en/contents/2016/JVNDB-2016-000129.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://lists.apple.com/archives/security-announce/2013/Jun/msg00000.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://lists.fedoraproject.org/pipermail/package-announce/2013-April/101366.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://lists.opensuse.org/opensuse-updates/2012-10/msg00096.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://lists.opensuse.org/opensuse-updates/2013-01/msg00034.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://lists.opensuse.org/opensuse-updates/2013-01/msg00048.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://marc.info/?l=bugtraq&m=136612293908376&w=2",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://news.ycombinator.com/item?id=4510829",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://rhn.redhat.com/errata/RHSA-2013-0587.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://security.stackexchange.com/questions/19911/crime-how-to-beat-the-beast-successor",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://support.apple.com/kb/HT5784",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://threatpost.com/en_us/blogs/crime-attack-uses-compression-ratio-tls-requests-side-channel-hijack-secure-sessions-091312",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://threatpost.com/en_us/blogs/new-attack-uses-ssltls-information-leak-hijack-https-sessions-090512",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.debian.org/security/2012/dsa-2579",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.debian.org/security/2013/dsa-2627",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.debian.org/security/2015/dsa-3253",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.ekoparty.org/2012/thai-duong.php",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.iacr.org/cryptodb/data/paper.php?pubkey=3091",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.securityfocus.com/bid/55704",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.theregister.co.uk/2012/09/14/crime_tls_attack/",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.ubuntu.com/usn/USN-1627-1",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.ubuntu.com/usn/USN-1628-1",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.ubuntu.com/usn/USN-1898-1",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "https://bugzilla.redhat.com/show_bug.cgi?id=857051",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "https://chromiumcodereview.appspot.com/10825183",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "https://community.qualys.com/blogs/securitylabs/2012/09/14/crime-information-leakage-attack-against-ssltls",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "https://gist.github.com/3696912",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "https://github.com/mpgn/CRIME-poc",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A18920",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "https://threatpost.com/en_us/blogs/demo-crime-tls-attack-091212",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    }
+   ]
+  },
+  {
+   "id": "CVE-2012-4930",
+   "sourceIdentifier": "cve@mitre.org",
+   "published": "2012-09-15T18:55:03.250",
+   "lastModified": "2026-06-16T23:45:55.440",
+   "vulnStatus": "Modified",
+   "cveTags": [],
+   "descriptions": [
+    {
+     "lang": "en",
+     "value": "The SPDY protocol 3 and earlier, as used in Mozilla Firefox, Google Chrome, and other products, can perform TLS encryption of compressed data without properly obfuscating the length of the unencrypted data, which allows man-in-the-middle attackers to obtain plaintext HTTP headers by observing length differences during a series of guesses in which a string in an HTTP request potentially matches an unknown string in an HTTP header, aka a \"CRIME\" attack."
+    },
+    {
+     "lang": "es",
+     "value": "El protocolo SPDY 3 y anteriores, como el usado en Mozilla Firefox, Google Chrome, y otros productos, puede hacer cifrados TLS de datos comprimidos sin ofuscar de forma adecuada la longitud de los datos no cifrado, lo que permte a atacantes man-in-the-middle obtener cabeceras HTTP en texto plano observando las diferencias de longitud durante una serie de previsiones en la cual una cadena en una petición HTTP potencialmente coincide con una cadena desconocida en una cabecera HTPP, también conocido como ataque \"CRIME\"."
+    }
+   ],
+   "affected": [
+    {
+     "source": "cve@mitre.org",
+     "affectedData": [
+      {
+       "vendor": "n/a",
+       "product": "n/a",
+       "versions": [
+        {
+         "version": "n/a",
+         "status": "affected"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "metrics": {
+    "cvssMetricV2": [
+     {
+      "source": "nvd@nist.gov",
+      "type": "Primary",
+      "cvssData": {
+       "version": "2.0",
+       "vectorString": "AV:N/AC:H/Au:N/C:P/I:N/A:N",
+       "baseScore": 2.6,
+       "accessVector": "NETWORK",
+       "accessComplexity": "HIGH",
+       "authentication": "NONE",
+       "confidentialityImpact": "PARTIAL",
+       "integrityImpact": "NONE",
+       "availabilityImpact": "NONE"
+      },
+      "baseSeverity": "LOW",
+      "exploitabilityScore": 4.9,
+      "impactScore": 2.9,
+      "acInsufInfo": false,
+      "obtainAllPrivilege": false,
+      "obtainUserPrivilege": false,
+      "obtainOtherPrivilege": false,
+      "userInteractionRequired": true
+     }
+    ]
+   },
+   "weaknesses": [
+    {
+     "source": "nvd@nist.gov",
+     "type": "Primary",
+     "description": [
+      {
+       "lang": "en",
+       "value": "CWE-310"
+      }
+     ]
+    }
+   ],
+   "configurations": [
+    {
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:*:*:*:*:*:*:*:*",
+         "matchCriteriaId": "07E9B637-69D8-4E4F-8896-F8F14CC55E03"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:mozilla:firefox:*:*:*:*:*:*:*:*",
+         "matchCriteriaId": "14E6A30E-7577-4569-9309-53A0AF7FE3AC"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "references": [
+    {
+     "url": "http://arstechnica.com/security/2012/09/crime-hijacks-https-sessions/",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://isecpartners.com/blog/2012/9/14/details-on-the-crime-attack.html",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://lists.opensuse.org/opensuse-security-announce/2012-10/msg00010.html",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://threatpost.com/en_us/blogs/crime-attack-uses-compression-ratio-tls-requests-side-channel-hijack-secure-sessions-091312",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.ekoparty.org/2012/thai-duong.php",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.iacr.org/cryptodb/data/paper.php?pubkey=3091",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.theregister.co.uk/2012/09/14/crime_tls_attack/",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "https://bugzilla.redhat.com/show_bug.cgi?id=857737",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "https://community.qualys.com/blogs/securitylabs/2012/09/14/crime-information-leakage-attack-against-ssltls",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://arstechnica.com/security/2012/09/crime-hijacks-https-sessions/",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://isecpartners.com/blog/2012/9/14/details-on-the-crime-attack.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://lists.opensuse.org/opensuse-security-announce/2012-10/msg00010.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://threatpost.com/en_us/blogs/crime-attack-uses-compression-ratio-tls-requests-side-channel-hijack-secure-sessions-091312",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.ekoparty.org/2012/thai-duong.php",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.iacr.org/cryptodb/data/paper.php?pubkey=3091",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.theregister.co.uk/2012/09/14/crime_tls_attack/",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "https://bugzilla.redhat.com/show_bug.cgi?id=857737",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "https://community.qualys.com/blogs/securitylabs/2012/09/14/crime-information-leakage-attack-against-ssltls",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    }
+   ]
+  },
+  {
+   "id": "CVE-2016-7152",
+   "sourceIdentifier": "cve@mitre.org",
+   "published": "2016-09-06T10:59:00.133",
+   "lastModified": "2026-06-17T00:52:41.570",
+   "vulnStatus": "Modified",
+   "cveTags": [],
+   "descriptions": [
+    {
+     "lang": "en",
+     "value": "The HTTPS protocol does not consider the role of the TCP congestion window in providing information about content length, which makes it easier for remote attackers to obtain cleartext data by leveraging a web-browser configuration in which third-party cookies are sent, aka a \"HEIST\" attack."
+    },
+    {
+     "lang": "es",
+     "value": "El protocolo HTTPS no considera el rol de la ventana de congestión TCP cuando da información sobre longitud del contenido, lo que facilita a atacantes remotos obtener datos en texto plano aprovechando una configuración de navegador web donde son enviadas cookies de terceros, también conocido como ataque \"HEIST\"."
+    }
+   ],
+   "affected": [
+    {
+     "source": "cve@mitre.org",
+     "affectedData": [
+      {
+       "vendor": "n/a",
+       "product": "n/a",
+       "versions": [
+        {
+         "version": "n/a",
+         "status": "affected"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "metrics": {
+    "cvssMetricV30": [
+     {
+      "source": "nvd@nist.gov",
+      "type": "Primary",
+      "cvssData": {
+       "version": "3.0",
+       "vectorString": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
+       "baseScore": 5.3,
+       "baseSeverity": "MEDIUM",
+       "attackVector": "NETWORK",
+       "attackComplexity": "LOW",
+       "privilegesRequired": "NONE",
+       "userInteraction": "NONE",
+       "scope": "UNCHANGED",
+       "confidentialityImpact": "LOW",
+       "integrityImpact": "NONE",
+       "availabilityImpact": "NONE"
+      },
+      "exploitabilityScore": 3.9,
+      "impactScore": 1.4
+     }
+    ],
+    "cvssMetricV2": [
+     {
+      "source": "nvd@nist.gov",
+      "type": "Primary",
+      "cvssData": {
+       "version": "2.0",
+       "vectorString": "AV:N/AC:L/Au:N/C:P/I:N/A:N",
+       "baseScore": 5,
+       "accessVector": "NETWORK",
+       "accessComplexity": "LOW",
+       "authentication": "NONE",
+       "confidentialityImpact": "PARTIAL",
+       "integrityImpact": "NONE",
+       "availabilityImpact": "NONE"
+      },
+      "baseSeverity": "MEDIUM",
+      "exploitabilityScore": 10,
+      "impactScore": 2.9,
+      "acInsufInfo": false,
+      "obtainAllPrivilege": false,
+      "obtainUserPrivilege": false,
+      "obtainOtherPrivilege": false,
+      "userInteractionRequired": false
+     }
+    ]
+   },
+   "weaknesses": [
+    {
+     "source": "nvd@nist.gov",
+     "type": "Primary",
+     "description": [
+      {
+       "lang": "en",
+       "value": "CWE-200"
+      }
+     ]
+    }
+   ],
+   "configurations": [
+    {
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:opera:opera:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "9E2045F5-B973-49F1-8FFD-778BADCEC00F"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:apple:safari:*:*:*:*:*:*:*:*",
+         "matchCriteriaId": "AE370CAA-04B3-434E-BD5B-1D87DE596C10"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:mozilla:firefox:*:*:*:*:*:*:*:*",
+         "matchCriteriaId": "14E6A30E-7577-4569-9309-53A0AF7FE3AC"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:microsoft:edge:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "77D197D7-57FB-4898-8C70-B19D5F0D5BE0"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:microsoft:internet_explorer:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "C37BA825-679F-4257-9F2B-CE2318B75396"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "39B565E1-C2F1-44FC-A517-E3130332B17C"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "references": [
+    {
+     "url": "http://arstechnica.com/security/2016/08/new-attack-steals-ssns-e-mail-addresses-and-more-from-https-pages/",
+     "source": "cve@mitre.org",
+     "tags": [
+      "Technical Description"
+     ]
+    },
+    {
+     "url": "http://www.securityfocus.com/bid/92769",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.securitytracker.com/id/1036741",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.securitytracker.com/id/1036742",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.securitytracker.com/id/1036743",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.securitytracker.com/id/1036744",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.securitytracker.com/id/1036745",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.securitytracker.com/id/1036746",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "https://tom.vg/papers/heist_blackhat2016.pdf",
+     "source": "cve@mitre.org",
+     "tags": [
+      "Technical Description"
+     ]
+    },
+    {
+     "url": "http://arstechnica.com/security/2016/08/new-attack-steals-ssns-e-mail-addresses-and-more-from-https-pages/",
+     "source": "af854a3a-2127-422b-91ae-364da2661108",
+     "tags": [
+      "Technical Description"
+     ]
+    },
+    {
+     "url": "http://www.securityfocus.com/bid/92769",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.securitytracker.com/id/1036741",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.securitytracker.com/id/1036742",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.securitytracker.com/id/1036743",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.securitytracker.com/id/1036744",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.securitytracker.com/id/1036745",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.securitytracker.com/id/1036746",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "https://tom.vg/papers/heist_blackhat2016.pdf",
+     "source": "af854a3a-2127-422b-91ae-364da2661108",
+     "tags": [
+      "Technical Description"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "CVE-2009-1597",
+   "sourceIdentifier": "cve@mitre.org",
+   "published": "2009-05-11T15:30:00.437",
+   "lastModified": "2026-06-16T23:07:36.547",
+   "vulnStatus": "Modified",
+   "cveTags": [],
+   "descriptions": [
+    {
+     "lang": "en",
+     "value": "Mozilla Firefox executes DOM calls in response to a javascript: URI in the target attribute of a submit element within a form contained in an inline PDF file, which might allow remote attackers to bypass intended Adobe Acrobat JavaScript restrictions on accessing the document object, as demonstrated by a web site that permits PDF uploads by untrusted users, and therefore has a shared document.domain between the web site and this javascript: URI.  NOTE: the researcher reports that Adobe's position is \"a PDF file is active content.\""
+    },
+    {
+     "lang": "es",
+     "value": "Mozilla Firefox ejecuta llamadas a DOM en respuesta a un \"javascript: URI\" en el atributo target de un elemento submit en un formulario contenido en un fichero PDF, lo que podría permitir a atacantes remotos eludir las restricciones JavaScript al acceder al objeto de documento, como lo demuestran un sitio web que permite subir archivos PDF por usuarios no confiables, y por lo tanto disponer de un document.domain compartido entre el sitio web y este \"javascript: URI\". NOTA: El investigador informa de que la posición de Adobe es \"un archivo PDF es contenido activo\"."
+    }
+   ],
+   "affected": [
+    {
+     "source": "cve@mitre.org",
+     "affectedData": [
+      {
+       "vendor": "n/a",
+       "product": "n/a",
+       "versions": [
+        {
+         "version": "n/a",
+         "status": "affected"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "metrics": {
+    "cvssMetricV2": [
+     {
+      "source": "nvd@nist.gov",
+      "type": "Primary",
+      "cvssData": {
+       "version": "2.0",
+       "vectorString": "AV:N/AC:M/Au:N/C:C/I:C/A:C",
+       "baseScore": 9.3,
+       "accessVector": "NETWORK",
+       "accessComplexity": "MEDIUM",
+       "authentication": "NONE",
+       "confidentialityImpact": "COMPLETE",
+       "integrityImpact": "COMPLETE",
+       "availabilityImpact": "COMPLETE"
+      },
+      "baseSeverity": "HIGH",
+      "exploitabilityScore": 8.6,
+      "impactScore": 10,
+      "acInsufInfo": false,
+      "obtainAllPrivilege": false,
+      "obtainUserPrivilege": false,
+      "obtainOtherPrivilege": false,
+      "userInteractionRequired": true
+     }
+    ]
+   },
+   "weaknesses": [
+    {
+     "source": "nvd@nist.gov",
+     "type": "Primary",
+     "description": [
+      {
+       "lang": "en",
+       "value": "CWE-264"
+      }
+     ]
+    }
+   ],
+   "configurations": [
+    {
+     "operator": "AND",
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:mozilla:firefox:*:*:*:*:*:*:*:*",
+         "matchCriteriaId": "14E6A30E-7577-4569-9309-53A0AF7FE3AC"
+        }
+       ]
+      },
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": false,
+         "criteria": "cpe:2.3:a:adobe:acrobat_reader:7.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "6E2D0266-6954-4DBA-9EEE-8BF73B39DD61"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "references": [
+    {
+     "url": "http://secniche.org/papers/SNS_09_03_PDF_Silent_Form_Re_Purp_Attack.pdf",
+     "source": "cve@mitre.org",
+     "tags": [
+      "Exploit"
+     ]
+    },
+    {
+     "url": "http://www.securityfocus.com/archive/1/503183/100/0/threaded",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://secniche.org/papers/SNS_09_03_PDF_Silent_Form_Re_Purp_Attack.pdf",
+     "source": "af854a3a-2127-422b-91ae-364da2661108",
+     "tags": [
+      "Exploit"
+     ]
+    },
+    {
+     "url": "http://www.securityfocus.com/archive/1/503183/100/0/threaded",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    }
+   ]
+  },
+  {
+   "id": "CVE-2014-4199",
+   "sourceIdentifier": "cve@mitre.org",
+   "published": "2014-08-28T15:14:09.127",
+   "lastModified": "2026-06-17T00:09:34.233",
+   "vulnStatus": "Modified",
+   "cveTags": [],
+   "descriptions": [
+    {
+     "lang": "en",
+     "value": "vm-support 0.88 in VMware Tools, as distributed with VMware Workstation through 10.0.3 and other products, allows local users to write to arbitrary files via a symlink attack on a file in /tmp."
+    },
+    {
+     "lang": "es",
+     "value": "vm-support 0.88 en VMware Tools, distribuido con VMware Workstation hasta 10.0.3 y otros productos, permite a usuarios locales escribir a ficheros arbitrarios a través de un ataque de enlace simbólico sobre un fichero en /tmp."
+    }
+   ],
+   "affected": [
+    {
+     "source": "cve@mitre.org",
+     "affectedData": [
+      {
+       "vendor": "n/a",
+       "product": "n/a",
+       "versions": [
+        {
+         "version": "n/a",
+         "status": "affected"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "metrics": {
+    "cvssMetricV2": [
+     {
+      "source": "nvd@nist.gov",
+      "type": "Primary",
+      "cvssData": {
+       "version": "2.0",
+       "vectorString": "AV:L/AC:M/Au:N/C:N/I:C/A:C",
+       "baseScore": 6.3,
+       "accessVector": "LOCAL",
+       "accessComplexity": "MEDIUM",
+       "authentication": "NONE",
+       "confidentialityImpact": "NONE",
+       "integrityImpact": "COMPLETE",
+       "availabilityImpact": "COMPLETE"
+      },
+      "baseSeverity": "MEDIUM",
+      "exploitabilityScore": 3.4,
+      "impactScore": 9.2,
+      "acInsufInfo": false,
+      "obtainAllPrivilege": false,
+      "obtainUserPrivilege": false,
+      "obtainOtherPrivilege": false,
+      "userInteractionRequired": false
+     }
+    ]
+   },
+   "weaknesses": [
+    {
+     "source": "nvd@nist.gov",
+     "type": "Primary",
+     "description": [
+      {
+       "lang": "en",
+       "value": "CWE-59"
+      }
+     ]
+    }
+   ],
+   "configurations": [
+    {
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:vmware:tools:*:*:*:*:*:*:*:*",
+         "matchCriteriaId": "2D9449DF-743A-4518-B250-D75469CDAA84"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:vmware:vm-support:0.88:*:*:*:*:*:*:*",
+         "matchCriteriaId": "5787AC67-DC64-46E3-A9FE-98C2E36478E4"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:vmware:workstation:*:*:*:*:*:*:*:*",
+         "versionEndIncluding": "10.0.3",
+         "matchCriteriaId": "2555BC63-D2A7-4D8E-A5E9-C502A00DD753"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:vmware:workstation:10.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "8D0119B9-916C-4A98-8542-10FFC4F71C80"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:vmware:workstation:10.0.1:*:*:*:*:*:*:*",
+         "matchCriteriaId": "35CA413B-AB24-4884-A052-2A30A0CA4E7D"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:vmware:workstation:10.0.2:*:*:*:*:*:*:*",
+         "matchCriteriaId": "D4B2275C-913F-43D9-8146-0B0CD737E485"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "references": [
+    {
+     "url": "http://seclists.org/fulldisclosure/2014/Aug/71",
+     "source": "cve@mitre.org",
+     "tags": [
+      "Exploit"
+     ]
+    },
+    {
+     "url": "http://www.osvdb.org/110458",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.securitytracker.com/id/1030758",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "https://exchange.xforce.ibmcloud.com/vulnerabilities/95493",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://seclists.org/fulldisclosure/2014/Aug/71",
+     "source": "af854a3a-2127-422b-91ae-364da2661108",
+     "tags": [
+      "Exploit"
+     ]
+    },
+    {
+     "url": "http://www.osvdb.org/110458",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.securitytracker.com/id/1030758",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "https://exchange.xforce.ibmcloud.com/vulnerabilities/95493",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    }
+   ]
+  },
+  {
+   "id": "CVE-2026-6919",
+   "sourceIdentifier": "chrome-cve-admin@google.com",
+   "published": "2026-04-23T18:16:30.520",
+   "lastModified": "2026-10-26T21:10:00.170",
+   "vulnStatus": "Modified",
+   "cveTags": [],
+   "descriptions": [
+    {
+     "lang": "en",
+     "value": "Use after free in DevTools in Google Chrome prior to 147.0.7727.117 allowed a remote attacker who had compromised the renderer process to potentially perform a sandbox escape via a crafted HTML page. (Chromium security severity: High)"
+    },
+    {
+     "lang": "es",
+     "value": "Uso después de liberar en DevTools en Google Chrome anterior a la versión 147.0.7727.117 permitió a un atacante remoto que había comprometido el proceso de renderizado realizar potencialmente un escape de sandbox a través de una página HTML diseñada específicamente. (Gravedad de seguridad de Chromium: Alta)"
+    }
+   ],
+   "affected": [
+    {
+     "source": "chrome-cve-admin@google.com",
+     "affectedData": [
+      {
+       "vendor": "Google",
+       "product": "Chrome",
+       "versions": [
+        {
+         "version": "147.0.7727.117",
+         "lessThan": "147.0.7727.117",
+         "versionType": "custom",
+         "status": "affected"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "metrics": {
+    "cvssMetricV31": [
+     {
+      "source": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+      "type": "Secondary",
+      "cvssData": {
+       "version": "3.1",
+       "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:H",
+       "baseScore": 9.6,
+       "baseSeverity": "CRITICAL",
+       "attackVector": "NETWORK",
+       "attackComplexity": "LOW",
+       "privilegesRequired": "NONE",
+       "userInteraction": "REQUIRED",
+       "scope": "CHANGED",
+       "confidentialityImpact": "HIGH",
+       "integrityImpact": "HIGH",
+       "availabilityImpact": "HIGH"
+      },
+      "exploitabilityScore": 2.8,
+      "impactScore": 6
+     }
+    ],
+    "ssvcV203": [
+     {
+      "source": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+      "ssvcData": {
+       "timestamp": "2026-04-24T03:55:30.566874Z",
+       "id": "CVE-2026-6919",
+       "options": [
+        {
+         "exploitation": "none"
+        },
+        {
+         "automatable": "no"
+        },
+        {
+         "technicalImpact": "total"
+        }
+       ],
+       "role": "CISA Coordinator",
+       "version": "2.0.3"
+      }
+     }
+    ]
+   },
+   "weaknesses": [
+    {
+     "source": "chrome-cve-admin@google.com",
+     "type": "Secondary",
+     "description": [
+      {
+       "lang": "en",
+       "value": "CWE-416"
+      }
+     ]
+    },
+    {
+     "source": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+     "type": "Secondary",
+     "description": [
+      {
+       "lang": "en",
+       "value": "CWE-416"
+      }
+     ]
+    }
+   ],
+   "configurations": [
+    {
+     "operator": "AND",
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:*:*:*:*:*:*:*:*",
+         "versionEndExcluding": "147.0.7727.116",
+         "matchCriteriaId": "AB75176F-0FDC-47BF-A48D-D5F26FACD347"
+        }
+       ]
+      },
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": false,
+         "criteria": "cpe:2.3:o:google:android:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "F8B9FEC8-73B6-43B8-B24E-1F7C20D91D26"
+        },
+        {
+         "vulnerable": false,
+         "criteria": "cpe:2.3:o:linux:linux_kernel:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "703AF700-7A70-47E2-BC3A-7FD03B3CA9C1"
+        },
+        {
+         "vulnerable": false,
+         "criteria": "cpe:2.3:o:microsoft:windows:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "A2572D17-1DE6-457B-99CC-64AFD54487EA"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "references": [
+    {
+     "url": "https://chromereleases.googleblog.com/2026/04/stable-channel-update-for-desktop_22.html",
+     "source": "chrome-cve-admin@google.com",
+     "tags": [
+      "Release Notes"
+     ]
+    },
+    {
+     "url": "https://issues.chromium.org/issues/493652473",
+     "source": "chrome-cve-admin@google.com",
+     "tags": [
+      "Permissions Required",
+      "Vendor Advisory"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "CVE-2015-1209",
+   "sourceIdentifier": "chrome-cve-admin@google.com",
+   "published": "2015-02-06T11:59:07.497",
+   "lastModified": "2026-06-17T00:21:57.457",
+   "vulnStatus": "Modified",
+   "cveTags": [],
+   "descriptions": [
+    {
+     "lang": "en",
+     "value": "Use-after-free vulnerability in the VisibleSelection::nonBoundaryShadowTreeRootNode function in core/editing/VisibleSelection.cpp in the DOM implementation in Blink, as used in Google Chrome before 40.0.2214.111 on Windows, OS X, and Linux and before 40.0.2214.109 on Android, allows remote attackers to cause a denial of service or possibly have unspecified other impact via crafted JavaScript code that triggers improper handling of a shadow-root anchor."
+    },
+    {
+     "lang": "es",
+     "value": "Vulnerabilidad de uso después de liberación en la función VisibleSelection::nonBoundaryShadowTreeRootNode en core/editing/VisibleSelection.cpp en la implementación DOM en Blink, utilizado en Google Chrome anterior a 40.0.2214.111 en Windows, OS X, y Linux y anterior a 40.0.2214.109 en Android, permite a atacantes remotos causar una denegación de servicio o posiblemente tener otro impacto no especificado a través de código JavaScript manipulado que provoca el manejo incorrecto de una ancla shadow-root."
+    }
+   ],
+   "affected": [
+    {
+     "source": "chrome-cve-admin@google.com",
+     "affectedData": [
+      {
+       "vendor": "n/a",
+       "product": "n/a",
+       "versions": [
+        {
+         "version": "n/a",
+         "status": "affected"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "metrics": {
+    "cvssMetricV2": [
+     {
+      "source": "nvd@nist.gov",
+      "type": "Primary",
+      "cvssData": {
+       "version": "2.0",
+       "vectorString": "AV:N/AC:L/Au:N/C:P/I:P/A:P",
+       "baseScore": 7.5,
+       "accessVector": "NETWORK",
+       "accessComplexity": "LOW",
+       "authentication": "NONE",
+       "confidentialityImpact": "PARTIAL",
+       "integrityImpact": "PARTIAL",
+       "availabilityImpact": "PARTIAL"
+      },
+      "baseSeverity": "HIGH",
+      "exploitabilityScore": 10,
+      "impactScore": 6.4,
+      "acInsufInfo": false,
+      "obtainAllPrivilege": false,
+      "obtainUserPrivilege": false,
+      "obtainOtherPrivilege": false,
+      "userInteractionRequired": false
+     }
+    ]
+   },
+   "weaknesses": [
+    {
+     "source": "nvd@nist.gov",
+     "type": "Primary",
+     "description": [
+      {
+       "lang": "en",
+       "value": "CWE-416"
+      }
+     ]
+    }
+   ],
+   "configurations": [
+    {
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:*:*:*:*:*:android:*:*",
+         "versionEndExcluding": "40.0.2214.109",
+         "matchCriteriaId": "DFDE8F2F-775A-4C8B-B332-B00E82A3BAB6"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "operator": "AND",
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:*:*:*:*:*:*:*:*",
+         "versionEndExcluding": "40.0.2214.111",
+         "matchCriteriaId": "855BFB6F-F192-4D7C-A07E-8311EC8C9A4D"
+        }
+       ]
+      },
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": false,
+         "criteria": "cpe:2.3:o:apple:macos:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "387021A0-AF36-463C-A605-32EA7DAC172E"
+        },
+        {
+         "vulnerable": false,
+         "criteria": "cpe:2.3:o:linux:linux_kernel:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "703AF700-7A70-47E2-BC3A-7FD03B3CA9C1"
+        },
+        {
+         "vulnerable": false,
+         "criteria": "cpe:2.3:o:microsoft:windows:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "A2572D17-1DE6-457B-99CC-64AFD54487EA"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:o:canonical:ubuntu_linux:14.04:*:*:*:esm:*:*:*",
+         "matchCriteriaId": "815D70A8-47D3-459C-A32C-9FEACA0659D1"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:o:canonical:ubuntu_linux:14.10:*:*:*:*:*:*:*",
+         "matchCriteriaId": "49A63F39-30BE-443F-AF10-6245587D3359"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:o:redhat:enterprise_linux_desktop:6.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "EE249E1B-A1FD-4E08-AA71-A0E1F10FFE97"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:o:redhat:enterprise_linux_eus:6.6:*:*:*:*:*:*:*",
+         "matchCriteriaId": "319EC0C6-94C5-494A-9C5D-DC5124DFC8E1"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:o:redhat:enterprise_linux_server:6.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "9BBCD86A-E6C7-4444-9D74-F861084090F0"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:o:redhat:enterprise_linux_server_aus:6.6:*:*:*:*:*:*:*",
+         "matchCriteriaId": "16E6D998-B41D-4B49-9E00-8336D2E40A4A"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:o:redhat:enterprise_linux_workstation:6.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "E5ED5807-55B7-47C5-97A6-03233F4FBC3A"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:o:opensuse:opensuse:13.1:*:*:*:*:*:*:*",
+         "matchCriteriaId": "A10BC294-9196-425F-9FB0-B1625465B47F"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:o:opensuse:opensuse:13.2:*:*:*:*:*:*:*",
+         "matchCriteriaId": "03117DF1-3BEC-4B8D-AD63-DBBDB2126081"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "references": [
+    {
+     "url": "http://googlechromereleases.blogspot.com/2015/02/chrome-for-android-update.html",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "http://googlechromereleases.blogspot.com/2015/02/stable-channel-update.html",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "http://lists.opensuse.org/opensuse-security-announce/2015-03/msg00005.html",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "http://rhn.redhat.com/errata/RHSA-2015-0163.html",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "http://secunia.com/advisories/62670",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "http://secunia.com/advisories/62818",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "http://secunia.com/advisories/62917",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "http://secunia.com/advisories/62925",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "http://security.gentoo.org/glsa/glsa-201502-13.xml",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "http://www.securityfocus.com/bid/72497",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "http://www.securitytracker.com/id/1031709",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "http://www.ubuntu.com/usn/USN-2495-1",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "https://code.google.com/p/chromium/issues/detail?id=447906",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "https://exchange.xforce.ibmcloud.com/vulnerabilities/100715",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "https://src.chromium.org/viewvc/blink?revision=188788&view=revision",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "http://googlechromereleases.blogspot.com/2015/02/chrome-for-android-update.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://googlechromereleases.blogspot.com/2015/02/stable-channel-update.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://lists.opensuse.org/opensuse-security-announce/2015-03/msg00005.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://rhn.redhat.com/errata/RHSA-2015-0163.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://secunia.com/advisories/62670",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://secunia.com/advisories/62818",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://secunia.com/advisories/62917",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://secunia.com/advisories/62925",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://security.gentoo.org/glsa/glsa-201502-13.xml",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.securityfocus.com/bid/72497",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.securitytracker.com/id/1031709",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.ubuntu.com/usn/USN-2495-1",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "https://code.google.com/p/chromium/issues/detail?id=447906",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "https://exchange.xforce.ibmcloud.com/vulnerabilities/100715",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "https://src.chromium.org/viewvc/blink?revision=188788&view=revision",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    }
+   ]
+  },
+  {
+   "id": "CVE-2013-0879",
+   "sourceIdentifier": "chrome-cve-admin@google.com",
+   "published": "2013-02-23T21:55:00.967",
+   "lastModified": "2026-06-16T23:50:14.850",
+   "vulnStatus": "Modified",
+   "cveTags": [],
+   "descriptions": [
+    {
+     "lang": "en",
+     "value": "Google Chrome before 25.0.1364.97 on Windows and Linux, and before 25.0.1364.99 on Mac OS X, does not properly implement web audio nodes, which allows remote attackers to cause a denial of service (memory corruption) or possibly have unspecified other impact via unknown vectors."
+    },
+    {
+     "lang": "es",
+     "value": "Google Chrome anterior a v25.0.1364.97 en Windows y Linux, y anterior a v25.0.1364.99 en Mac OS X, no implementa correctamente los nodos de web audio, lo que permite a atacantes remotos causar una denegación de servicio (corrupción de memoria) o posiblemente tener otro impacto no especificado mediante vectores desconocidos."
+    }
+   ],
+   "affected": [
+    {
+     "source": "chrome-cve-admin@google.com",
+     "affectedData": [
+      {
+       "vendor": "n/a",
+       "product": "n/a",
+       "versions": [
+        {
+         "version": "n/a",
+         "status": "affected"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "metrics": {
+    "cvssMetricV2": [
+     {
+      "source": "nvd@nist.gov",
+      "type": "Primary",
+      "cvssData": {
+       "version": "2.0",
+       "vectorString": "AV:N/AC:L/Au:N/C:P/I:P/A:P",
+       "baseScore": 7.5,
+       "accessVector": "NETWORK",
+       "accessComplexity": "LOW",
+       "authentication": "NONE",
+       "confidentialityImpact": "PARTIAL",
+       "integrityImpact": "PARTIAL",
+       "availabilityImpact": "PARTIAL"
+      },
+      "baseSeverity": "HIGH",
+      "exploitabilityScore": 10,
+      "impactScore": 6.4,
+      "acInsufInfo": false,
+      "obtainAllPrivilege": false,
+      "obtainUserPrivilege": false,
+      "obtainOtherPrivilege": false,
+      "userInteractionRequired": false
+     }
+    ]
+   },
+   "weaknesses": [
+    {
+     "source": "nvd@nist.gov",
+     "type": "Primary",
+     "description": [
+      {
+       "lang": "en",
+       "value": "CWE-787"
+      }
+     ]
+    }
+   ],
+   "configurations": [
+    {
+     "operator": "AND",
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:*:*:*:*:*:*:*:*",
+         "versionEndExcluding": "25.0.1364.97",
+         "matchCriteriaId": "0107C81D-3DF7-48EB-9907-A69D933C1A55"
+        }
+       ]
+      },
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": false,
+         "criteria": "cpe:2.3:o:linux:linux_kernel:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "703AF700-7A70-47E2-BC3A-7FD03B3CA9C1"
+        },
+        {
+         "vulnerable": false,
+         "criteria": "cpe:2.3:o:microsoft:windows:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "A2572D17-1DE6-457B-99CC-64AFD54487EA"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "operator": "AND",
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:*:*:*:*:*:*:*:*",
+         "versionEndExcluding": "25.0.1364.99",
+         "matchCriteriaId": "E4443B52-0815-45EB-A1F8-BF045F0ED921"
+        }
+       ]
+      },
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": false,
+         "criteria": "cpe:2.3:o:apple:iphone_os:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "B5415705-33E5-46D5-8E4D-9EBADC8C5705"
+        },
+        {
+         "vulnerable": false,
+         "criteria": "cpe:2.3:o:apple:mac_os_x:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "4781BF1E-8A4E-4AFF-9540-23D523EE30DD"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "references": [
+    {
+     "url": "http://googlechromereleases.blogspot.com/2013/02/stable-channel-update_21.html",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "http://lists.apple.com/archives/security-announce/2013/Jun/msg00001.html",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "http://lists.apple.com/archives/security-announce/2013/Sep/msg00006.html",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "http://lists.opensuse.org/opensuse-updates/2013-03/msg00045.html",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "http://secunia.com/advisories/54886",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "http://support.apple.com/kb/HT5785",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "http://support.apple.com/kb/HT5934",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "https://code.google.com/p/chromium/issues/detail?id=172243",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A16505",
+     "source": "chrome-cve-admin@google.com"
+    },
+    {
+     "url": "http://googlechromereleases.blogspot.com/2013/02/stable-channel-update_21.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://lists.apple.com/archives/security-announce/2013/Jun/msg00001.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://lists.apple.com/archives/security-announce/2013/Sep/msg00006.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://lists.opensuse.org/opensuse-updates/2013-03/msg00045.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://secunia.com/advisories/54886",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://support.apple.com/kb/HT5785",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://support.apple.com/kb/HT5934",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "https://code.google.com/p/chromium/issues/detail?id=172243",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A16505",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    }
+   ]
+  },
+  {
+   "id": "CVE-2012-4903",
+   "sourceIdentifier": "cve@mitre.org",
+   "published": "2012-09-13T20:55:01.510",
+   "lastModified": "2026-06-16T23:45:52.733",
+   "vulnStatus": "Modified",
+   "cveTags": [],
+   "descriptions": [
+    {
+     "lang": "en",
+     "value": "Google Chrome before 18.0.1025308 on Android does not properly restrict access to file: URLs, which allows remote attackers to obtain sensitive information via unspecified vectors, as demonstrated by obtaining credential data, a different vulnerability than CVE-2012-4906."
+    },
+    {
+     "lang": "es",
+     "value": "Google Chrome antes de v18.0.1025308 en Android no restringe correctamente el acceso a URLs \"file:\", lo que permite a atacantes remotos obtener información sensible a través de vectores no especificados, comoha quedado demostrado mediante la obtención de datos de credenciales. Se trata de una vulnerabilidad diferente a CVE-2012-4906a.\r\n"
+    }
+   ],
+   "affected": [
+    {
+     "source": "cve@mitre.org",
+     "affectedData": [
+      {
+       "vendor": "n/a",
+       "product": "n/a",
+       "versions": [
+        {
+         "version": "n/a",
+         "status": "affected"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "metrics": {
+    "cvssMetricV2": [
+     {
+      "source": "nvd@nist.gov",
+      "type": "Primary",
+      "cvssData": {
+       "version": "2.0",
+       "vectorString": "AV:N/AC:L/Au:N/C:P/I:N/A:N",
+       "baseScore": 5,
+       "accessVector": "NETWORK",
+       "accessComplexity": "LOW",
+       "authentication": "NONE",
+       "confidentialityImpact": "PARTIAL",
+       "integrityImpact": "NONE",
+       "availabilityImpact": "NONE"
+      },
+      "baseSeverity": "MEDIUM",
+      "exploitabilityScore": 10,
+      "impactScore": 2.9,
+      "acInsufInfo": true,
+      "obtainAllPrivilege": false,
+      "obtainUserPrivilege": false,
+      "obtainOtherPrivilege": false,
+      "userInteractionRequired": false
+     }
+    ]
+   },
+   "weaknesses": [
+    {
+     "source": "nvd@nist.gov",
+     "type": "Primary",
+     "description": [
+      {
+       "lang": "en",
+       "value": "CWE-264"
+      }
+     ]
+    }
+   ],
+   "configurations": [
+    {
+     "operator": "AND",
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:*:*:*:*:*:*:*:*",
+         "versionEndIncluding": "18.0.1025306",
+         "matchCriteriaId": "1AD304AD-1B29-435C-938E-DA4FCF886FEA"
+        }
+       ]
+      },
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": false,
+         "criteria": "cpe:2.3:o:google:android:*:*:*:*:*:*:*:*",
+         "matchCriteriaId": "8255F035-04C8-4158-B301-82101711939C"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "references": [
+    {
+     "url": "http://googlechromereleases.blogspot.com/2012/09/chrome-for-android-update.html",
+     "source": "cve@mitre.org",
+     "tags": [
+      "Vendor Advisory"
+     ]
+    },
+    {
+     "url": "https://code.google.com/p/chromium/issues/detail?id=138210",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://googlechromereleases.blogspot.com/2012/09/chrome-for-android-update.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108",
+     "tags": [
+      "Vendor Advisory"
+     ]
+    },
+    {
+     "url": "https://code.google.com/p/chromium/issues/detail?id=138210",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    }
+   ]
+  },
+  {
+   "id": "CVE-2010-0658",
+   "sourceIdentifier": "cve@mitre.org",
+   "published": "2010-02-18T18:00:00.927",
+   "lastModified": "2026-06-16T23:16:35.860",
+   "vulnStatus": "Modified",
+   "cveTags": [],
+   "descriptions": [
+    {
+     "lang": "en",
+     "value": "Multiple integer overflows in Skia, as used in Google Chrome before 4.0.249.78, allow remote attackers to execute arbitrary code in the Chrome sandbox or cause a denial of service (memory corruption and application crash) via vectors involving CANVAS elements."
+    },
+    {
+     "lang": "es",
+     "value": "Múltiples desbordamientos de enteros en Skia, usado en Google Chrome anterior a v4.0.249.78 , permite a atacantes remotos ejecutar código arbitrario en la zona de seguridad de Chrome (sandbox) o causar una denegación de servicio (corrupción de la memoria y cuelgue de la aplicación) a través de vectores que contienen elementos CANVAS (lienzo)."
+    }
+   ],
+   "affected": [
+    {
+     "source": "cve@mitre.org",
+     "affectedData": [
+      {
+       "vendor": "n/a",
+       "product": "n/a",
+       "versions": [
+        {
+         "version": "n/a",
+         "status": "affected"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "metrics": {
+    "cvssMetricV2": [
+     {
+      "source": "nvd@nist.gov",
+      "type": "Primary",
+      "cvssData": {
+       "version": "2.0",
+       "vectorString": "AV:N/AC:M/Au:N/C:C/I:C/A:C",
+       "baseScore": 9.3,
+       "accessVector": "NETWORK",
+       "accessComplexity": "MEDIUM",
+       "authentication": "NONE",
+       "confidentialityImpact": "COMPLETE",
+       "integrityImpact": "COMPLETE",
+       "availabilityImpact": "COMPLETE"
+      },
+      "baseSeverity": "HIGH",
+      "exploitabilityScore": 8.6,
+      "impactScore": 10,
+      "acInsufInfo": false,
+      "obtainAllPrivilege": false,
+      "obtainUserPrivilege": false,
+      "obtainOtherPrivilege": false,
+      "userInteractionRequired": true
+     }
+    ]
+   },
+   "weaknesses": [
+    {
+     "source": "nvd@nist.gov",
+     "type": "Primary",
+     "description": [
+      {
+       "lang": "en",
+       "value": "CWE-189"
+      }
+     ]
+    }
+   ],
+   "configurations": [
+    {
+     "operator": "AND",
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:*:*:*:*:*:*:*:*",
+         "versionEndIncluding": "4.0.249.0",
+         "matchCriteriaId": "74697DF5-4F60-40DA-AADE-44288F4AAC18"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:0.2.149.27:*:*:*:*:*:*:*",
+         "matchCriteriaId": "D55D5075-D233-42D6-B1D6-77B7599650EB"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:0.2.149.29:*:*:*:*:*:*:*",
+         "matchCriteriaId": "5B8FF77A-7802-4963-B532-3F16C7BB012C"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:0.2.149.30:*:*:*:*:*:*:*",
+         "matchCriteriaId": "D73576CF-76EE-42A3-9955-D7991384B8C1"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:0.2.152.1:*:*:*:*:*:*:*",
+         "matchCriteriaId": "DD4A2AB1-6F90-4D0B-A673-C6310514CE63"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:0.2.153.1:*:*:*:*:*:*:*",
+         "matchCriteriaId": "66A4FEB5-11D8-4FFC-972D-A3B991176040"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:0.3.154.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "A6313614-FC3C-488C-B80B-191797319A56"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:0.3.154.3:*:*:*:*:*:*:*",
+         "matchCriteriaId": "9CDF3DAB-73C4-48E8-9B0B-DADABF217555"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:0.4.154.18:*:*:*:*:*:*:*",
+         "matchCriteriaId": "7B2FAE50-4CA3-46F6-B533-C599011A9ED5"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:0.4.154.22:*:*:*:*:*:*:*",
+         "matchCriteriaId": "B0D94F22-37B6-4938-966A-E1830D83FBC3"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:0.4.154.31:*:*:*:*:*:*:*",
+         "matchCriteriaId": "D8B7164E-7A4F-4959-9E6D-EF614EDD4C3C"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:0.4.154.33:*:*:*:*:*:*:*",
+         "matchCriteriaId": "0C0F9D75-B10D-468F-84D8-61B6A1230556"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:1.0.154.36:*:*:*:*:*:*:*",
+         "matchCriteriaId": "5D2CAE29-3F1E-4374-B82C-B60B7BB4AEAE"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:1.0.154.39:*:*:*:*:*:*:*",
+         "matchCriteriaId": "173D539E-045E-4429-80C9-5749BECC6CD5"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:1.0.154.42:*:*:*:*:*:*:*",
+         "matchCriteriaId": "D2052352-FECC-4990-B0F4-A715694AD816"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:1.0.154.43:*:*:*:*:*:*:*",
+         "matchCriteriaId": "BCBC80CB-4AB8-4EDF-9940-D2D7124D7549"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:1.0.154.46:*:*:*:*:*:*:*",
+         "matchCriteriaId": "E37938BB-8368-46D6-A8E4-F99F5CB9B82E"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:1.0.154.48:*:*:*:*:*:*:*",
+         "matchCriteriaId": "6659833E-E309-4797-84D4-A782237714A9"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:1.0.154.52:*:*:*:*:*:*:*",
+         "matchCriteriaId": "FE4C0D93-0308-48D4-A953-9398B88E2868"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:1.0.154.53:*:*:*:*:*:*:*",
+         "matchCriteriaId": "FE5094C4-1338-4189-B5FD-C9AFFF091D6B"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:1.0.154.59:*:*:*:*:*:*:*",
+         "matchCriteriaId": "51A8C3D2-82E6-453E-90B7-BA5C5D2CDF54"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:1.0.154.65:*:*:*:*:*:*:*",
+         "matchCriteriaId": "67C0798F-CC7F-4069-810E-B81F8BB77CCD"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.156.1:*:*:*:*:*:*:*",
+         "matchCriteriaId": "A2F95770-F36F-43C0-986F-5C819648271E"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.157.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "ECCE1FD3-8D27-4304-97F9-6F9689F2498D"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.157.2:*:*:*:*:*:*:*",
+         "matchCriteriaId": "0F6CA696-49AA-4445-B978-96C1D8CE58DF"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.158.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "D9CFA3BF-6C07-448B-8C83-AD4C524A6577"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.159.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "E8497F93-D88A-4FFA-B988-7210608530A8"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.169.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "49FB50A3-FFDA-4BB9-A2C1-DA6DACC2DAAB"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.169.1:*:*:*:*:*:*:*",
+         "matchCriteriaId": "59F93BC8-FE87-4CEC-B28A-4B0B5A468EDE"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.170.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "02D459C7-2555-42FA-9C68-619E410D7CBA"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.172:*:*:*:*:*:*:*",
+         "matchCriteriaId": "E5CDF938-2998-403F-B343-29B620E05D44"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.172.2:*:*:*:*:*:*:*",
+         "matchCriteriaId": "64F89EA6-B411-4887-90A1-FF3A054424F6"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.172.8:*:*:*:*:*:*:*",
+         "matchCriteriaId": "10D2BA3B-1C69-470C-9C40-001FAE82DDB4"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.172.27:*:*:*:*:*:*:*",
+         "matchCriteriaId": "3583995C-CD74-401F-905D-65B73CFC4595"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.172.28:*:*:*:*:*:*:*",
+         "matchCriteriaId": "A0A621B1-3186-4CE2-8BCC-916027CC74CF"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.172.30:*:*:*:*:*:*:*",
+         "matchCriteriaId": "B4A9B50D-5B0F-41C9-8FAF-B78CD21A0554"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.172.31:*:*:*:*:*:*:*",
+         "matchCriteriaId": "4F5223F1-85CD-4DF9-9665-BDF7B554A784"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.172.33:*:*:*:*:*:*:*",
+         "matchCriteriaId": "8DD7AFBA-A9A2-4EE9-B652-78D25EFBB690"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.172.37:*:*:*:*:*:*:*",
+         "matchCriteriaId": "6B9D6ED9-D5C5-4CA9-84EA-8007F48CF597"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.172.38:*:*:*:*:*:*:*",
+         "matchCriteriaId": "0E7F7897-ECD1-499E-81CD-E224241B6607"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:3.0.182.2:*:*:*:*:*:*:*",
+         "matchCriteriaId": "C7422307-271F-4953-9CA4-C50238D27BAE"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:3.0.190.2:*:*:*:*:*:*:*",
+         "matchCriteriaId": "9DCC3490-5B06-4992-8E31-CA46E18607B7"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:3.0.193.2:beta:*:*:*:*:*:*",
+         "matchCriteriaId": "C2F85551-EDB5-4790-8095-EFFA7DEC7F98"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:3.0.195.21:*:*:*:*:*:*:*",
+         "matchCriteriaId": "6FEBB1A8-295B-4AF7-996D-F7E415B91ECB"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:3.0.195.24:*:*:*:*:*:*:*",
+         "matchCriteriaId": "50995718-0F70-44CA-863B-4AFB4C7AF3CD"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:3.0.195.32:*:*:*:*:*:*:*",
+         "matchCriteriaId": "31D2B04D-ECEB-4B9B-9DC7-FE17C13DD72A"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:3.0.195.33:*:*:*:*:*:*:*",
+         "matchCriteriaId": "F7460B03-A658-4507-8D9E-E0234940BD71"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:4.0.244.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "764825B3-75C2-4FF1-93B6-C6E696C05058"
+        }
+       ]
+      },
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": false,
+         "criteria": "cpe:2.3:o:microsoft:windows:*:*:*:*:*:*:*:*",
+         "matchCriteriaId": "2CF61F35-5905-4BA9-AD7E-7DB261D2F256"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "references": [
+    {
+     "url": "http://code.google.com/p/chromium/issues/detail?id=24071",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://code.google.com/p/chromium/issues/detail?id=24646",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://code.google.com/p/chromium/issues/detail?id=8864",
+     "source": "cve@mitre.org",
+     "tags": [
+      "Vendor Advisory"
+     ]
+    },
+    {
+     "url": "http://googlechromereleases.blogspot.com/2010/01/stable-channel-update_25.html",
+     "source": "cve@mitre.org",
+     "tags": [
+      "Patch"
+     ]
+    },
+    {
+     "url": "http://securitytracker.com/id?1023506",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://sites.google.com/a/chromium.org/dev/Home/chromium-security/chromium-security-bugs",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A13852",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://code.google.com/p/chromium/issues/detail?id=24071",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://code.google.com/p/chromium/issues/detail?id=24646",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://code.google.com/p/chromium/issues/detail?id=8864",
+     "source": "af854a3a-2127-422b-91ae-364da2661108",
+     "tags": [
+      "Vendor Advisory"
+     ]
+    },
+    {
+     "url": "http://googlechromereleases.blogspot.com/2010/01/stable-channel-update_25.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108",
+     "tags": [
+      "Patch"
+     ]
+    },
+    {
+     "url": "http://securitytracker.com/id?1023506",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://sites.google.com/a/chromium.org/dev/Home/chromium-security/chromium-security-bugs",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A13852",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    }
+   ]
+  },
+  {
+   "id": "CVE-2010-0647",
+   "sourceIdentifier": "cve@mitre.org",
+   "published": "2010-02-18T18:00:00.537",
+   "lastModified": "2026-06-16T23:16:34.290",
+   "vulnStatus": "Modified",
+   "cveTags": [],
+   "descriptions": [
+    {
+     "lang": "en",
+     "value": "WebKit before r53525, as used in Google Chrome before 4.0.249.89, allows remote attackers to execute arbitrary code in the Chrome sandbox via a malformed RUBY element, as demonstrated by a <ruby>><table><rt> sequence."
+    },
+    {
+     "lang": "es",
+     "value": "WebKit anterior r53525, como el usado en Google Chrome anterior v4.0.249.89, permite a atacantes remotos ejecutar código en el sandbox a través de un elemento RUBY malformado, como queda demostrado con la secuencia <ruby>><table><rt>."
+    }
+   ],
+   "affected": [
+    {
+     "source": "cve@mitre.org",
+     "affectedData": [
+      {
+       "vendor": "n/a",
+       "product": "n/a",
+       "versions": [
+        {
+         "version": "n/a",
+         "status": "affected"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "metrics": {
+    "cvssMetricV2": [
+     {
+      "source": "nvd@nist.gov",
+      "type": "Primary",
+      "cvssData": {
+       "version": "2.0",
+       "vectorString": "AV:N/AC:M/Au:N/C:C/I:C/A:C",
+       "baseScore": 9.3,
+       "accessVector": "NETWORK",
+       "accessComplexity": "MEDIUM",
+       "authentication": "NONE",
+       "confidentialityImpact": "COMPLETE",
+       "integrityImpact": "COMPLETE",
+       "availabilityImpact": "COMPLETE"
+      },
+      "baseSeverity": "HIGH",
+      "exploitabilityScore": 8.6,
+      "impactScore": 10,
+      "acInsufInfo": false,
+      "obtainAllPrivilege": false,
+      "obtainUserPrivilege": false,
+      "obtainOtherPrivilege": false,
+      "userInteractionRequired": true
+     }
+    ]
+   },
+   "weaknesses": [
+    {
+     "source": "nvd@nist.gov",
+     "type": "Primary",
+     "description": [
+      {
+       "lang": "en",
+       "value": "CWE-94"
+      }
+     ]
+    }
+   ],
+   "configurations": [
+    {
+     "operator": "AND",
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:apple:webkit:*:*:*:*:*:*:*:*",
+         "versionEndIncluding": "r53475",
+         "matchCriteriaId": "12666DB7-5553-4CB8-8985-8F9F2D945A93"
+        }
+       ]
+      },
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:*:*:*:*:*:*:*:*",
+         "versionEndIncluding": "4.0.249.78",
+         "matchCriteriaId": "DB06F2D1-06F9-45B3-A390-EB25C2364F2C"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:0.2.149.27:*:*:*:*:*:*:*",
+         "matchCriteriaId": "D55D5075-D233-42D6-B1D6-77B7599650EB"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:0.2.149.29:*:*:*:*:*:*:*",
+         "matchCriteriaId": "5B8FF77A-7802-4963-B532-3F16C7BB012C"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:0.2.149.30:*:*:*:*:*:*:*",
+         "matchCriteriaId": "D73576CF-76EE-42A3-9955-D7991384B8C1"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:0.2.152.1:*:*:*:*:*:*:*",
+         "matchCriteriaId": "DD4A2AB1-6F90-4D0B-A673-C6310514CE63"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:0.2.153.1:*:*:*:*:*:*:*",
+         "matchCriteriaId": "66A4FEB5-11D8-4FFC-972D-A3B991176040"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:0.3.154.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "A6313614-FC3C-488C-B80B-191797319A56"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:0.3.154.3:*:*:*:*:*:*:*",
+         "matchCriteriaId": "9CDF3DAB-73C4-48E8-9B0B-DADABF217555"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:0.4.154.18:*:*:*:*:*:*:*",
+         "matchCriteriaId": "7B2FAE50-4CA3-46F6-B533-C599011A9ED5"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:0.4.154.22:*:*:*:*:*:*:*",
+         "matchCriteriaId": "B0D94F22-37B6-4938-966A-E1830D83FBC3"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:0.4.154.31:*:*:*:*:*:*:*",
+         "matchCriteriaId": "D8B7164E-7A4F-4959-9E6D-EF614EDD4C3C"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:0.4.154.33:*:*:*:*:*:*:*",
+         "matchCriteriaId": "0C0F9D75-B10D-468F-84D8-61B6A1230556"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:1.0.154.36:*:*:*:*:*:*:*",
+         "matchCriteriaId": "5D2CAE29-3F1E-4374-B82C-B60B7BB4AEAE"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:1.0.154.39:*:*:*:*:*:*:*",
+         "matchCriteriaId": "173D539E-045E-4429-80C9-5749BECC6CD5"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:1.0.154.42:*:*:*:*:*:*:*",
+         "matchCriteriaId": "D2052352-FECC-4990-B0F4-A715694AD816"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:1.0.154.43:*:*:*:*:*:*:*",
+         "matchCriteriaId": "BCBC80CB-4AB8-4EDF-9940-D2D7124D7549"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:1.0.154.46:*:*:*:*:*:*:*",
+         "matchCriteriaId": "E37938BB-8368-46D6-A8E4-F99F5CB9B82E"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:1.0.154.48:*:*:*:*:*:*:*",
+         "matchCriteriaId": "6659833E-E309-4797-84D4-A782237714A9"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:1.0.154.52:*:*:*:*:*:*:*",
+         "matchCriteriaId": "FE4C0D93-0308-48D4-A953-9398B88E2868"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:1.0.154.53:*:*:*:*:*:*:*",
+         "matchCriteriaId": "FE5094C4-1338-4189-B5FD-C9AFFF091D6B"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:1.0.154.59:*:*:*:*:*:*:*",
+         "matchCriteriaId": "51A8C3D2-82E6-453E-90B7-BA5C5D2CDF54"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:1.0.154.65:*:*:*:*:*:*:*",
+         "matchCriteriaId": "67C0798F-CC7F-4069-810E-B81F8BB77CCD"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.156.1:*:*:*:*:*:*:*",
+         "matchCriteriaId": "A2F95770-F36F-43C0-986F-5C819648271E"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.157.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "ECCE1FD3-8D27-4304-97F9-6F9689F2498D"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.157.2:*:*:*:*:*:*:*",
+         "matchCriteriaId": "0F6CA696-49AA-4445-B978-96C1D8CE58DF"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.158.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "D9CFA3BF-6C07-448B-8C83-AD4C524A6577"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.159.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "E8497F93-D88A-4FFA-B988-7210608530A8"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.169.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "49FB50A3-FFDA-4BB9-A2C1-DA6DACC2DAAB"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.169.1:*:*:*:*:*:*:*",
+         "matchCriteriaId": "59F93BC8-FE87-4CEC-B28A-4B0B5A468EDE"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.170.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "02D459C7-2555-42FA-9C68-619E410D7CBA"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.172:*:*:*:*:*:*:*",
+         "matchCriteriaId": "E5CDF938-2998-403F-B343-29B620E05D44"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.172.2:*:*:*:*:*:*:*",
+         "matchCriteriaId": "64F89EA6-B411-4887-90A1-FF3A054424F6"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.172.8:*:*:*:*:*:*:*",
+         "matchCriteriaId": "10D2BA3B-1C69-470C-9C40-001FAE82DDB4"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.172.27:*:*:*:*:*:*:*",
+         "matchCriteriaId": "3583995C-CD74-401F-905D-65B73CFC4595"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.172.28:*:*:*:*:*:*:*",
+         "matchCriteriaId": "A0A621B1-3186-4CE2-8BCC-916027CC74CF"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.172.30:*:*:*:*:*:*:*",
+         "matchCriteriaId": "B4A9B50D-5B0F-41C9-8FAF-B78CD21A0554"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.172.31:*:*:*:*:*:*:*",
+         "matchCriteriaId": "4F5223F1-85CD-4DF9-9665-BDF7B554A784"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.172.33:*:*:*:*:*:*:*",
+         "matchCriteriaId": "8DD7AFBA-A9A2-4EE9-B652-78D25EFBB690"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.172.37:*:*:*:*:*:*:*",
+         "matchCriteriaId": "6B9D6ED9-D5C5-4CA9-84EA-8007F48CF597"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:2.0.172.38:*:*:*:*:*:*:*",
+         "matchCriteriaId": "0E7F7897-ECD1-499E-81CD-E224241B6607"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:3.0.182.2:*:*:*:*:*:*:*",
+         "matchCriteriaId": "C7422307-271F-4953-9CA4-C50238D27BAE"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:3.0.190.2:*:*:*:*:*:*:*",
+         "matchCriteriaId": "9DCC3490-5B06-4992-8E31-CA46E18607B7"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:3.0.193.2:beta:*:*:*:*:*:*",
+         "matchCriteriaId": "C2F85551-EDB5-4790-8095-EFFA7DEC7F98"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:3.0.195.21:*:*:*:*:*:*:*",
+         "matchCriteriaId": "6FEBB1A8-295B-4AF7-996D-F7E415B91ECB"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:3.0.195.24:*:*:*:*:*:*:*",
+         "matchCriteriaId": "50995718-0F70-44CA-863B-4AFB4C7AF3CD"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:3.0.195.32:*:*:*:*:*:*:*",
+         "matchCriteriaId": "31D2B04D-ECEB-4B9B-9DC7-FE17C13DD72A"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:3.0.195.33:*:*:*:*:*:*:*",
+         "matchCriteriaId": "F7460B03-A658-4507-8D9E-E0234940BD71"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:chrome:4.0.244.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "764825B3-75C2-4FF1-93B6-C6E696C05058"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "references": [
+    {
+     "url": "http://code.google.com/p/chromium/issues/detail?id=31692",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://googlechromereleases.blogspot.com/2010/02/stable-channel-update.html",
+     "source": "cve@mitre.org",
+     "tags": [
+      "Patch"
+     ]
+    },
+    {
+     "url": "http://lists.opensuse.org/opensuse-security-announce/2011-01/msg00006.html",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://secunia.com/advisories/38545",
+     "source": "cve@mitre.org",
+     "tags": [
+      "Vendor Advisory"
+     ]
+    },
+    {
+     "url": "http://secunia.com/advisories/41856",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://secunia.com/advisories/43068",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://securitytracker.com/id?1023583",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://sites.google.com/a/chromium.org/dev/Home/chromium-security/chromium-security-bugs",
+     "source": "cve@mitre.org",
+     "tags": [
+      "Vendor Advisory"
+     ]
+    },
+    {
+     "url": "http://trac.webkit.org/changeset/53525",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.mandriva.com/security/advisories?name=MDVSA-2011:039",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.osvdb.org/62317",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.securityfocus.com/bid/38177",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.ubuntu.com/usn/USN-1006-1",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.vupen.com/english/advisories/2010/0361",
+     "source": "cve@mitre.org",
+     "tags": [
+      "Vendor Advisory"
+     ]
+    },
+    {
+     "url": "http://www.vupen.com/english/advisories/2010/2722",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.vupen.com/english/advisories/2011/0212",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://www.vupen.com/english/advisories/2011/0552",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "https://bugs.webkit.org/show_bug.cgi?id=33266",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "https://exchange.xforce.ibmcloud.com/vulnerabilities/56214",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A14094",
+     "source": "cve@mitre.org"
+    },
+    {
+     "url": "http://code.google.com/p/chromium/issues/detail?id=31692",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://googlechromereleases.blogspot.com/2010/02/stable-channel-update.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108",
+     "tags": [
+      "Patch"
+     ]
+    },
+    {
+     "url": "http://lists.opensuse.org/opensuse-security-announce/2011-01/msg00006.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://secunia.com/advisories/38545",
+     "source": "af854a3a-2127-422b-91ae-364da2661108",
+     "tags": [
+      "Vendor Advisory"
+     ]
+    },
+    {
+     "url": "http://secunia.com/advisories/41856",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://secunia.com/advisories/43068",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://securitytracker.com/id?1023583",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://sites.google.com/a/chromium.org/dev/Home/chromium-security/chromium-security-bugs",
+     "source": "af854a3a-2127-422b-91ae-364da2661108",
+     "tags": [
+      "Vendor Advisory"
+     ]
+    },
+    {
+     "url": "http://trac.webkit.org/changeset/53525",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.mandriva.com/security/advisories?name=MDVSA-2011:039",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.osvdb.org/62317",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.securityfocus.com/bid/38177",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.ubuntu.com/usn/USN-1006-1",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.vupen.com/english/advisories/2010/0361",
+     "source": "af854a3a-2127-422b-91ae-364da2661108",
+     "tags": [
+      "Vendor Advisory"
+     ]
+    },
+    {
+     "url": "http://www.vupen.com/english/advisories/2010/2722",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.vupen.com/english/advisories/2011/0212",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "http://www.vupen.com/english/advisories/2011/0552",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "https://bugs.webkit.org/show_bug.cgi?id=33266",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "https://exchange.xforce.ibmcloud.com/vulnerabilities/56214",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    },
+    {
+     "url": "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A14094",
+     "source": "af854a3a-2127-422b-91ae-364da2661108"
+    }
+   ]
+  },
+  {
+   "id": "CVE-2023-7261",
+   "sourceIdentifier": "chrome-cve-admin@google.com",
+   "published": "2024-06-07T20:15:10.887",
+   "lastModified": "2026-06-17T06:52:25.837",
+   "vulnStatus": "Modified",
+   "cveTags": [],
+   "descriptions": [
+    {
+     "lang": "en",
+     "value": "Inappropriate implementation in Google Updator prior to 1.3.36.351 in Google Chrome allowed a local attacker to perform privilege escalation via a malicious file. (Chromium security severity: High)"
+    },
+    {
+     "lang": "es",
+     "value": "La implementación inadecuada en Google Updatetor anterior a la versión 1.3.36.351 en Google Chrome permitió a un atacante local realizar una escalada de privilegios a través de un archivo malicioso. (Severidad de seguridad de Chrome: alta)"
+    }
+   ],
+   "affected": [
+    {
+     "source": "chrome-cve-admin@google.com",
+     "affectedData": [
+      {
+       "vendor": "Google",
+       "product": "Omaha",
+       "versions": [
+        {
+         "version": "1.3.36.271",
+         "lessThan": "1.3.36.271",
+         "versionType": "custom",
+         "status": "affected"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "source": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+     "affectedData": [
+      {
+       "vendor": "google",
+       "product": "omaha",
+       "defaultStatus": "unknown",
+       "cpes": [
+        "cpe:2.3:a:google:omaha:*:*:*:*:*:*:*:*"
+       ],
+       "versions": [
+        {
+         "version": "0",
+         "lessThan": "1.3.36.351",
+         "versionType": "custom",
+         "status": "affected"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "metrics": {
+    "cvssMetricV31": [
+     {
+      "source": "nvd@nist.gov",
+      "type": "Primary",
+      "cvssData": {
+       "version": "3.1",
+       "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H",
+       "baseScore": 7.8,
+       "baseSeverity": "HIGH",
+       "attackVector": "LOCAL",
+       "attackComplexity": "LOW",
+       "privilegesRequired": "NONE",
+       "userInteraction": "REQUIRED",
+       "scope": "UNCHANGED",
+       "confidentialityImpact": "HIGH",
+       "integrityImpact": "HIGH",
+       "availabilityImpact": "HIGH"
+      },
+      "exploitabilityScore": 1.8,
+      "impactScore": 5.9
+     },
+     {
+      "source": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+      "type": "Secondary",
+      "cvssData": {
+       "version": "3.1",
+       "vectorString": "CVSS:3.1/AV:L/AC:L/PR:L/UI:R/S:U/C:H/I:H/A:H",
+       "baseScore": 7.3,
+       "baseSeverity": "HIGH",
+       "attackVector": "LOCAL",
+       "attackComplexity": "LOW",
+       "privilegesRequired": "LOW",
+       "userInteraction": "REQUIRED",
+       "scope": "UNCHANGED",
+       "confidentialityImpact": "HIGH",
+       "integrityImpact": "HIGH",
+       "availabilityImpact": "HIGH"
+      },
+      "exploitabilityScore": 1.3,
+      "impactScore": 5.9
+     }
+    ],
+    "ssvcV203": [
+     {
+      "source": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+      "ssvcData": {
+       "timestamp": "2024-06-10T13:48:45.977216Z",
+       "id": "CVE-2023-7261",
+       "options": [
+        {
+         "exploitation": "none"
+        },
+        {
+         "automatable": "no"
+        },
+        {
+         "technicalImpact": "total"
+        }
+       ],
+       "role": "CISA Coordinator",
+       "version": "2.0.3"
+      }
+     }
+    ]
+   },
+   "weaknesses": [
+    {
+     "source": "nvd@nist.gov",
+     "type": "Primary",
+     "description": [
+      {
+       "lang": "en",
+       "value": "NVD-CWE-noinfo"
+      }
+     ]
+    },
+    {
+     "source": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+     "type": "Secondary",
+     "description": [
+      {
+       "lang": "en",
+       "value": "CWE-233"
+      }
+     ]
+    }
+   ],
+   "configurations": [
+    {
+     "operator": "AND",
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:google:updater:*:*:*:*:*:*:*:*",
+         "versionEndExcluding": "1.3.36.351",
+         "matchCriteriaId": "E44CE57F-E54B-4F58-87A4-AE7B8565CDC2"
+        }
+       ]
+      },
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": false,
+         "criteria": "cpe:2.3:a:google:chrome:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "39B565E1-C2F1-44FC-A517-E3130332B17C"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "references": [
+    {
+     "url": "https://issues.chromium.org/issues/40064602",
+     "source": "chrome-cve-admin@google.com",
+     "tags": [
+      "Exploit",
+      "Issue Tracking"
+     ]
+    },
+    {
+     "url": "https://issues.chromium.org/issues/40064602",
+     "source": "af854a3a-2127-422b-91ae-364da2661108",
+     "tags": [
+      "Exploit",
+      "Issue Tracking"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "CVE-2024-20726",
+   "sourceIdentifier": "psirt@adobe.com",
+   "published": "2024-02-15T13:15:46.500",
+   "lastModified": "2026-06-17T07:07:44.293",
+   "vulnStatus": "Modified",
+   "cveTags": [],
+   "descriptions": [
+    {
+     "lang": "en",
+     "value": "Acrobat Reader versions 20.005.30539, 23.008.20470 and earlier are affected by an out-of-bounds write vulnerability that could result in arbitrary code execution in the context of the current user. Exploitation of this issue requires user interaction in that a victim must open a malicious file."
+    },
+    {
+     "lang": "es",
+     "value": "Las versiones de Acrobat Reader 20.005.30539, 23.008.20470 y anteriores se ven afectadas por una vulnerabilidad de escritura fuera de los límites que podría provocar la ejecución de código arbitrario en el contexto del usuario actual. La explotación de este problema requiere la interacción del usuario, ya que la víctima debe abrir un archivo malicioso."
+    }
+   ],
+   "affected": [
+    {
+     "source": "psirt@adobe.com",
+     "affectedData": [
+      {
+       "vendor": "Adobe",
+       "product": "Acrobat Reader",
+       "defaultStatus": "affected",
+       "versions": [
+        {
+         "version": "0",
+         "lessThanOrEqual": "23.008.20470",
+         "versionType": "semver",
+         "status": "affected"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "source": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+     "affectedData": [
+      {
+       "vendor": "adobe",
+       "product": "acrobat_dc",
+       "defaultStatus": "unknown",
+       "cpes": [
+        "cpe:2.3:a:adobe:acrobat_dc:-:*:*:*:pro:*:*:*"
+       ],
+       "versions": [
+        {
+         "version": "0",
+         "lessThanOrEqual": "23.008.20470",
+         "versionType": "custom",
+         "status": "affected"
+        }
+       ]
+      },
+      {
+       "vendor": "adobe",
+       "product": "acrobat_reader_dc",
+       "defaultStatus": "unknown",
+       "cpes": [
+        "cpe:2.3:a:adobe:acrobat_reader_dc:-:*:*:*:classic:*:*:*"
+       ],
+       "versions": [
+        {
+         "version": "0",
+         "lessThanOrEqual": "23.008.20470",
+         "versionType": "custom",
+         "status": "affected"
+        }
+       ]
+      },
+      {
+       "vendor": "adobe",
+       "product": "acrobat",
+       "defaultStatus": "unknown",
+       "cpes": [
+        "cpe:2.3:a:adobe:acrobat:2020:*:*:*:*:*:*:*"
+       ],
+       "versions": [
+        {
+         "version": "2020",
+         "lessThanOrEqual": "20.005.30539",
+         "versionType": "custom",
+         "status": "affected"
+        }
+       ]
+      },
+      {
+       "vendor": "adobe",
+       "product": "acrobat_reader",
+       "defaultStatus": "unknown",
+       "cpes": [
+        "cpe:2.3:a:adobe:acrobat_reader:2020:*:*:*:classic:*:*:*"
+       ],
+       "versions": [
+        {
+         "version": "2020",
+         "lessThanOrEqual": "20.005.30539",
+         "versionType": "custom",
+         "status": "affected"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "metrics": {
+    "cvssMetricV31": [
+     {
+      "source": "psirt@adobe.com",
+      "type": "Secondary",
+      "cvssData": {
+       "version": "3.1",
+       "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H",
+       "baseScore": 7.8,
+       "baseSeverity": "HIGH",
+       "attackVector": "LOCAL",
+       "attackComplexity": "LOW",
+       "privilegesRequired": "NONE",
+       "userInteraction": "REQUIRED",
+       "scope": "UNCHANGED",
+       "confidentialityImpact": "HIGH",
+       "integrityImpact": "HIGH",
+       "availabilityImpact": "HIGH"
+      },
+      "exploitabilityScore": 1.8,
+      "impactScore": 5.9
+     },
+     {
+      "source": "nvd@nist.gov",
+      "type": "Primary",
+      "cvssData": {
+       "version": "3.1",
+       "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H",
+       "baseScore": 7.8,
+       "baseSeverity": "HIGH",
+       "attackVector": "LOCAL",
+       "attackComplexity": "LOW",
+       "privilegesRequired": "NONE",
+       "userInteraction": "REQUIRED",
+       "scope": "UNCHANGED",
+       "confidentialityImpact": "HIGH",
+       "integrityImpact": "HIGH",
+       "availabilityImpact": "HIGH"
+      },
+      "exploitabilityScore": 1.8,
+      "impactScore": 5.9
+     }
+    ],
+    "ssvcV203": [
+     {
+      "source": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+      "ssvcData": {
+       "timestamp": "2024-02-15T14:11:41.172393Z",
+       "id": "CVE-2024-20726",
+       "options": [
+        {
+         "exploitation": "none"
+        },
+        {
+         "automatable": "no"
+        },
+        {
+         "technicalImpact": "total"
+        }
+       ],
+       "role": "CISA Coordinator",
+       "version": "2.0.3"
+      }
+     }
+    ]
+   },
+   "weaknesses": [
+    {
+     "source": "psirt@adobe.com",
+     "type": "Secondary",
+     "description": [
+      {
+       "lang": "en",
+       "value": "CWE-787"
+      }
+     ]
+    }
+   ],
+   "configurations": [
+    {
+     "operator": "AND",
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:adobe:acrobat_dc:*:*:*:*:continuous:*:*:*",
+         "versionStartIncluding": "15.008.20082",
+         "versionEndExcluding": "23.008.20533",
+         "matchCriteriaId": "003DFCB5-0AB3-4758-AB2C-C94EABA7CCF7"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:adobe:acrobat_reader_dc:*:*:*:*:continuous:*:*:*",
+         "versionStartIncluding": "15.008.20082",
+         "versionEndExcluding": "23.008.20533",
+         "matchCriteriaId": "E194EB06-36A7-486A-A556-A4A51256C8F7"
+        }
+       ]
+      },
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": false,
+         "criteria": "cpe:2.3:o:apple:macos:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "387021A0-AF36-463C-A605-32EA7DAC172E"
+        },
+        {
+         "vulnerable": false,
+         "criteria": "cpe:2.3:o:microsoft:windows:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "A2572D17-1DE6-457B-99CC-64AFD54487EA"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "operator": "AND",
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:adobe:acrobat:*:*:*:*:classic:*:*:*",
+         "versionStartIncluding": "20.001.30005",
+         "versionEndExcluding": "20.005.30574",
+         "matchCriteriaId": "D4DBB9C3-11E4-4F50-B7B8-B75DD384F8A5"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:adobe:acrobat_reader:*:*:*:*:classic:*:*:*",
+         "versionStartIncluding": "20.001.30005",
+         "versionEndExcluding": "20.005.30574",
+         "matchCriteriaId": "F2BDF07B-649F-4C09-B8DD-458FF75ADB35"
+        }
+       ]
+      },
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": false,
+         "criteria": "cpe:2.3:o:apple:macos:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "387021A0-AF36-463C-A605-32EA7DAC172E"
+        },
+        {
+         "vulnerable": false,
+         "criteria": "cpe:2.3:o:microsoft:windows:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "A2572D17-1DE6-457B-99CC-64AFD54487EA"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "references": [
+    {
+     "url": "https://helpx.adobe.com/security/products/acrobat/apsb24-07.html",
+     "source": "psirt@adobe.com",
+     "tags": [
+      "Patch",
+      "Vendor Advisory"
+     ]
+    },
+    {
+     "url": "https://helpx.adobe.com/security/products/acrobat/apsb24-07.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108",
+     "tags": [
+      "Patch",
+      "Vendor Advisory"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "CVE-2025-41244",
+   "sourceIdentifier": "security@vmware.com",
+   "published": "2025-09-29T17:15:30.843",
+   "lastModified": "2026-10-18T21:10:00.120",
+   "vulnStatus": "Analyzed",
+   "cveTags": [],
+   "descriptions": [
+    {
+     "lang": "en",
+     "value": "VMware Aria Operations and VMware Tools contain a local privilege escalation vulnerability. A malicious local actor with non-administrative privileges having access to a VM with VMware Tools installed and managed by Aria Operations with SDMP enabled may exploit this vulnerability to escalate privileges to root on the same VM."
+    },
+    {
+     "lang": "es",
+     "value": "VMware Aria Operations y VMware Tools contienen una vulnerabilidad de escalada de privilegios local. Un actor local malicioso con privilegios no administrativos que tenga acceso a una VM con VMware Tools instalado y gestionada por Aria Operations con SDMP habilitado puede explotar esta vulnerabilidad para escalar privilegios a root en la misma VM."
+    }
+   ],
+   "affected": [
+    {
+     "source": "security@vmware.com",
+     "affectedData": [
+      {
+       "vendor": "VMware",
+       "product": "VCF operations",
+       "defaultStatus": "unaffected",
+       "versions": [
+        {
+         "version": "9.0.x",
+         "lessThan": "9.0.1.0",
+         "versionType": "commercial",
+         "status": "affected"
+        }
+       ]
+      },
+      {
+       "vendor": "VMware",
+       "product": "VMware tools",
+       "defaultStatus": "unaffected",
+       "versions": [
+        {
+         "version": "13.x.x.x",
+         "lessThan": "13.0.5.0",
+         "versionType": "commercial",
+         "status": "affected"
+        },
+        {
+         "version": "12.5.x",
+         "lessThan": "12.5.4",
+         "versionType": "commercial",
+         "status": "affected"
+        }
+       ]
+      },
+      {
+       "vendor": "VMware",
+       "product": "VMware Aria Operations",
+       "defaultStatus": "unaffected",
+       "versions": [
+        {
+         "version": "8.18.x",
+         "lessThan": "8.18.5",
+         "versionType": "commercial",
+         "status": "affected"
+        }
+       ]
+      },
+      {
+       "vendor": "VMware",
+       "product": "VMware Cloud Foundation",
+       "defaultStatus": "unaffected",
+       "versions": [
+        {
+         "version": "5.x",
+         "lessThan": "8.18.5",
+         "versionType": "commercial",
+         "status": "affected"
+        },
+        {
+         "version": "4.x",
+         "lessThan": "8.18.5",
+         "versionType": "commercial",
+         "status": "affected"
+        }
+       ]
+      },
+      {
+       "vendor": "VMware",
+       "product": "VMware Telco Cloud Platform",
+       "defaultStatus": "unaffected",
+       "versions": [
+        {
+         "version": "5.x",
+         "lessThan": "8.18.5",
+         "versionType": "commercial",
+         "status": "affected"
+        },
+        {
+         "version": "4.x",
+         "lessThan": "8.18.5",
+         "versionType": "commercial",
+         "status": "affected"
+        }
+       ]
+      },
+      {
+       "vendor": "VMware",
+       "product": "VMware Telco Cloud Infrastructure",
+       "defaultStatus": "unaffected",
+       "versions": [
+        {
+         "version": "3.x",
+         "lessThan": "8.18.5",
+         "versionType": "commercial",
+         "status": "affected"
+        },
+        {
+         "version": "2.x",
+         "lessThan": "8.18.5",
+         "versionType": "commercial",
+         "status": "affected"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "metrics": {
+    "cvssMetricV31": [
+     {
+      "source": "security@vmware.com",
+      "type": "Secondary",
+      "cvssData": {
+       "version": "3.1",
+       "vectorString": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+       "baseScore": 7.8,
+       "baseSeverity": "HIGH",
+       "attackVector": "LOCAL",
+       "attackComplexity": "LOW",
+       "privilegesRequired": "LOW",
+       "userInteraction": "NONE",
+       "scope": "UNCHANGED",
+       "confidentialityImpact": "HIGH",
+       "integrityImpact": "HIGH",
+       "availabilityImpact": "HIGH"
+      },
+      "exploitabilityScore": 1.8,
+      "impactScore": 5.9
+     }
+    ],
+    "ssvcV203": [
+     {
+      "source": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+      "ssvcData": {
+       "timestamp": "2025-10-30T03:56:00.543163Z",
+       "id": "CVE-2025-41244",
+       "options": [
+        {
+         "exploitation": "active"
+        },
+        {
+         "automatable": "no"
+        },
+        {
+         "technicalImpact": "total"
+        }
+       ],
+       "role": "CISA Coordinator",
+       "version": "2.0.3"
+      }
+     }
+    ]
+   },
+   "cisaExploitAdd": "2025-10-30",
+   "cisaActionDue": "2025-11-20",
+   "cisaRequiredAction": "Apply mitigations per vendor instructions, follow applicable BOD 22-01 guidance for cloud services, or discontinue use of the product if mitigations are unavailable.",
+   "cisaVulnerabilityName": "Broadcom VMware Aria Operations and VMware Tools Privilege Defined with Unsafe Actions Vulnerability",
+   "weaknesses": [
+    {
+     "source": "security@vmware.com",
+     "type": "Secondary",
+     "description": [
+      {
+       "lang": "en",
+       "value": "CWE-267"
+      }
+     ]
+    }
+   ],
+   "configurations": [
+    {
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:vmware:aria_operations:*:*:*:*:*:*:*:*",
+         "versionStartIncluding": "8.0",
+         "versionEndExcluding": "8.18.5",
+         "matchCriteriaId": "B78BDDD1-DE10-4839-9754-3A0D00F47986"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:vmware:cloud_foundation:*:*:*:*:*:*:*:*",
+         "versionStartIncluding": "4.0",
+         "versionEndIncluding": "5.2.2",
+         "matchCriteriaId": "D1B12C7E-0819-472E-8E79-477B47D603DD"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:vmware:cloud_foundation_operations:9.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "1A8C1A33-352A-4F7E-A284-F966F21EB0B3"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:vmware:open_vm_tools:*:*:*:*:*:*:*:*",
+         "versionStartIncluding": "11.2.0",
+         "versionEndExcluding": "12.5.4",
+         "matchCriteriaId": "3A809AD4-BFBA-4618-84A2-E638C13DC01F"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:vmware:open_vm_tools:13.0.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "7F8B48DE-44C4-4581-A52F-5631B0EB33E6"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:vmware:telco_cloud_infrastructure:*:*:*:*:*:*:*:*",
+         "versionStartIncluding": "2.2",
+         "versionEndIncluding": "3.0",
+         "matchCriteriaId": "904AA81A-D1C3-4DAF-BB2C-C51FEDF5B3F6"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:vmware:telco_cloud_platform:*:*:*:*:*:*:*:*",
+         "versionStartIncluding": "4.0",
+         "versionEndExcluding": "5.0.1",
+         "matchCriteriaId": "A9C444F9-5647-451F-B239-252841E440C7"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:o:debian:debian_linux:11.0:*:*:*:*:*:*:*",
+         "matchCriteriaId": "FA6FEEC2-9F11-4643-8827-749718254FED"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "operator": "AND",
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:vmware:tools:*:*:*:*:*:*:*:*",
+         "versionStartIncluding": "12.5.0",
+         "versionEndExcluding": "12.5.4",
+         "matchCriteriaId": "15832760-0347-4BB8-9B78-DE47CBE21957"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:vmware:tools:*:*:*:*:*:*:*:*",
+         "versionStartIncluding": "13.0.0.0",
+         "versionEndExcluding": "13.0.5.0",
+         "matchCriteriaId": "60F4C0D6-B650-4BE4-9E8F-DBFCFF7D8390"
+        }
+       ]
+      },
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": false,
+         "criteria": "cpe:2.3:o:linux:linux_kernel:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "703AF700-7A70-47E2-BC3A-7FD03B3CA9C1"
+        },
+        {
+         "vulnerable": false,
+         "criteria": "cpe:2.3:o:microsoft:windows:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "A2572D17-1DE6-457B-99CC-64AFD54487EA"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "references": [
+    {
+     "url": "http://support.broadcom.com/group/ecx/support-content-view/-/support-content/Security%20Advisories/VMSA-2025-0015--VMware-Aria-Operations-and-VMware-Tools-updates-address-multiple-vulnerabilities--CVE-2025-41244-CVE-2025-41245--CVE-2025-41246-/36149",
+     "source": "security@vmware.com",
+     "tags": [
+      "Permissions Required"
+     ]
+    },
+    {
+     "url": "http://www.openwall.com/lists/oss-security/2025/09/29/10",
+     "source": "af854a3a-2127-422b-91ae-364da2661108",
+     "tags": [
+      "Mailing List",
+      "Third Party Advisory"
+     ]
+    },
+    {
+     "url": "https://lists.debian.org/debian-lts-announce/2025/10/msg00000.html",
+     "source": "af854a3a-2127-422b-91ae-364da2661108",
+     "tags": [
+      "Mailing List",
+      "Third Party Advisory"
+     ]
+    },
+    {
+     "url": "https://blog.nviso.eu/2025/09/29/you-name-it-vmware-elevates-it-cve-2025-41244/",
+     "source": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+     "tags": [
+      "Exploit",
+      "Third Party Advisory"
+     ]
+    },
+    {
+     "url": "https://support.broadcom.com/web/ecx/support-content-notification/-/external/content/SecurityAdvisories/0/36149",
+     "source": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+     "tags": [
+      "Vendor Advisory"
+     ]
+    },
+    {
+     "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2025-41244",
+     "source": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+     "tags": [
+      "US Government Resource"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "CVE-2024-6053",
+   "sourceIdentifier": "psirt@teamviewer.com",
+   "published": "2024-08-28T17:15:11.163",
+   "lastModified": "2026-06-17T08:17:11.213",
+   "vulnStatus": "Analyzed",
+   "cveTags": [],
+   "descriptions": [
+    {
+     "lang": "en",
+     "value": "Improper access control in the clipboard synchronization feature in TeamViewer Full Client prior version 15.57 and TeamViewer Meeting prior version 15.55.3 can lead to unintentional sharing of the clipboard with the current presenter of a meeting."
+    },
+    {
+     "lang": "es",
+     "value": "Un control de acceso inadecuado en la función de sincronización del portapapeles en TeamViewer Full Client versión anterior a 15.57 y TeamViewer Meeting versión anterior a 15.55.3 puede provocar que se comparta involuntariamente el portapapeles con el presentador actual de una reunión."
+    }
+   ],
+   "affected": [
+    {
+     "source": "psirt@teamviewer.com",
+     "affectedData": [
+      {
+       "vendor": "TeamViewer",
+       "product": "Meeting",
+       "defaultStatus": "unaffected",
+       "platforms": [
+        "Windows",
+        "MacOS"
+       ],
+       "versions": [
+        {
+         "version": "0",
+         "lessThan": "15.55.3",
+         "versionType": "custom",
+         "status": "affected"
+        }
+       ]
+      },
+      {
+       "vendor": "TeamViewer",
+       "product": "Meeting",
+       "defaultStatus": "unaffected",
+       "platforms": [
+        "Android"
+       ],
+       "versions": [
+        {
+         "version": "0",
+         "lessThan": "15.44.7",
+         "versionType": "custom",
+         "status": "affected"
+        }
+       ]
+      },
+      {
+       "vendor": "TeamViewer",
+       "product": "Meeting",
+       "defaultStatus": "unaffected",
+       "platforms": [
+        "iOS"
+       ],
+       "versions": [
+        {
+         "version": "0",
+         "lessThan": "15.57",
+         "versionType": "custom",
+         "status": "affected"
+        }
+       ]
+      },
+      {
+       "vendor": "TeamViewer",
+       "product": "Remote Full Client",
+       "defaultStatus": "unaffected",
+       "platforms": [
+        "Windows",
+        "Linux",
+        "MacOS"
+       ],
+       "versions": [
+        {
+         "version": "0",
+         "lessThan": "15.57.3",
+         "versionType": "custom",
+         "status": "affected"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "metrics": {
+    "cvssMetricV31": [
+     {
+      "source": "psirt@teamviewer.com",
+      "type": "Secondary",
+      "cvssData": {
+       "version": "3.1",
+       "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:N/A:N",
+       "baseScore": 4.3,
+       "baseSeverity": "MEDIUM",
+       "attackVector": "NETWORK",
+       "attackComplexity": "LOW",
+       "privilegesRequired": "NONE",
+       "userInteraction": "REQUIRED",
+       "scope": "UNCHANGED",
+       "confidentialityImpact": "LOW",
+       "integrityImpact": "NONE",
+       "availabilityImpact": "NONE"
+      },
+      "exploitabilityScore": 2.8,
+      "impactScore": 1.4
+     },
+     {
+      "source": "nvd@nist.gov",
+      "type": "Primary",
+      "cvssData": {
+       "version": "3.1",
+       "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:N/A:N",
+       "baseScore": 4.3,
+       "baseSeverity": "MEDIUM",
+       "attackVector": "NETWORK",
+       "attackComplexity": "LOW",
+       "privilegesRequired": "NONE",
+       "userInteraction": "REQUIRED",
+       "scope": "UNCHANGED",
+       "confidentialityImpact": "LOW",
+       "integrityImpact": "NONE",
+       "availabilityImpact": "NONE"
+      },
+      "exploitabilityScore": 2.8,
+      "impactScore": 1.4
+     }
+    ],
+    "ssvcV203": [
+     {
+      "source": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+      "ssvcData": {
+       "timestamp": "2024-08-28T17:46:55.180517Z",
+       "id": "CVE-2024-6053",
+       "options": [
+        {
+         "exploitation": "none"
+        },
+        {
+         "automatable": "no"
+        },
+        {
+         "technicalImpact": "partial"
+        }
+       ],
+       "role": "CISA Coordinator",
+       "version": "2.0.3"
+      }
+     }
+    ]
+   },
+   "weaknesses": [
+    {
+     "source": "psirt@teamviewer.com",
+     "type": "Secondary",
+     "description": [
+      {
+       "lang": "en",
+       "value": "CWE-359"
+      }
+     ]
+    },
+    {
+     "source": "nvd@nist.gov",
+     "type": "Primary",
+     "description": [
+      {
+       "lang": "en",
+       "value": "NVD-CWE-Other"
+      }
+     ]
+    }
+   ],
+   "configurations": [
+    {
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:teamviewer:meeting:*:*:*:*:*:android:*:*",
+         "versionEndExcluding": "15.44.7",
+         "matchCriteriaId": "F013628F-FC2F-4E14-B1D4-737C1391BD79"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:teamviewer:meeting:*:*:*:*:*:macos:*:*",
+         "versionEndExcluding": "15.55.3",
+         "matchCriteriaId": "8BE9FCAD-E9D1-4217-A022-0C138E24719D"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:teamviewer:meeting:*:*:*:*:*:windows:*:*",
+         "versionEndExcluding": "15.55.3",
+         "matchCriteriaId": "F1F7C2AE-D5D1-48B1-96E1-2C815F9997F7"
+        },
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:teamviewer:meeting:*:*:*:*:*:iphone_os:*:*",
+         "versionEndExcluding": "15.57",
+         "matchCriteriaId": "5E11E9BA-101C-46F8-9A3C-FF8FF69BE17D"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "operator": "AND",
+     "nodes": [
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": true,
+         "criteria": "cpe:2.3:a:teamviewer:teamviewer:*:*:*:*:*:*:*:*",
+         "versionEndExcluding": "15.57.3",
+         "matchCriteriaId": "89B97B88-D6DF-40C8-9727-3BC857B181BF"
+        }
+       ]
+      },
+      {
+       "operator": "OR",
+       "negate": false,
+       "cpeMatch": [
+        {
+         "vulnerable": false,
+         "criteria": "cpe:2.3:o:apple:macos:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "387021A0-AF36-463C-A605-32EA7DAC172E"
+        },
+        {
+         "vulnerable": false,
+         "criteria": "cpe:2.3:o:linux:linux_kernel:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "703AF700-7A70-47E2-BC3A-7FD03B3CA9C1"
+        },
+        {
+         "vulnerable": false,
+         "criteria": "cpe:2.3:o:microsoft:windows:-:*:*:*:*:*:*:*",
+         "matchCriteriaId": "A2572D17-1DE6-457B-99CC-64AFD54487EA"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "references": [
+    {
+     "url": "https://www.teamviewer.com/en/resources/trust-center/security-bulletins/tv-2024-1007/",
+     "source": "psirt@teamviewer.com",
+     "tags": [
+      "Vendor Advisory"
+     ]
+    }
+   ]
+  }
+ ]
+}

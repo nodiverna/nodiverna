@@ -1,0 +1,24 @@
+/* Hardware (device-hardware.tsx): the subarea bar with the copy button, the status line and the
+   grids of kit cards. The cards, KPI rows, tables and states are kit parts with their own styles. */
+.sd-console .dhw-workspace { display: grid; gap: 16px; min-width: 0; color: var(--sd-ink); }
+.sd-console .dhw-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-width: 0; }
+.sd-console .dhw-toolbar > .sdx-btn { flex-shrink: 0; }
+.sd-console .dhw-toolbar > .sdx-tabbar { flex: 1 1 auto; min-width: 0; }
+.sd-console .dhw-panel { display: grid; gap: 16px; min-width: 0; }
+/* The status line is meta text: the inventory time and what is missing from it. */
+.sd-console .dhw-status { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0; color: var(--sd-muted); font-size: 12px; }
+.sd-console .dhw-status > span + span { padding-left: 8px; border-left: 1px solid var(--sd-line); }
+.sd-console .dhw-status time { font-variant-numeric: tabular-nums; }
+.sd-console .dhw-notes { margin-top: 4px; }
+.sd-console .dhw-notes summary { cursor: pointer; font-weight: 600; }
+.sd-console .dhw-notes ul { margin: 4px 0 0; padding-left: 16px; }
+/* Components: 3 columns from 1151px, 2 down to 761px, 1 below. */
+.sd-console .dhw-parts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; min-width: 0; }
+/* Fact cards (CPU, System & BIOS): a single card never spans a wide screen. */
+.sd-console .dhw-fact-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr)); gap: 16px; min-width: 0; }
+.sd-console .dhw-chart { min-width: 0; }
+@media (max-width: 1150px) { .sd-console .dhw-parts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) {
+  .sd-console .dhw-parts { grid-template-columns: minmax(0, 1fr); }
+  .sd-console .dhw-toolbar { flex-wrap: wrap; }
+}

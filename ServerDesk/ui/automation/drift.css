@@ -1,0 +1,52 @@
+/* Automation → Configuration drift (ui/automation/drift-panel.tsx, ui/automation/drift-overview.tsx) on the console kit:
+   the cards and tables are kit parts; these rules cover the path cells, the history toolbar and the
+   policy disclosure with its monitoring switch. Tokens only, 4px rhythm. */
+.drift-path { display: block; max-width: 100%; white-space: normal; overflow-wrap: anywhere; font-size: 12px; }
+.drift-range { display: flex; align-items: center; gap: 8px; color: var(--sd-muted); font-size: 12px; }
+.drift-range select { min-width: 160px; }
+.drift-retention { display: flex; align-items: center; gap: 4px; color: var(--sd-muted); font-size: 12px; white-space: nowrap; }
+
+/* The policy: a card-shaped disclosure below the history. */
+.drift-policy-disclosure { padding: 0; overflow: hidden; }
+.drift-policy-disclosure > summary { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 48px; padding: 12px 16px; cursor: pointer; list-style: none; font-size: 14px; font-weight: 650; }
+.drift-policy-disclosure > summary::-webkit-details-marker { display: none; }
+.drift-policy-disclosure > summary:hover { background: var(--sdx-hover, color-mix(in srgb, var(--sd-ink) 4%, var(--sd-panel))); }
+.drift-policy-disclosure > summary:focus-visible { outline: 2px solid var(--sd-accent); outline-offset: -4px; border-radius: var(--sd-radius); }
+.drift-policy-title, .drift-policy-end { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.drift-policy-title > svg, .drift-policy-end > svg { flex-shrink: 0; color: var(--sd-muted); }
+.drift-policy-end > span { color: var(--sd-muted); font-size: 12px; font-weight: 400; }
+.drift-policy-end > svg { transition: transform .16s var(--sd-ease-out); }
+.drift-policy-disclosure[open] > summary { border-bottom: 1px solid var(--sd-soft-line); }
+.drift-policy-disclosure[open] .drift-policy-end > svg { transform: rotate(180deg); }
+.drift-editor { padding: 16px; min-width: 0; }
+.drift-fieldset { display: grid; gap: 12px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.drift-fieldset > legend { margin-bottom: 8px; padding: 0; font-size: 13px; font-weight: 650; }
+.drift-help { margin: 0; color: var(--sd-muted); font-size: 12px; }
+
+/* The monitoring switch: a button with role="switch" in the look of the console switch. */
+.drift-switch { display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 0; border: 0; background: none; color: var(--sd-muted); font: inherit; font-size: 12px; cursor: pointer; }
+.drift-switch > span:first-child, .drift-switch > svg { box-sizing: content-box; width: 16px; height: 16px; padding: 4px; border-radius: 99px; background: color-mix(in srgb, var(--sd-ink) 19%, var(--sd-panel)); }
+.drift-switch > span:first-child::after { content: ""; display: block; width: 16px; height: 16px; border-radius: 99px; background: var(--sd-on-accent); box-shadow: var(--sd-shadow-sm); transition: transform .2s var(--sd-ease-spring); }
+.drift-switch > span:first-child { width: 32px; }
+.drift-switch[aria-checked="true"] > span:first-child { background: var(--sd-accent-grad); }
+.drift-switch[aria-checked="true"] > span:first-child::after { transform: translateX(16px); }
+.drift-switch > svg { color: var(--sd-accent-strong); background: var(--sd-accent-soft); }
+.drift-switch[aria-disabled="true"] { cursor: not-allowed; }
+.drift-switch[aria-disabled="true"] > span:first-child { opacity: .48; }
+.drift-switch:active:not([aria-disabled="true"]) > span:first-child { transform: scale(.96); }
+
+.drift-source-toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
+.drift-path-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.drift-path-row { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 4px 4px 4px 12px; border: 1px solid var(--sd-line); border-radius: var(--sd-radius-sm); }
+.drift-path-row > span { flex: 1; min-width: 0; font-size: 12px; overflow-wrap: anywhere; }
+.drift-manual-path { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 8px; }
+.drift-manual-path > .sdx-field { flex: 1; min-width: 200px; }
+.drift-picker { min-width: 0; padding: 12px; border: 1px solid var(--sd-line); border-radius: var(--sd-radius); }
+.drift-config-list { grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); }
+.drift-limits > summary { width: fit-content; cursor: pointer; color: var(--sd-muted); font-size: 12px; font-weight: 600; }
+.drift-limit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 12px; margin-top: 12px; }
+
+/* Details drawer. */
+.drift-detail-title { overflow-wrap: anywhere; font-size: 12px; }
+.drift-detail-meta { margin: 0 0 12px; color: var(--sd-muted); font-size: 12px; line-height: 1.5; }
+@media (prefers-reduced-motion: reduce) { .drift-policy-end > svg, .drift-switch > span:first-child::after { transition: none; } }

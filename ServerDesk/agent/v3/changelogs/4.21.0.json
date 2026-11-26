@@ -1,0 +1,8 @@
+{
+  "version": "4.21.0",
+  "features": [
+    "Jobs that change nothing on the device, for example inventory refresh, update search, Defender scans and diagnostic reads, run next to each other and next to one changing job.",
+    "Changing jobs stay one at a time. An agent update, an uninstall, a plugin installation and a restart or shutdown need the device alone."
+  ],
+  "fixes": []
+}

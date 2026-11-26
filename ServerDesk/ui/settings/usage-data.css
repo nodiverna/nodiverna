@@ -1,0 +1,11 @@
+/* Usage data: the question at the first setup and the card on the page Usage data (ui/settings/usage-data.tsx). */
+.sdx-usage-dialog { max-height: calc(100dvh - 2rem); overflow-y: auto; }
+.sdx-usage-hint { margin: 0; color: var(--sd-muted); font-size: 12px; line-height: 1.5; }
+.sdx-usage-body { display: grid; gap: var(--sd-space-4); }
+.sdx-usage-kept { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sd-space-2) var(--sd-space-3); padding: var(--sd-space-3); border: 1px solid var(--sd-line); border-radius: var(--sd-radius-sm); }
+.sdx-usage-kept > p { flex: 1 1 260px; margin: 0; color: var(--sd-ink); font-size: 12.5px; line-height: 1.5; }
+.sdx-usage-sent { display: grid; gap: var(--sd-space-2); }
+.sdx-usage-sent > h3 { margin: 0; color: var(--sd-muted); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+/* Usage data is off (view.enabled false): the card stays recognizable but blurred, dimmed and out of reach. The
+   wrapper is also inert and aria-hidden in usage-data-page.tsx. Static: no transition, no keyframes. */
+.sdx-usage-disabled { filter: blur(1.5px); opacity: .75; pointer-events: none; user-select: none; }

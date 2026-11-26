@@ -1,0 +1,10 @@
+{
+  "version": "4.10.0",
+  "features": [
+    "The agent reports 30 days of crashes: blue screens with stop code and parameters, unexpected shutdowns, WHEA hardware errors. Stop code and probable driver come from minidumps that stay on the device.",
+    "The agent reports the edition, installation type, display version, update revision, product name and build of Windows, so that the portal can show the support status of the operating system.",
+    "The agent reports the installed programs from the uninstall keys of the registry, without paths or user names. It sends the list only when its checksum changes.",
+    "The agent reports the BitLocker state of every volume: encryption, protection, method and the kinds of key protectors. It never reads recovery passwords or other secrets."
+  ],
+  "fixes": []
+}

@@ -1,0 +1,8 @@
+{
+  "version": "4.13.1",
+  "features": [],
+  "fixes": [
+    "The agent opens each minidump without following junctions or symbolic links and checks the opened file before it reads it.",
+    "The agent no longer looks up a driver file whose name is a reserved Windows device name such as CON or NUL."
+  ]
+}

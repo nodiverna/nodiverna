@@ -1,0 +1,175 @@
+# Nodiverna (ServerDesk) with PostgreSQL and Caddy HTTPS in front. This file is
+# self-contained: put it next to .env.runtime (template:
+# deploy/runtime.env.example, with a generated DATABASE_PASSWORD) and run
+#   docker compose --env-file .env.runtime pull
+#   docker compose --env-file .env.runtime run --rm app node scripts/selfhost.mjs migrate
+#   docker compose --env-file .env.runtime run --rm app node scripts/selfhost.mjs bootstrap-owner
+#   docker compose --env-file .env.runtime up -d
+# run starts the database (service db) first and waits until it is healthy.
+# Requires Docker Compose 2.23.1 or later (configs.content). SERVERDESK_IMAGE
+# selects another image or a fixed version tag. The app runs the daily
+# maintenance itself (docs/self-hosting.md, "Maintenance").
+# The database (service db) is only on the internal network "database", which
+# has no outbound access. Only the app joins it; the proxy cannot reach the
+# database.
+name: serverdesk
+
+# The image and the storage environment of the app.
+x-image: &image ${SERVERDESK_IMAGE:-docker.io/lostindreamz/nodiverna:latest}
+x-runtime-environment: &runtime-environment
+  NODE_ENV: production
+  DATABASE_URL: ${DATABASE_URL:-postgres://serverdesk@db:5432/serverdesk}
+  OBJECT_STORAGE_DRIVER: ${OBJECT_STORAGE_DRIVER:-filesystem}
+  OBJECT_STORAGE_PATH: ${OBJECT_STORAGE_PATH:-/data/objects}
+
+services:
+  # PostgreSQL 17. The volume keeps the data and the password of its first
+  # start; to change DATABASE_PASSWORD later, also run ALTER ROLE (docs/self-hosting.md).
+  # db is only on the internal network "database", which only the app joins.
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    networks: [database]
+    environment:
+      POSTGRES_USER: serverdesk
+      POSTGRES_DB: serverdesk
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?Set DATABASE_PASSWORD in .env.runtime}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    # pg_isready -h 127.0.0.1 asks over TCP, so the init-time server on the
+    # Unix socket does not count as ready.
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "serverdesk", "-d", "serverdesk"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    security_opt:
+      - no-new-privileges:true
+
+  app:
+    image: *image
+    restart: unless-stopped
+    init: true
+    env_file: .env.runtime
+    environment:
+      <<: *runtime-environment
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+      # The public root of Caddy's local CA, written by ca-export; missing with a public certificate.
+      PORTAL_CA_FILE: /portal-ca/root.crt
+    volumes:
+      - app-data:/data
+      - portal-ca:/portal-ca:ro
+    expose:
+      - "3000"
+    # default: the proxy and outbound access (the usage report of the daily
+    # maintenance); database: the db service.
+    networks: [default, database]
+    depends_on:
+      db:
+        condition: service_healthy
+    stop_grace_period: 30s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+  proxy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    ports:
+      - "${CADDY_HTTP_PORT:-8080}:80"
+      - "${CADDY_HTTPS_PORT:-8443}:443"
+    environment:
+      CADDY_ADDRESS: ${CADDY_ADDRESS:-https://localhost}
+      CADDY_SERVER_NAME: ${CADDY_SERVER_NAME:-localhost}
+      SITE_ORIGIN: ${SITE_ORIGIN:-https://localhost:8443}
+      CADDY_TLS: ${CADDY_TLS:-internal}
+    configs:
+      - source: caddyfile
+        target: /etc/caddy/Caddyfile
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+
+  # Copies only the public root certificate of Caddy's local CA (tls internal)
+  # into the volume portal-ca, which the app mounts read-only (PORTAL_CA_FILE).
+  # Install scripts embed it and offer its import (docs/self-hosting.md, "HTTPS
+  # with the local Caddy CA"). Same image as the proxy, no network, read-only
+  # access to Caddy's data; it never reads the private key or the intermediate.
+  # With another CADDY_TLS value (a public certificate) it removes the copy.
+  ca-export:
+    image: caddy:2.10-alpine
+    init: true
+    restart: unless-stopped
+    network_mode: none
+    # The script writes only to the /export volume.
+    read_only: true
+    environment:
+      CADDY_TLS: ${CADDY_TLS:-internal}
+    volumes:
+      - caddy-data:/caddy:ro
+      - portal-ca:/export
+    # $$ keeps Compose from interpolating; the shell reads the variables.
+    command:
+      - /bin/sh
+      - -c
+      - |
+        source=/caddy/caddy/pki/authorities/local/root.crt
+        while :; do
+          if [ "$$CADDY_TLS" = internal ] && [ -f "$$source" ]; then
+            if ! cmp -s "$$source" /export/root.crt; then
+              cp "$$source" /export/root.crt.tmp && chmod 0644 /export/root.crt.tmp && mv -f /export/root.crt.tmp /export/root.crt
+            fi
+          else
+            rm -f /export/root.crt /export/root.crt.tmp
+          fi
+          sleep 60
+        done
+    depends_on:
+      - proxy
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+# Same text as deploy/Caddyfile; $$ keeps Compose from interpolating, so Caddy
+# reads its own {$VARIABLE:default} placeholders from the proxy environment.
+configs:
+  caddyfile:
+    content: |
+      {
+          auto_https disable_redirects
+          # IP clients may omit SNI; use the configured certificate name then.
+          default_sni {$$CADDY_SERVER_NAME:localhost}
+      }
+
+      http://{$$CADDY_SERVER_NAME:localhost} {
+          # Preserve the externally published HTTPS port, e.g. NAS :8443.
+          redir {$$SITE_ORIGIN:https://localhost:8443}{uri} permanent
+      }
+
+      {$$CADDY_ADDRESS:https://localhost} {
+          tls {$$CADDY_TLS:internal}
+          encode zstd gzip
+          reverse_proxy app:3000 {
+              # App has no published port: this header is supplied only by this proxy.
+              header_up X-ServerDesk-Client-IP {remote_host}
+          }
+      }
+
+# Internal: no outbound access, and only the services that list it can connect.
+networks:
+  database:
+    internal: true
+
+volumes:
+  db-data:
+  app-data:
+  caddy-data:
+  caddy-config:
+  portal-ca:

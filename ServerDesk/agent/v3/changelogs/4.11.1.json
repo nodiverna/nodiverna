@@ -1,0 +1,10 @@
+{
+  "version": "4.11.1",
+  "features": [],
+  "fixes": [
+    "The agent reads drivers and Device Manager errors without WMI and checks driver signatures offline. The driver list now arrives on devices where the WMI query timed out.",
+    "When an inventory fails, the agent reports a coded error. The portal shows that the driver list is not available or out of date instead of an empty area.",
+    "Log lines for failed inventories name the collector, the exception type, the error code and the elapsed time instead of only the Windows message.",
+    "After a proxy or portal failure, the terminal and channel connections wait longer with each attempt, up to 30 seconds, instead of retrying at once."
+  ]
+}

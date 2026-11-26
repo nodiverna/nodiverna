@@ -1,0 +1,8 @@
+{
+  "version": "4.7.3",
+  "features": [],
+  "fixes": [
+    "Der Worker baut wieder HTTPS-Verbindungen zum Portal auf: Sein Dienst läuft mit eigener, nicht schreibbeschränkter Service-SID, weil Schannel sonst keine Anmeldeinformationen erhält.",
+    "Der Auftragskanal übergibt Ergebnisse und Übertragungsstände wieder an den Broker, statt bei jedem Durchlauf mit einem JSON-Fehler abzubrechen."
+  ]
+}

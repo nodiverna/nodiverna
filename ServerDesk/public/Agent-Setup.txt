@@ -1,0 +1,36 @@
+NODIVERNA – WINDOWS AGENT
+=========================
+
+Installation (Windows Server 2022/2025 or Windows 11 Pro/Enterprise, x64):
+1. In the portal, open "Gerät hinzufügen" (add device). Create the registration and download the current ServerDesk.Agent.exe.
+2. Copy both files to the target device. Open PowerShell as administrator in the download folder.
+3. Use the actual name of the registration file:
+   .\ServerDesk.Agent.exe --install --config .\ServerDesk-DEVICE.registration.json
+4. After a successful installation, delete the downloaded registration file. It contains credentials.
+
+The agent needs HTTPS access to the portal. Install your own CA in the certificate store of the local computer. You do not need to install .NET separately.
+
+Update or repair an installed agent (use the current downloaded EXE outside the agent directory):
+   .\ServerDesk.Agent.exe --install
+The device identity and the mode stay. Finish running jobs, terminals and transfers first.
+
+Control the service (PowerShell as administrator):
+   Get-Service -Name ServerDeskAgent
+   Stop-Service -Name ServerDeskAgent -ErrorAction Stop
+   Start-Service -Name ServerDeskAgent -ErrorAction Stop
+   Restart-Service -Name ServerDeskAgent -ErrorAction Stop
+
+Logs and the last confirmed portal report:
+   Get-Content -LiteralPath "$env:ProgramData\ServerDesk\agent-v3.log" -Tail 80 -Wait
+   Get-Content -LiteralPath "$env:ProgramData\ServerDesk\v3-health.json"
+The previous log is agent-v3.log.1. Stop the live view with Ctrl+C. An old heartbeat does not confirm a current connection.
+
+Temporary files:
+Only the extracted runtime cache in %ProgramData%\ServerDesk\runtime can be made again, after the agent has stopped fully. Finish an installation or update first.
+Keep config.bin, current, previous, updates and the job and transfer files. With your own SERVERDESK_DATA, the paths configured there apply.
+
+Uninstallation:
+1. Finish jobs and sessions, and let a running agent update complete.
+2. Run the downloaded EXE outside the agent directory as administrator:
+   .\ServerDesk.Agent.exe --uninstall
+3. In the portal, confirm "Gerät entfernen" (remove device). This also revokes the portal access.

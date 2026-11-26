@@ -1,0 +1,11 @@
+{
+  "version": "4.7.0",
+  "features": [
+    "Getrennter Agent: ein SYSTEM-Broker ohne Netzwerkzugriff führt nur portal-signierte Aufträge aus; ein eingeschränkter Worker übernimmt die Portalkommunikation.",
+    "Aufträge, Dateiübertragungen, Drift-Richtlinien und Terminal-Freigaben tragen eine ECDSA-Signatur des Portals, die an Gerät und kurze Gültigkeit gebunden ist."
+  ],
+  "fixes": [
+    "Der Geräteschlüssel verlässt den SYSTEM-Prozess nicht mehr; Tokenerneuerungen signiert der Broker nur nach Prüfung der Portal-Challenge.",
+    "Remotedesktop wird vom getrennten Agenten vorerst nicht angeboten; Installation erfordert eine neue Registrierungsdatei mit Job-Signierschlüssel."
+  ]
+}

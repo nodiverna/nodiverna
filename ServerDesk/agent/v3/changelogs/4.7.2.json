@@ -1,0 +1,7 @@
+{
+  "version": "4.7.2",
+  "features": [],
+  "fixes": [
+    "Das Worker-Log nennt bei Verbindungsfehlern zum Portal auch die eigentliche Ursache, etwa einen TLS- oder Zertifikatsfehler."
+  ]
+}

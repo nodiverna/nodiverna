@@ -1,0 +1,337 @@
+@import "tailwindcss";
+/* Shared keyframes and entrance motion; no other stylesheet defines keyframes. */
+@import "../ui/styles/motion.css";
+/* Design tokens: the only definition. Every color has a light and a
+   dark value through light-dark(); the active value follows color-scheme, which
+   only the three theme rules below set, plus the two fixed-scheme rules further
+   down (a fixed-dark and a fixed-light surface). No other stylesheet holds a color
+   value: every stylesheet below app/ uses these tokens.
+   <html data-theme> comes from the theme cookie (lib/theme.ts, app/layout.tsx).
+   Derived tones mix tokens, never fixed colors, so they flip with the theme.
+   Color schemes: the scheme-able tokens read their light and dark value
+   from scheme variables (--scheme-light-* / --scheme-dark-*). This block holds the
+   Aurora defaults; the scheme blocks after it override them per mode from
+   <html data-scheme-light data-scheme-dark> (lib/color-schemes.ts). */
+:root {
+  --sd-font: "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, system-ui, sans-serif;
+
+  /* Scheme variables, Aurora defaults. Mix ratios are percentages, not colors. */
+  --scheme-light-bg: #f4f6fa;
+  --scheme-dark-bg: #11151c;
+  --scheme-dark-panel: #191e27;
+  --scheme-light-glow: #5b5cf6;
+  --scheme-dark-glow: #5b5cf6;
+  --scheme-light-accent: #5b5cf6;
+  --scheme-dark-accent: #5b5cf6;
+  --scheme-light-on-accent: #fff;
+  --scheme-dark-on-accent: #fff;
+  --scheme-light-from: #7c4dff;
+  --scheme-dark-from: #7c4dff;
+  --scheme-light-to: #1fb6ff;
+  --scheme-dark-to: #1fb6ff;
+  --scheme-light-strong: 80%;
+  --scheme-dark-strong: 55%;
+  --scheme-light-soft: 9%;
+  --scheme-dark-soft: 20%;
+  /* Surface color of the scheme at full strength, shown only by the menu swatch. Aurora tints no surface; its swatch shows the gradient end. */
+  --scheme-light-surface: #1fb6ff;
+  --scheme-dark-surface: #1fb6ff;
+
+  /* 60 % surface; glass follows the panel, so tinted dark panels keep matching glass */
+  --sd-bg: light-dark(var(--scheme-light-bg), var(--scheme-dark-bg));
+  --sd-panel: light-dark(#fff, var(--scheme-dark-panel));
+  --sd-selected: light-dark(#eef1f6, #262c38);
+  --sd-glass: light-dark(color-mix(in srgb, var(--sd-panel) 68%, transparent), color-mix(in srgb, var(--sd-panel) 72%, transparent));
+  --sd-glass-strong: light-dark(color-mix(in srgb, var(--sd-panel) 84%, transparent), color-mix(in srgb, var(--sd-panel) 90%, transparent));
+  --sd-glass-edge: light-dark(rgba(255, 255, 255, .75), rgba(255, 255, 255, .07));
+
+  /* 30 % ink and lines; --sd-contrast deepens tones in color-mix() */
+  --sd-ink: light-dark(#1d2939, #e6e9ef);
+  --sd-muted: light-dark(#667085, #9aa3b2);
+  --sd-line: light-dark(#e3e8ef, #2c3340);
+  --sd-soft-line: light-dark(#eef1f6, #232935);
+  --sd-contrast: light-dark(#0b1220, #f5f7fb);
+
+  /* 10 % accent (Aurora by default); --sd-glow tints the background glow */
+  --sd-accent: light-dark(var(--scheme-light-accent), var(--scheme-dark-accent));
+  --sd-on-accent: light-dark(var(--scheme-light-on-accent), var(--scheme-dark-on-accent));
+  --sd-accent-from: light-dark(var(--scheme-light-from), var(--scheme-dark-from));
+  --sd-accent-to: light-dark(var(--scheme-light-to), var(--scheme-dark-to));
+  --sd-accent-strong: light-dark(color-mix(in srgb, var(--sd-accent) var(--scheme-light-strong), var(--sd-contrast)), color-mix(in srgb, var(--sd-accent) var(--scheme-dark-strong), var(--sd-contrast)));
+  --sd-accent-soft: light-dark(color-mix(in srgb, var(--sd-accent) var(--scheme-light-soft), var(--sd-panel)), color-mix(in srgb, var(--sd-accent) var(--scheme-dark-soft), var(--sd-panel)));
+  --sd-glow: light-dark(var(--scheme-light-glow), var(--scheme-dark-glow));
+  --sd-accent-hi: color-mix(in srgb, var(--sd-accent) 84%, var(--sd-panel));
+  --sd-accent-grad: linear-gradient(135deg, var(--sd-accent-from), var(--sd-accent-to));
+
+  /* Status: signals only */
+  --sd-success: light-dark(#127e5b, #4ccf96);
+  --sd-success-bg: light-dark(#e8f6ef, #15291f);
+  --sd-warn: light-dark(#8b611d, #e7b553);
+  --sd-warn-bg: light-dark(#fff7e8, #2e2412);
+  --sd-danger: light-dark(#b42318, #ff7a6e);
+  --sd-danger-bg: light-dark(#fef3f2, #33191a);
+
+  /* Data marks: meters, sparklines and single-series chart lines and their cursor. They never take the scheme
+     accent, so a value never reads as a warning next to a warning pill (Ember's orange accent); no scheme block
+     sets them, so they are the same in every scheme. --sd-warn and --sd-danger mark a value only past its threshold. */
+  --sd-meter: light-dark(#3b6cd4, #6f9bff);
+  --sd-meter-track: light-dark(color-mix(in srgb, var(--sd-ink) 8%, transparent), color-mix(in srgb, var(--sd-ink) 12%, transparent));
+  /* Chart tooltips (ui/kit/chart.ts): an opaque surface, raised a little in dark mode, with ink and muted text. */
+  --sd-chart-tooltip-bg: light-dark(var(--sd-panel), color-mix(in srgb, var(--sd-ink) 6%, var(--sd-panel)));
+  --sd-chart-tooltip-ink: light-dark(var(--sd-ink), var(--sd-ink));
+  --sd-chart-tooltip-muted: light-dark(var(--sd-muted), var(--sd-muted));
+  --sd-chart-tooltip-line: light-dark(var(--sd-line), color-mix(in srgb, var(--sd-ink) 14%, var(--sd-panel)));
+
+  /* Shadows: a darker, stronger shadow color in dark mode */
+  --sd-shadow-color: light-dark(#101828, #000);
+  --sd-shadow-sm: 0 1px 2px light-dark(rgba(16, 24, 40, .05), rgba(0, 0, 0, .3));
+  --sd-shadow-md: 0 1px 2px light-dark(rgba(16, 24, 40, .04), rgba(0, 0, 0, .3)), 0 4px 12px -2px light-dark(rgba(16, 24, 40, .07), rgba(0, 0, 0, .4));
+  --sd-shadow-lg: 0 2px 6px light-dark(rgba(16, 24, 40, .06), rgba(0, 0, 0, .35)), 0 24px 48px -12px light-dark(rgba(16, 24, 40, .22), rgba(0, 0, 0, .65));
+
+  --sd-ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+  --sd-ease-out: cubic-bezier(.22, 1, .36, 1);
+  --sd-radius-sm: 8px;
+  --sd-radius: 12px;
+  --sd-radius-lg: 16px;
+  /* Motion durations: fast for press and hover, default for entrances and fades, slow for sheets and pop-overs. */
+  --sd-dur-fast: 120ms;
+  --sd-dur: 180ms;
+  --sd-dur-slow: 260ms;
+  /* Spacing on the 4px grid. */
+  --sd-space-1: 4px;
+  --sd-space-2: 8px;
+  --sd-space-3: 12px;
+  --sd-space-4: 16px;
+  --sd-space-5: 24px;
+  --sd-space-6: 32px;
+  /* Density: table row (one line, two lines), table head, KPI tile without a visual, the compact one-line KPI tile
+     (760px or narrower), gap below the page header. */
+  --sd-row-h: 44px;
+  --sd-row-h-2: 48px;
+  --sd-head-h: 36px;
+  --sd-kpi-h: 88px;
+  --sd-kpi-h-compact: 44px;
+  --sd-page-head-gap: 12px;
+  /* Navigator lines: a row of the device tree and a page line of the navigator lists. */
+  --sd-tree-row-h: 32px;
+  --sd-nav-row-h: 36px;
+  /* Column widths of a fixed-layout table (DataTable layout="fixed"), cell padding included. check: the selection
+     column of every table. The rest are the fleet Devices table, one width per column kind, each the widest value of
+     the sample devices in English and German rounded up to the grid: status for Online and Offline, status-long for the
+     waiting and maintenance labels (used while such a device is shown), actions for the 32px row menu button. The
+     Device column takes the rest of the width, at least device-min. */
+  --sd-col-check: 40px;
+  --sd-col-actions: 48px;
+  --sd-col-device-min: 164px;
+  --sd-col-status: 84px;
+  --sd-col-status-long: 192px;
+  --sd-col-health: 212px;
+  --sd-col-customer: 176px;
+  --sd-col-group: 96px;
+  --sd-col-description: 216px;
+  --sd-col-tags: 312px;
+  --sd-col-os: 228px;
+  --sd-col-manufacturer: 160px;
+  --sd-col-meter: 72px;
+  --sd-col-free: 84px;
+  --sd-col-agent: 112px;
+  --sd-col-os-support: 212px;
+  --sd-col-bitlocker: 148px;
+  --sd-col-disk-health: 144px;
+  --sd-col-ssd-wear: 120px;
+  --sd-col-battery: 76px;
+  --sd-col-last-seen: 120px;
+  /* The headline number of a KPI tile; tabular figures come from the kit rule (.sdx-kpi-value). */
+  --sd-text-kpi: 650 22px/1.1 var(--sd-font);
+}
+/* Compact density (lib/density.ts, <html data-density>, My account): shorter table rows and heads, KPI tiles, navigator
+   lines and page header gap. Only with a wide window and a fine pointer, so touch targets stay at least 32px; at 900px
+   or narrower and on touch screens compact looks like comfortable. The only data-density rule of the console. */
+@media (min-width: 901px) and (pointer: fine) {
+  :root[data-density="compact"] {
+    --sd-row-h: 36px;
+    --sd-row-h-2: 40px;
+    --sd-head-h: 32px;
+    --sd-kpi-h: 76px;
+    --sd-page-head-gap: 8px;
+    --sd-tree-row-h: 28px;
+    --sd-nav-row-h: 32px;
+  }
+}
+:root { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+:root[data-theme="system"] { color-scheme: light dark; }
+
+/* Color schemes. One block per scheme and mode; each declares only the
+   scheme variables of its mode, never a token. The block also matches the preview
+   swatch [data-scheme-swatch] in the scheme menu, so a swatch shows its scheme's
+   colors whatever scheme the page uses. Light mode: the primary color leads
+   (accent, gradient start), the secondary color ends the gradient and tints the
+   background and the glow. Dark mode: the roles swap. The secondary color leads,
+   the primary color tints the background and the panels. A color-mix() with #000
+   or a lead color marks an adjustment for contrast; tests/ui/styles/theme-tokens.mjs checks
+   every pair that such an adjustment is made for. */
+:root[data-scheme-light="aurora"], [data-scheme-swatch="aurora"] {
+  --scheme-light-surface: #1fb6ff;
+  --scheme-light-bg: #f4f6fa;
+  --scheme-light-glow: #5b5cf6;
+  --scheme-light-accent: #5b5cf6;
+  --scheme-light-on-accent: #fff;
+  --scheme-light-from: #7c4dff;
+  --scheme-light-to: #1fb6ff;
+  --scheme-light-strong: 80%;
+  --scheme-light-soft: 9%;
+}
+:root[data-scheme-dark="aurora"], [data-scheme-swatch="aurora"] {
+  --scheme-dark-surface: #1fb6ff;
+  --scheme-dark-bg: #11151c;
+  --scheme-dark-panel: #191e27;
+  --scheme-dark-glow: #5b5cf6;
+  --scheme-dark-accent: #5b5cf6;
+  --scheme-dark-on-accent: #fff;
+  --scheme-dark-from: #7c4dff;
+  --scheme-dark-to: #1fb6ff;
+  --scheme-dark-strong: 55%;
+  --scheme-dark-soft: 20%;
+}
+/* Brand colors: the scheme the Owner derives from the portal logo (lib/brand-scheme.ts, docs/branding.md). The
+   stylesheet /api/branding/scheme (linked in app/layout.tsx) declares the --brand-* values on :root; without it
+   every variable falls back to its Aurora value, so the scheme looks exactly like Aurora. No other stylesheet
+   declares --brand-*. */
+:root[data-scheme-light="brand"], [data-scheme-swatch="brand"] {
+  --scheme-light-surface: var(--brand-light-surface, #1fb6ff);
+  --scheme-light-bg: var(--brand-light-bg, #f4f6fa);
+  --scheme-light-glow: var(--brand-light-glow, #5b5cf6);
+  --scheme-light-accent: var(--brand-light-accent, #5b5cf6);
+  --scheme-light-on-accent: var(--brand-light-on-accent, #fff);
+  --scheme-light-from: var(--brand-light-from, #7c4dff);
+  --scheme-light-to: var(--brand-light-to, #1fb6ff);
+  --scheme-light-strong: var(--brand-light-strong, 80%);
+  --scheme-light-soft: var(--brand-light-soft, 9%);
+}
+:root[data-scheme-dark="brand"], [data-scheme-swatch="brand"] {
+  --scheme-dark-surface: var(--brand-dark-surface, #1fb6ff);
+  --scheme-dark-bg: var(--brand-dark-bg, #11151c);
+  --scheme-dark-panel: var(--brand-dark-panel, #191e27);
+  --scheme-dark-glow: var(--brand-dark-glow, #5b5cf6);
+  --scheme-dark-accent: var(--brand-dark-accent, #5b5cf6);
+  --scheme-dark-on-accent: var(--brand-dark-on-accent, #fff);
+  --scheme-dark-from: var(--brand-dark-from, #7c4dff);
+  --scheme-dark-to: var(--brand-dark-to, #1fb6ff);
+  --scheme-dark-strong: var(--brand-dark-strong, 55%);
+  --scheme-dark-soft: var(--brand-dark-soft, 20%);
+}
+/* Cyber Teal #0a5b61 & AquaFoam #7fffd4 */
+:root[data-scheme-light="cyber-teal"], [data-scheme-swatch="cyber-teal"] {
+  --scheme-light-surface: #7fffd4;
+  --scheme-light-bg: color-mix(in srgb, #7fffd4 8%, #f4f6fa);
+  --scheme-light-glow: #7fffd4;
+  --scheme-light-accent: #0a5b61;
+  --scheme-light-on-accent: #fff;
+  --scheme-light-from: #0a5b61;
+  --scheme-light-to: color-mix(in srgb, #0a5b61 76%, #7fffd4);
+  --scheme-light-strong: 80%;
+  --scheme-light-soft: 9%;
+}
+:root[data-scheme-dark="cyber-teal"], [data-scheme-swatch="cyber-teal"] {
+  --scheme-dark-surface: #0a5b61;
+  --scheme-dark-bg: color-mix(in srgb, #0a5b61 15%, #11151c);
+  --scheme-dark-panel: color-mix(in srgb, #0a5b61 15%, #191e27);
+  --scheme-dark-glow: #7fffd4;
+  --scheme-dark-accent: #7fffd4;
+  --scheme-dark-on-accent: #11151c;
+  --scheme-dark-from: #7fffd4;
+  --scheme-dark-to: color-mix(in srgb, #7fffd4 30%, #0a5b61);
+  --scheme-dark-strong: 55%;
+  --scheme-dark-soft: 20%;
+}
+/* Inkberry #1a0b2e & Peach #ffb7a5 */
+:root[data-scheme-light="inkberry"], [data-scheme-swatch="inkberry"] {
+  --scheme-light-surface: #ffb7a5;
+  --scheme-light-bg: color-mix(in srgb, #ffb7a5 4%, #f4f6fa);
+  --scheme-light-glow: #ffb7a5;
+  --scheme-light-accent: #1a0b2e;
+  --scheme-light-on-accent: #fff;
+  --scheme-light-from: #1a0b2e;
+  --scheme-light-to: color-mix(in srgb, #1a0b2e 45%, #ffb7a5);
+  --scheme-light-strong: 80%;
+  --scheme-light-soft: 9%;
+}
+:root[data-scheme-dark="inkberry"], [data-scheme-swatch="inkberry"] {
+  --scheme-dark-surface: #1a0b2e;
+  --scheme-dark-bg: color-mix(in srgb, #1a0b2e 50%, #11151c);
+  --scheme-dark-panel: color-mix(in srgb, #1a0b2e 50%, #191e27);
+  --scheme-dark-glow: #ffb7a5;
+  --scheme-dark-accent: #ffb7a5;
+  --scheme-dark-on-accent: #1a0b2e;
+  --scheme-dark-from: #ffb7a5;
+  --scheme-dark-to: color-mix(in srgb, #ffb7a5 59%, #1a0b2e);
+  --scheme-dark-strong: 55%;
+  --scheme-dark-soft: 20%;
+}
+/* Electric Violet #6a00f4 & Cream Soda #ffd6a5 */
+:root[data-scheme-light="electric-violet"], [data-scheme-swatch="electric-violet"] {
+  --scheme-light-surface: #ffd6a5;
+  --scheme-light-bg: color-mix(in srgb, #ffd6a5 6%, #f4f6fa);
+  --scheme-light-glow: #ffd6a5;
+  --scheme-light-accent: #6a00f4;
+  --scheme-light-on-accent: #fff;
+  --scheme-light-from: #6a00f4;
+  --scheme-light-to: color-mix(in srgb, #6a00f4 63%, #ffd6a5);
+  --scheme-light-strong: 80%;
+  --scheme-light-soft: 9%;
+}
+:root[data-scheme-dark="electric-violet"], [data-scheme-swatch="electric-violet"] {
+  --scheme-dark-surface: #6a00f4;
+  --scheme-dark-bg: color-mix(in srgb, #6a00f4 10%, #11151c);
+  --scheme-dark-panel: color-mix(in srgb, #6a00f4 10%, #191e27);
+  --scheme-dark-glow: #ffd6a5;
+  --scheme-dark-accent: #ffd6a5;
+  --scheme-dark-on-accent: #11151c;
+  --scheme-dark-from: #ffd6a5;
+  --scheme-dark-to: color-mix(in srgb, #ffd6a5 43%, #6a00f4);
+  --scheme-dark-strong: 55%;
+  --scheme-dark-soft: 20%;
+}
+/* Ember #ff6115 & Porcelain #fffcf4, light only */
+:root[data-scheme-light="ember"], [data-scheme-swatch="ember"] {
+  --scheme-light-surface: #fffcf4;
+  --scheme-light-bg: color-mix(in srgb, #fffcf4 50%, #f4f6fa);
+  --scheme-light-glow: #fffcf4;
+  --scheme-light-accent: color-mix(in srgb, #ff6115 97%, #000);
+  --scheme-light-on-accent: #11151c;
+  --scheme-light-from: color-mix(in srgb, #ff6115 97%, #000);
+  --scheme-light-to: #fffcf4;
+  --scheme-light-strong: 75%;
+  --scheme-light-soft: 9%;
+}
+/* Prompt Blue #0b132b & AI Green #39ff88, dark only */
+:root[data-scheme-dark="prompt-blue"], [data-scheme-swatch="prompt-blue"] {
+  --scheme-dark-surface: #0b132b;
+  --scheme-dark-bg: color-mix(in srgb, #0b132b 60%, #11151c);
+  --scheme-dark-panel: color-mix(in srgb, #0b132b 60%, #191e27);
+  --scheme-dark-glow: #39ff88;
+  --scheme-dark-accent: #39ff88;
+  --scheme-dark-on-accent: #0b132b;
+  --scheme-dark-from: #39ff88;
+  --scheme-dark-to: color-mix(in srgb, #39ff88 53%, #0b132b);
+  --scheme-dark-strong: 55%;
+  --scheme-dark-soft: 20%;
+}
+
+/* Fixed-scheme surfaces. These surfaces keep one scheme in both modes by design.
+   They are permanent and not light or dark islands: their stylesheets use tokens,
+   which resolve to the values of the fixed scheme here.
+   Fixed dark: the full-page remote desktop client and the terminal viewport. They
+   stay dark in light mode, as a remote screen and a shell are. */
+.sd-rdp-client, .v3-terminal-viewport, .v3-terminal { color-scheme: dark; }
+/* Fixed light: the authenticator QR code keeps dark modules on a light surface,
+   so that every authenticator app can scan it in dark mode too. */
+.sd-mfa-qr { color-scheme: light; }
+/* Fixed light and fixed dark: Settings › Branding shows each logo and each color
+   sample on the panel of its own appearance, so the Owner sees both at once, and
+   the preview window keeps the appearance of its own switch. */
+.sdx-branding-frame-light { color-scheme: light; }
+.sdx-branding-frame-dark { color-scheme: dark; }
+*{box-sizing:border-box}body{margin:0;font-family:var(--sd-font);background:var(--sd-bg);color:var(--sd-ink);font-size:14px;line-height:1.5}button,a,input{transition:background .15s,color .15s,border-color .15s}button{cursor:pointer}button:disabled{cursor:not-allowed}button:focus-visible,a:focus-visible{outline:2px solid color-mix(in srgb,var(--sd-accent) 96%,var(--sd-contrast));outline-offset:3px}a{text-decoration:none}h1,h2,h3,p{margin:0}h1{font-size:30px;font-weight:650;letter-spacing:-1px;line-height:1.25}h2{font-size:16px;font-weight:650;letter-spacing:-.25px}h3{font-size:16px;font-weight:600}.mono,code,pre{font-family:Consolas,'SFMono-Regular',monospace}.table-sub{display:block;color:var(--sd-muted);font-size:11px;margin-top:3px}.download-link{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--sd-accent-strong);font-weight:500}.spin{animation:sdx-spin 1s linear infinite}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

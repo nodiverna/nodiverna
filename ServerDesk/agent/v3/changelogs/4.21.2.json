@@ -1,0 +1,8 @@
+{
+  "version": "4.21.2",
+  "features": [],
+  "fixes": [
+    "Plugin reads reach the portal again: the read data no longer fail with 'The node already has a parent'. This fixes the DNS and DHCP reads from the portal and the periodic reads.",
+    "A plugin job that fails in the agent reports a translated message instead of a raw error text."
+  ]
+}

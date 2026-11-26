@@ -1,0 +1,14 @@
+/* Settings → Data retention (ui/settings/maintenance-panel.tsx). Kit classes do the rest; tokens only. */
+.sdx-maintenance-status { display: grid; gap: 12px; }
+/* The focal point of the cleanup card: the state pill of the last run; it fades its color on each poll while a run is active. */
+.sdx-maintenance-state .sdx-pill { transition: color var(--sd-dur) var(--sd-ease-out), background-color var(--sd-dur) var(--sd-ease-out); }
+.sdx-maintenance-never { color: var(--sd-muted); font-size: 13px; }
+/* The recent runs sit below the facts, set off by a soft line. */
+.sdx-maintenance-history { padding-top: 4px; border-top: 1px solid var(--sd-soft-line); }
+/* The result of a run: the summary, and the reason of a failed run below it. */
+.sdx-maintenance-result small { display: block; margin-top: 4px; color: var(--sd-muted); font-size: 12px; overflow-wrap: anywhere; }
+/* Size of an area: the value, and its share of the database as a thin meter below it. */
+.sdx-maintenance-size { display: grid; gap: 4px; min-width: 88px; max-width: 160px; }
+/* An environment variable in "Set by" may break at its underscores on a narrow column. */
+.sdx-maintenance-setby .mono { overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: reduce) { .sdx-maintenance-state .sdx-pill { transition: none; } }

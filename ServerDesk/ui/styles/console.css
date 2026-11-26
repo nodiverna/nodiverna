@@ -1,0 +1,1599 @@
+/* Redesigned ServerDesk console. Scoped to .sdx (and .sdx-menu for portaled
+   menus). Colours come only from the --sd-* tokens: 60 % surface, 30 % ink and
+   lines, 10 % Aurora accent. Status colours mark state, never decoration. */
+
+.sdx {
+  --sdx-topbar: 52px;
+  --sdx-rail: 88px;
+  --sdx-navigator: 284px;
+  --sdx-hover: color-mix(in srgb, var(--sd-ink) 5%, transparent);
+  --sdx-press: color-mix(in srgb, var(--sd-ink) 9%, transparent);
+  --sdx-edge: color-mix(in srgb, var(--sd-ink) 8%, transparent);
+  display: grid;
+  grid-template-rows: var(--sdx-topbar) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: 0;
+  height: 100svh;
+  min-height: 0;
+  /* Fixed frame: the box is positioned, so absolutely positioned descendants (sr-only text,
+     hidden inputs, hit areas) have it in their containing-block chain and cannot extend the
+     document below the viewport. `clip`, not `hidden`: the frame is no scroll container, so
+     scrollIntoView() and focus() deep in the page cannot scroll it and move the top bar away. */
+  position: relative;
+  overflow: clip;
+}
+/* While the console is mounted the document itself never scrolls: a fast wheel or swipe at the
+   end of the workspace must not chain to the root and slide the whole frame (top bar, job dock)
+   up. Pages without the console frame (sign-in, MFA, session screens) keep their scrolling.
+   The console marks the root with data-ui="redesign" while it is mounted. Not html:has(.sdx): that selector made
+   every node a layer inserts or removes (the palette, Help, any dialog, drawer or menu) recheck the root and restyle
+   the whole document, 30 000 elements with 250 devices. */
+html[data-ui="redesign"], html[data-ui="redesign"] body { overflow: hidden; overscroll-behavior: none; }
+/* The scroll lock of every modal kit Dialog, ConfirmDialog and Drawer (radix, react-remove-scroll-bar) sets
+   body[data-scroll-locked] { overflow: hidden; position: relative; --removed-body-scroll-bar-size: 0px } (the console
+   has no document scrollbar, so the gap is 0). The console body already has the same values, so opening and closing a
+   modal layer changes no computed style of the body: no relayout of the console and, for the inherited custom
+   property, no restyle of every element below it. The frame fills the viewport, so nothing moves. */
+html[data-ui="redesign"] body { position: relative; --removed-body-scroll-bar-size: 0px; }
+/* While a modal kit layer with a scrim is open (ScrimLayerMark in confirm-dialog.tsx), radix sets the inherited
+   body { pointer-events: none }. The frame keeps its own value, so the change does not restyle every element of the
+   console on open and close; the scrim covers the frame and takes every pointer outside the layer. Menus and other
+   layers without a scrim keep radix's behaviour: there the frame follows the body. The mark is on each element these
+   rules style (the frame, the skip link, the navigator overlay and its scrim), never on an ancestor: a rule keyed on an
+   ancestor's attribute makes the browser check every element below it when the mark changes. */
+.sdx[data-sdx-scrim] { pointer-events: auto; }
+/* The frame's chrome that paints above the scrim stays inert behind the modal layer, as under radix's body lock: the
+   skip link and, at 900px or narrower, the navigator overlay and its scrim. */
+.sdx-skip[data-sdx-scrim] { pointer-events: none; }
+@media (max-width: 900px) {
+  :is(.sdx-navigator, .sdx-navigator-scrim)[data-sdx-scrim] { pointer-events: none; }
+}
+.sdx > .sdx-topbar { grid-row: 1; }
+.sdx > .sdx-body { grid-row: 2; }
+:is(.sdx, .sdx-layer) .mono { font-family: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace; font-size: 12px; }
+:is(.sdx, .sdx-layer) :is(h1, h2, h3, p) { margin: 0; }
+.sdx-skip { position: fixed; left: 12px; top: -48px; z-index: 100; padding: 8px 12px; border-radius: var(--sd-radius-sm); background: var(--sd-panel); box-shadow: var(--sd-shadow-md); color: var(--sd-ink); }
+.sdx-skip:focus { top: 10px; }
+.sdx-spin { animation: sdx-spin 1s linear infinite; }
+
+/* ---------- Buttons ---------- */
+:is(.sdx, .sdx-layer) .sdx-btn,
+.sdx-menu .sdx-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  height: 34px; padding: 0 14px; border: 1px solid transparent; border-radius: var(--sd-radius-sm);
+  font: 550 13px/1 var(--sd-font); white-space: nowrap; cursor: pointer; user-select: none;
+  transition: transform .22s var(--sd-ease-spring), background-color .16s var(--sd-ease-out), box-shadow .16s var(--sd-ease-out), border-color .16s var(--sd-ease-out), color .16s var(--sd-ease-out);
+}
+:is(.sdx, .sdx-layer) .sdx-btn-sm { height: 30px; padding: 0 11px; font-size: 12.5px; border-radius: var(--sd-radius-sm); }
+:is(.sdx, .sdx-layer) .sdx-btn:active:not(:disabled, [aria-disabled="true"]) { transform: scale(.96); }
+:is(.sdx, .sdx-layer) .sdx-btn:is(:disabled, [aria-disabled="true"]) { opacity: .5; cursor: not-allowed; }
+:is(.sdx, .sdx-layer) .sdx-btn-primary { color: var(--sd-on-accent); background: var(--sd-accent-grad); box-shadow: 0 1px 2px color-mix(in srgb, var(--sd-accent-strong) 30%, transparent), 0 6px 16px -8px color-mix(in srgb, var(--sd-accent) 70%, transparent), inset 0 1px 0 color-mix(in srgb, var(--sd-on-accent) 30%, transparent); }
+:is(.sdx, .sdx-layer) .sdx-btn-primary:hover:not(:disabled, [aria-disabled="true"]) { box-shadow: 0 1px 2px color-mix(in srgb, var(--sd-accent-strong) 30%, transparent), 0 10px 22px -10px color-mix(in srgb, var(--sd-accent) 85%, transparent), inset 0 1px 0 color-mix(in srgb, var(--sd-on-accent) 30%, transparent); filter: saturate(1.08); }
+:is(.sdx, .sdx-layer) .sdx-btn-secondary { color: var(--sd-ink); background: var(--sd-panel); border-color: var(--sd-line); box-shadow: var(--sd-shadow-sm); }
+:is(.sdx, .sdx-layer) .sdx-btn-secondary:hover:not(:disabled, [aria-disabled="true"]) { border-color: color-mix(in srgb, var(--sd-ink) 22%, var(--sd-line)); background: color-mix(in srgb, var(--sd-ink) 2%, var(--sd-panel)); }
+:is(.sdx, .sdx-layer) .sdx-btn-ghost { color: var(--sd-ink); background: transparent; }
+/* A pressed toggle Btn (aria-pressed, Btn pressed): the accent-soft selection look with its text in the strong accent. */
+:is(.sdx, .sdx-layer) .sdx-btn-secondary[aria-pressed="true"] { color: var(--sd-accent-strong); background: var(--sd-accent-soft); border-color: color-mix(in srgb, var(--sd-accent) 40%, transparent); box-shadow: none; }
+:is(.sdx, .sdx-layer) .sdx-btn-secondary[aria-pressed="true"]:hover:not(:disabled, [aria-disabled="true"]) { background: color-mix(in srgb, var(--sd-accent) 16%, var(--sd-panel)); border-color: color-mix(in srgb, var(--sd-accent) 50%, transparent); }
+/* A primary that cannot act (blocked or disabled, not loading) looks like a blocked secondary: it stops being the brightest control. A loading primary keeps the gradient with its spinner. */
+:is(.sdx, .sdx-layer) .sdx-btn-primary:is(:disabled, [aria-disabled="true"]):not([aria-busy="true"]) { color: var(--sd-ink); background: var(--sd-panel); border-color: var(--sd-line); box-shadow: var(--sd-shadow-sm); filter: none; }
+:is(.sdx, .sdx-layer) .sdx-btn-ghost:hover:not(:disabled, [aria-disabled="true"]) { background: var(--sdx-hover); }
+:is(.sdx, .sdx-layer) .sdx-btn-ghost[aria-expanded="true"], :is(.sdx, .sdx-layer) .sdx-btn-ghost[data-state="open"] { background: var(--sdx-press); }
+:is(.sdx, .sdx-layer) .sdx-btn-danger { color: var(--sd-danger); background: var(--sd-danger-bg); border-color: color-mix(in srgb, var(--sd-danger) 22%, transparent); }
+:is(.sdx, .sdx-layer) .sdx-btn-danger:hover:not(:disabled, [aria-disabled="true"]) { background: color-mix(in srgb, var(--sd-danger) 12%, var(--sd-panel)); }
+:is(.sdx, .sdx-layer) .sdx-icon-btn {
+  display: inline-grid; place-items: center; flex: none; width: 32px; height: 32px; padding: 0; border: 1px solid transparent; border-radius: var(--sd-radius-sm); color: var(--sd-muted); cursor: pointer;
+  transition: transform .22s var(--sd-ease-spring), background-color .16s var(--sd-ease-out), color .16s var(--sd-ease-out);
+}
+:is(.sdx, .sdx-layer) .sdx-icon-btn:hover:not(:disabled, [aria-disabled="true"]) { color: var(--sd-ink); }
+:is(.sdx, .sdx-layer) .sdx-icon-btn:active:not(:disabled, [aria-disabled="true"]) { transform: scale(.9); }
+:is(.sdx, .sdx-layer) .sdx-icon-btn[aria-pressed="true"] { color: var(--sd-accent-strong); background: var(--sd-accent-soft); }
+:is(.sdx, .sdx-layer) .sdx-icon-btn:is(:disabled, [aria-disabled="true"]) { opacity: .45; cursor: not-allowed; }
+/* IconBtn variant="primary" (the compact scope header's "Add device"): the primary look with its glyph on the accent; blocked it looks like a blocked secondary (rule above). */
+:is(.sdx, .sdx-layer) .sdx-icon-btn.sdx-btn-primary:not(:disabled, [aria-disabled="true"]) { color: var(--sd-on-accent); }
+/* Btn and IconBtn variant="tinted" (the device header's "Ask assistant"): a flat accent tint that marks the focal action of a
+   control group without the primary gradient. It sits after the IconBtn rules, so the glyph keeps the strong accent on hover
+   instead of the muted or ink color of .sdx-icon-btn. Blocked and disabled use the shared opacity and get no hover change. */
+:is(.sdx, .sdx-layer) .sdx-btn-tinted { color: var(--sd-accent-strong); background: var(--sd-accent-soft); border-color: color-mix(in srgb, var(--sd-accent) 40%, transparent); box-shadow: var(--sd-shadow-sm); font-weight: 600; }
+:is(.sdx, .sdx-layer) .sdx-btn-tinted:hover:not(:disabled, [aria-disabled="true"]) { color: var(--sd-accent-strong); background: color-mix(in srgb, var(--sd-accent) 16%, var(--sd-panel)); border-color: color-mix(in srgb, var(--sd-accent) 50%, transparent); }
+:is(.sdx, .sdx-layer) .sdx-btn-tinted[aria-expanded="true"] { color: var(--sd-accent-strong); background: color-mix(in srgb, var(--sd-accent) 16%, var(--sd-panel)); border-color: color-mix(in srgb, var(--sd-accent) 50%, transparent); }
+:is(.sdx, .sdx-layer) .sdx-icon-btn.sdx-btn-tinted { transition: transform .22s var(--sd-ease-spring), background-color .16s var(--sd-ease-out), border-color .16s var(--sd-ease-out), color .16s var(--sd-ease-out); }
+:is(.sdx, .sdx-layer) .sdx-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.sdx-kbd, :is(.sdx, .sdx-layer) kbd.sdx-kbd {
+  display: inline-flex; align-items: center; min-width: 20px; height: 20px; padding: 0 6px; border: 1px solid var(--sd-line); border-bottom-width: 2px; border-radius: var(--sd-radius-sm);
+  color: var(--sd-muted); background: var(--sd-panel); font: 600 10.5px/1 var(--sd-font); letter-spacing: .02em;
+}
+
+/* ---------- Top bar ---------- */
+.sdx-topbar {
+  position: relative; z-index: 30; display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 560px) minmax(0, 1fr); align-items: center; gap: 16px; padding: 0 12px 0 14px;
+  background: var(--sd-glass); -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid var(--sdx-edge); box-shadow: inset 0 -1px 0 var(--sd-glass-edge);
+}
+.sdx-topbar-start, .sdx-topbar-end { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.sdx-topbar-end { justify-content: flex-end; }
+.sdx-brand { display: inline-flex; align-items: center; gap: 10px; padding: 4px 8px 4px 4px; border-radius: var(--sd-radius-sm); color: var(--sd-ink); text-decoration: none; }
+.sdx-brand .sdx-brand-logo { min-height: 28px; }
+.sdx-brand strong { font-size: 14.5px; font-weight: 650; letter-spacing: -.2px; }
+.sdx-logo { display: grid; place-items: center; width: 28px; height: 28px; border-radius: var(--sd-radius-sm); color: var(--sd-on-accent); background: var(--sd-accent-grad); box-shadow: inset 0 1px 0 color-mix(in srgb, var(--sd-on-accent) 30%, transparent), 0 2px 6px -2px color-mix(in srgb, var(--sd-accent) 60%, transparent); }
+.sdx-search {
+  display: flex; align-items: center; gap: 10px; width: 100%; height: 36px; padding: 0 8px 0 13px; border: 1px solid var(--sdx-edge); border-radius: var(--sd-radius);
+  color: var(--sd-muted); background: color-mix(in srgb, var(--sd-panel) 72%, transparent); box-shadow: var(--sd-shadow-sm); font: 13px var(--sd-font); cursor: text; text-align: left;
+  transition: border-color .16s var(--sd-ease-out), box-shadow .16s var(--sd-ease-out), transform .22s var(--sd-ease-spring);
+}
+.sdx-search span { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sdx-search:hover { border-color: color-mix(in srgb, var(--sd-accent) 35%, var(--sd-line)); }
+.sdx-search:active { transform: scale(.99); }
+.sdx-freshness { margin-right: 4px; color: var(--sd-muted); font-size: 12px; white-space: nowrap; }
+/* The idle countdown in place of the freshness, only in the urgent window (TopbarStatus in shell.tsx): it fades in once and its time never shifts the layout. */
+.sdx-idle-pill { margin-right: 4px; cursor: default; font-variant-numeric: tabular-nums; animation: sdx-fade var(--sd-dur) var(--sd-ease-out); }
+.sdx-idle-pill b { font-weight: 650; }
+/* The demo pill in place of the freshness (DemoPill in shell.tsx): the flask, "Sample devices" and a ghost "End" in a 32px
+   accent pill. It is the only state signal of the top bar in demo mode and fades in once. */
+.sdx-demo-pill { height: 32px; margin-right: var(--sd-space-1); padding: 0 var(--sd-space-1) 0 var(--sd-space-3); gap: var(--sd-space-1); cursor: default; animation: sdx-fade var(--sd-dur) var(--sd-ease-out); }
+.sdx-avatar-btn { display: grid; place-items: center; width: 36px; height: 36px; margin-left: 4px; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; transition: transform .22s var(--sd-ease-spring); }
+.sdx-avatar-btn:active { transform: scale(.92); }
+.sdx-avatar { display: grid; place-items: center; flex: none; width: 30px; height: 30px; border-radius: 50%; color: var(--sd-panel); background: var(--sd-ink); font-size: 11.5px; font-weight: 650; letter-spacing: .03em; }
+
+/* ---------- Body: rail, navigator, workspace ---------- */
+.sdx-body { display: grid; grid-template-columns: var(--sdx-rail) var(--sdx-navigator) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; min-height: 0; transition: grid-template-columns .28s var(--sd-ease-out); }
+.sdx-body > .sdx-rail { grid-column: 1; grid-row: 1; }
+.sdx-body > .sdx-navigator { grid-column: 2; grid-row: 1; }
+.sdx-body > .sdx-workspace { grid-column: 3; grid-row: 1; }
+/* The job dock spans the full width under rail, navigator and workspace. */
+.sdx-body > .sdx-dock { grid-column: 1 / -1; grid-row: 2; }
+.sdx[data-navigator="closed"] .sdx-body { grid-template-columns: var(--sdx-rail) 0 minmax(0, 1fr); }
+.sdx[data-navigator="closed"] .sdx-navigator { visibility: hidden; opacity: 0; }
+
+.sdx-rail { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px; overflow-y: auto; }
+.sdx-rail-item {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; width: 76px; padding: 7px 0 6px; border: 0; border-radius: var(--sd-radius);
+  color: var(--sd-muted); background: transparent; font: 550 11px/1.1 var(--sd-font); cursor: pointer;
+  transition: color .16s var(--sd-ease-out), transform .22s var(--sd-ease-spring);
+}
+.sdx-rail-label { white-space: nowrap; }
+/* Entries like Einstellungen sit at the bottom of the rail, apart from the work areas. */
+.sdx-rail-item-end { margin-top: auto; }
+.sdx-rail-icon { display: grid; place-items: center; width: 40px; height: 32px; border-radius: var(--sd-radius-sm); transition: background-color .16s var(--sd-ease-out), box-shadow .16s var(--sd-ease-out); }
+.sdx-rail-item:hover { color: var(--sd-ink); }
+.sdx-rail-item:hover .sdx-rail-icon { background: color-mix(in srgb, var(--sd-panel) 70%, transparent); box-shadow: var(--sd-shadow-sm); }
+.sdx-rail-item:active { transform: scale(.94); }
+.sdx-rail-item.active { color: var(--sd-accent-strong); }
+.sdx-rail-item.active .sdx-rail-icon { color: var(--sd-accent); background: var(--sd-panel); box-shadow: var(--sd-shadow-md), inset 0 0 0 1px color-mix(in srgb, var(--sd-accent) 18%, transparent); }
+.sdx-rail-item.active::before { content: ""; position: absolute; left: -6px; top: 13px; width: 3px; height: 20px; border-radius: 0 99px 99px 0; background: var(--sd-accent); }
+/* Items of the bottom bar only (the Jobs item): hidden above 900px, where the job dock holds the jobs. */
+.sdx-rail-mobile { display: none; }
+.sdx-rail-icon { position: relative; }
+/* The Jobs badge: the running and waiting jobs in the flat accent with tabular figures; a new count cross-fades in (keyed by its value). */
+.sdx-rail-badge { position: absolute; top: -4px; right: -4px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 99px; color: var(--sd-on-accent); background: var(--sd-accent); box-shadow: 0 0 0 2px var(--sd-panel); font: 650 11px/16px var(--sd-font); font-variant-numeric: tabular-nums; text-align: center; animation: sdx-fade var(--sd-dur) var(--sd-ease-out); }
+
+.sdx-navigator {
+  display: flex; flex-direction: column; min-height: 0; overflow: hidden;
+  border-inline: 1px solid var(--sd-line); background: var(--sd-glass-strong);
+  -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%);
+  transition: opacity .2s var(--sd-ease-out), visibility .2s;
+}
+.sdx-navigator-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 50px; padding: 8px 8px 4px 16px; }
+.sdx-navigator-head h2 { font-size: 15px; font-weight: 650; letter-spacing: -.2px; }
+.sdx-navigator-body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 8px 12px; }
+.sdx-navigator-foot { padding: 10px; border-top: 1px solid var(--sdx-edge); }
+.sdx-navigator-scrim { display: none; }
+/* The overlay panel takes focus itself only when it holds no control (navigatorFocusTarget); keep its ring inside. */
+.sdx-navigator:focus-visible { outline-offset: -2px; }
+
+/* Device tree */
+:is(.sdx, .sdx-layer) .sdx-tree-filter { width: 100%; margin: 2px 0 8px; }
+.sdx-tree { margin: 0; padding: 0; list-style: none; }
+.sdx-tree-row {
+  position: relative; display: flex; align-items: center; gap: 6px; height: var(--sd-tree-row-h); margin: 1px 0; padding-right: 4px; border-radius: var(--sd-radius-sm);
+  color: var(--sd-ink); font-size: 13px; cursor: pointer; user-select: none; outline-offset: -2px;
+  transition: background-color .14s var(--sd-ease-out), color .14s var(--sd-ease-out);
+}
+.sdx-tree-row:hover { background: var(--sdx-hover); }
+.sdx-tree-row:active { background: var(--sdx-press); }
+.sdx-tree-row.active { color: var(--sd-accent-strong); background: var(--sd-accent-soft); font-weight: 600; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sd-accent) 14%, transparent); }
+.sdx-tree-caret { display: grid; place-items: center; flex: none; width: 18px; height: 18px; border-radius: var(--sd-radius-sm); color: var(--sd-muted); }
+.sdx-tree-caret svg { transition: transform .18s var(--sd-ease-out); }
+.sdx-tree-caret.open svg { transform: rotate(90deg); }
+.sdx-tree-caret:hover { background: var(--sdx-press); }
+.sdx-tree-icon { position: relative; display: grid; place-items: center; flex: none; width: 18px; color: var(--sd-muted); }
+.sdx-tree-row.active .sdx-tree-icon { color: var(--sd-accent); }
+/* A pinned row of the open device: the main row stays selected, this one only shows where you are (no fill). */
+.sdx-tree-row.current { color: var(--sd-accent-strong); }
+.sdx-tree-row.current .sdx-tree-icon { color: var(--sd-accent); }
+/* A row pinned during the session fades in once. */
+.sdx-tree-row.is-fresh { animation: sdx-fade var(--sd-dur) var(--sd-ease-out) backwards; }
+/* The slot of a customer avatar (20px, ui/devices/fleet/customer-avatar.css). */
+.sdx-tree-icon-avatar { width: 20px; }
+.sdx-tree-label { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sdx-tree-count { flex: none; min-width: 20px; padding: 1px 6px; border-radius: 99px; color: var(--sd-muted); background: var(--sdx-hover); font-size: 11px; font-weight: 600; text-align: center; }
+.sdx-tree-menu { display: flex; flex: none; opacity: 0; transition: opacity .12s; }
+.sdx-tree-row:is(:hover, :focus-visible, .menu-open) .sdx-tree-menu { opacity: 1; }
+:is(.sdx, .sdx-layer) .sdx-tree-more { width: 26px; height: 26px; border-radius: var(--sd-radius-sm); }
+.sdx-tree-empty { padding: 10px 8px; color: var(--sd-muted); font-size: 12px; }
+.sdx-dot { position: absolute; right: -3px; bottom: -2px; width: 8px; height: 8px; border: 2px solid var(--sd-panel); border-radius: 50%; background: var(--sd-muted); }
+.sdx-dot-online { background: var(--sd-success); }
+.sdx-dot-warning { background: var(--sd-warn); }
+.sdx-dot-critical { background: var(--sd-danger); }
+.sdx-dot-offline { background: color-mix(in srgb, var(--sd-muted) 60%, var(--sd-panel)); }
+.sdx-dot-waiting, .sdx-dot-maintenance { background: var(--sd-accent); }
+.sdx-dot-neutral { display: none; }
+
+/* Page lists in the navigator */
+.sdx-navlist { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+/* One line, 36px: the icon without a tile, then the label. The page hint is the page subtitle, not a second line here. */
+.sdx-navlist a {
+  display: flex; align-items: center; gap: var(--sd-space-3); height: var(--sd-nav-row-h); padding: 0 var(--sd-space-3); border-radius: var(--sd-radius-sm); color: var(--sd-ink); text-decoration: none;
+  transition: background-color .14s var(--sd-ease-out), box-shadow .16s var(--sd-ease-out), transform .22s var(--sd-ease-spring);
+}
+.sdx-navlist a:hover { background: var(--sdx-hover); }
+.sdx-navlist a:active { transform: scale(.98); }
+/* Selection: accent-soft fill plus a 3px accent bar on the leading edge, not color alone. */
+.sdx-navlist a.active { background: var(--sd-accent-soft); box-shadow: inset 3px 0 0 var(--sd-accent); }
+.sdx-navlist-glyph { flex: none; color: var(--sd-muted); transition: color .16s var(--sd-ease-out); }
+.sdx-navlist a.active .sdx-navlist-glyph { color: var(--sd-accent); }
+.sdx-navlist-label { flex: 1; min-width: 0; overflow: hidden; font-size: 13px; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
+.sdx-navlist a.active .sdx-navlist-label { color: var(--sd-accent-strong); }
+/* Named groups of page lists, e.g. in the settings */
+.sdx-navgroups { display: grid; gap: var(--sd-space-4); }
+.sdx-navlist-heading { margin: 0 0 4px; padding: 0 10px; color: var(--sd-muted); font-size: 11.5px; font-weight: 600; letter-spacing: .02em; }
+
+/* ---------- Workspace ---------- */
+.sdx-workspace { display: grid; grid-template-rows: minmax(0, 1fr); grid-template-columns: minmax(0, 1fr); min-width: 0; min-height: 0; }
+/* The only page scroller. Positioned, so absolutely positioned content (sr-only text, hidden
+   .sdx-choice inputs, card hit areas) scrolls and clips with the workspace instead of hanging off
+   the initial containing block and extending the document below the job dock. */
+/* The gutter stays reserved, so the page header does not shift when a tab gets a scrollbar. */
+.sdx-main { position: relative; min-height: 0; overflow-y: auto; scrollbar-gutter: stable; padding: 20px 28px 40px; outline: none; scroll-padding-top: 64px; }
+.sdx-main > * { max-width: 1680px; margin-left: auto; margin-right: auto; }
+.sdx-main > .sdx-notice { margin-bottom: 14px; }
+/* Page notices span the content width: in the flex column of the Devices table the auto margins would shrink them to their text. */
+.sdx-main > .sdx-notice { width: 100%; }
+
+.sdx-page-head { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; margin-bottom: var(--sd-page-head-gap); }
+.sdx-page-path { display: flex; align-items: center; gap: 6px; min-height: 20px; }
+.sdx-crumbs ol { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 0; padding: 0; list-style: none; color: var(--sd-muted); font-size: 12px; }
+.sdx-crumbs li { display: inline-flex; align-items: center; gap: 4px; }
+.sdx-crumbs a { padding: 2px 4px; border-radius: var(--sd-radius-sm); color: var(--sd-muted); text-decoration: none; }
+.sdx-crumbs a:hover { color: var(--sd-accent-strong); background: var(--sd-accent-soft); }
+.sdx-crumbs [aria-current="page"] { color: var(--sd-ink); font-weight: 550; }
+/* The crumb button of Automation and Settings pages: hidden above 900px (no Tab stop), it opens the navigator overlay below. */
+.sdx-page-path-area { display: none; }
+@media (max-width: 900px) {
+  .sdx-page-path-area { display: flex; }
+  :is(.sdx, .sdx-layer) .sdx-area-crumb { margin-left: calc(-1 * var(--sd-space-2)); color: var(--sd-muted); }
+  :is(.sdx, .sdx-layer) .sdx-area-crumb:hover { color: var(--sd-accent-strong); }
+}
+.sdx-page-title { display: flex; align-items: center; gap: 14px; }
+.sdx-page-copy { flex: 1; min-width: 0; }
+.sdx-page-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+:is(.sdx, .sdx-layer) .sdx-page-line h1 { font-size: 24px; font-weight: 680; line-height: 1.2; letter-spacing: -.6px; }
+/* A renamed device: the new name cross-fades in once (DeviceTitle in device.tsx). */
+.sdx-title-swap { animation: sdx-fade var(--sd-dur) var(--sd-ease-out); }
+.sdx-page-copy p { margin-top: 3px; color: var(--sd-muted); font-size: 13px; }
+/* A scope description (a group's text) is its own line in ink above the counts; it wraps. */
+.sdx-page-copy p.sdx-page-description { max-width: 72ch; margin-top: 4px; color: var(--sd-ink); overflow-wrap: anywhere; }
+.sdx-page-copy p.sdx-page-description + p { margin-top: 4px; }
+.sdx-page-actions { display: flex; flex: none; align-items: center; gap: 8px; }
+/* The compact page header (PageHeader compact, at 760px or narrower): one title line, the title ellipsizes and the actions
+   follow it as icon buttons (.sdx-page-line-actions); the subtitle is one line. Crumbs and the description stay. */
+.sdx-page-head-compact .sdx-page-line { flex-wrap: nowrap; gap: var(--sd-space-2); }
+.sdx-page-head-compact .sdx-page-line > h1 { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sdx-page-head-compact .sdx-page-line > :not(h1) { flex: none; }
+.sdx-page-head-compact .sdx-page-copy > p:not(.sdx-page-description) { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; overflow-wrap: normal; }
+.sdx-stepper { display: inline-flex; padding: 2px; border-radius: var(--sd-radius); background: var(--sdx-hover); }
+.sdx-tag { display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 9px; border: 1px solid var(--sd-line); border-radius: 99px; color: var(--sd-muted); background: var(--sd-panel); font-size: 12px; font-weight: 550; }
+/* The compact tag: inside a table cell next to a name, for example the Default tag of the default customer. */
+.sdx-tag.sdx-tag-sm { height: 20px; padding: 0 8px; }
+/* Origin of an inherited, read-only entry (ui/kit/inheritance.tsx, skill §7) */
+.sdx-inherited-origin { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; }
+.sdx-inherited-origin > small { flex-basis: 100%; margin: 0; color: var(--sd-muted); font-size: 12px; }
+.sdx-inherited-label { color: var(--sd-ink); font-weight: 600; overflow-wrap: anywhere; }
+.sdx-inherited-link { padding: 0; border: 0; border-radius: var(--sd-radius-sm); color: var(--sd-accent-strong); background: none; font: inherit; font-weight: 600; text-align: left; text-underline-offset: 2px; overflow-wrap: anywhere; cursor: pointer; }
+.sdx-inherited-link:hover { color: var(--sd-accent-strong); text-decoration: underline; }
+.sdx-inherited-link:focus-visible { outline: 2px solid var(--sd-accent); outline-offset: 2px; }
+/* Inline variant for chip rows: "Inherited" as muted 12px text, then the origin; the hint is only for screen readers. */
+.sdx-inherited-origin.sdx-inherited-inline { display: inline-flex; flex-wrap: nowrap; gap: 4px; font-size: 12px; }
+.sdx-inherited-word { flex: none; color: var(--sd-muted); font-size: 12px; font-weight: 500; white-space: nowrap; }
+.sdx-inherited-inline :is(.sdx-inherited-label, .sdx-inherited-link) { min-width: 0; overflow: hidden; font-size: 12px; white-space: nowrap; text-overflow: ellipsis; overflow-wrap: normal; }
+.sdx-inherited-inline .sdx-inherited-link { display: inline-flex; align-items: center; }
+/* Reason line of an inherited entry that gives no rights (InheritedNotEffective) */
+.sdx-inherited-reason { display: block; margin-top: 4px; color: var(--sd-muted); font-size: 12px; overflow-wrap: anywhere; }
+/* An inherited entry that gives no rights here (Permissions view): its subject and role are muted; the reason line or the subject marker says why. */
+.sdx-inherited-ineffective, .sdx-inherited-ineffective > strong { color: var(--sd-muted); }
+
+/* Status pills */
+.sdx-pill { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 9px; border-radius: 99px; color: var(--sd-muted); background: var(--sdx-hover); font-size: 12px; font-weight: 600; white-space: nowrap; }
+.sdx-pill.sdx-pill-lg { height: 28px; font-size: 13px; }
+.sdx-pill i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.sdx-pill-sm { height: 20px; padding: 0 8px 0 7px; font-size: 11.5px; }
+.sdx-pill-online, .sdx-pill-success { color: var(--sd-success); background: var(--sd-success-bg); }
+.sdx-pill-online i { box-shadow: 0 0 0 3px color-mix(in srgb, var(--sd-success) 18%, transparent); }
+.sdx-pill-warning { color: var(--sd-warn); background: var(--sd-warn-bg); }
+.sdx-pill-critical { color: var(--sd-danger); background: var(--sd-danger-bg); }
+.sdx-pill-waiting, .sdx-pill-maintenance, .sdx-pill-accent { color: var(--sd-accent-strong); background: var(--sd-accent-soft); }
+
+/* Segmented control: the neutral filter look (filters and view switches inside a panel). Inactive
+   labels sit on the 6 % ink track, not on the panel: --sdx-segment-ink mixes the muted tone towards
+   the ink so they keep 4.5:1 there in every mode and scheme (tests/ui/styles/theme-contrast.mjs). The pill
+   variant of the kit Tabs has its own accent navigation look (below the kit Tabs frame). */
+.sdx-segmented { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; border-radius: var(--sd-radius); background: color-mix(in srgb, var(--sd-ink) 6%, transparent); box-shadow: inset 0 1px 2px color-mix(in srgb, var(--sd-ink) 6%, transparent); }
+.sdx-segmented button {
+  --sdx-segment-ink: color-mix(in srgb, var(--sd-muted) 72%, var(--sd-ink));
+  display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 12px; border: 0; border-radius: var(--sd-radius-sm); color: var(--sdx-segment-ink); background: transparent;
+  font: 550 13px/1 var(--sd-font); text-decoration: none; cursor: pointer; white-space: nowrap;
+  transition: background-color .16s var(--sd-ease-out), color .16s var(--sd-ease-out), box-shadow .16s var(--sd-ease-out), transform .22s var(--sd-ease-spring);
+}
+.sdx-segmented button:hover { color: var(--sd-ink); background: color-mix(in srgb, var(--sd-panel) 55%, transparent); }
+.sdx-segmented button:active { transform: scale(.96); }
+.sdx-segmented button.active { color: var(--sd-ink); background: var(--sd-panel); box-shadow: var(--sd-shadow-sm), 0 0 0 1px var(--sdx-edge); }
+.sdx-segmented button b, .sdx-tabbar .sdx-tab b { min-width: 18px; padding: 2px 6px; border-radius: 99px; color: var(--sdx-segment-ink, var(--sd-muted)); background: var(--sdx-hover); font-size: 11px; font-weight: 650; text-align: center; transition: color .16s var(--sd-ease-out), background-color .16s var(--sd-ease-out); }
+/* A state tag after a tab label (TabItem.tag, also in the "More" menu entry), for example "Paused". */
+.sdx-tabbar .sdx-tab .sdx-tag, .sdx-menu-item .sdx-tag { height: 20px; padding: 0 8px; font-size: 12px; }
+.sdx-segmented button.active b, .sdx-tabbar .sdx-tab.active b { color: var(--sd-accent-strong); background: var(--sd-accent-soft); }
+.sdx-segmented button.active b.sdx-count-online, .sdx-tabbar .sdx-tab.active b.sdx-count-online { color: var(--sd-success); background: var(--sd-success-bg); }
+.sdx-segmented button.active b.sdx-count-warning { color: var(--sd-warn); background: var(--sd-warn-bg); }
+.sdx-segmented button.active b.sdx-count-critical { color: var(--sd-danger); background: var(--sd-danger-bg); }
+/* A tab count with a warning or critical tone keeps it on the inactive tab too (the "Alarms" scope tab); counts change color with .16s ease-out. */
+.sdx-tabbar .sdx-tab b.sdx-count-warning { color: var(--sd-warn); background: var(--sd-warn-bg); }
+.sdx-tabbar .sdx-tab b.sdx-count-critical { color: var(--sd-danger); background: var(--sd-danger-bg); }
+.sdx-segmented-sm button { height: 28px; padding: 0 10px; font-size: 12.5px; }
+:is(.sdx, .sdx-layer) .sdx-subtabs { margin: 0 0 16px; }
+
+/* Kit Tabs (ui/kit/tabs.tsx). The nav holds the scrolling tablist and, when tabs are out of
+   sight, the "More" trigger. A cut edge fades through a mask (alpha only, no color of its own). */
+.sdx-tabbar { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.sdx-tabbar > .sdx-tablist { display: flex; flex-wrap: nowrap; flex: 0 1 auto; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.sdx-tabbar > .sdx-tablist::-webkit-scrollbar { display: none; }
+.sdx-tabbar[data-mode="menu"] > .sdx-tablist { overflow-x: hidden; }
+.sdx-tabbar:is([data-fade-start], [data-fade-end]) > .sdx-tablist {
+  --sdx-fade-start: 0px; --sdx-fade-end: 0px;
+  -webkit-mask-image: linear-gradient(to right, transparent, var(--sd-ink) var(--sdx-fade-start), var(--sd-ink) calc(100% - var(--sdx-fade-end)), transparent);
+  mask-image: linear-gradient(to right, transparent, var(--sd-ink) var(--sdx-fade-start), var(--sd-ink) calc(100% - var(--sdx-fade-end)), transparent);
+}
+.sdx-tabbar[data-fade-start] > .sdx-tablist { --sdx-fade-start: 32px; }
+.sdx-tabbar[data-fade-end] > .sdx-tablist { --sdx-fade-end: 32px; }
+.sdx-tabbar .sdx-tab:focus-visible, .sdx-tabbar .sdx-tabs-more:focus-visible { outline-offset: -2px; }
+.sdx-tabs-more > svg { flex: none; transition: transform .16s var(--sd-ease-out); }
+.sdx-tabs-more[data-state="open"] > svg { transform: rotate(180deg); }
+
+/* Pill variant: subarea and section navigation. No track: muted labels sit on the page, and the
+   active tab takes the selection look of the tree row (accent-soft fill, accent text, inset accent
+   ring, so the state is not color alone). Navigation reads accent; a Segmented filter reads neutral.
+   Same weight in every state, so the "More" fit does not change when the active tab changes. */
+.sdx-tabbar-pill > .sdx-tablist { flex-wrap: nowrap; gap: 4px; padding: 0; background: none; box-shadow: none; }
+.sdx-tabbar-pill .sdx-tab, .sdx-tabbar-pill .sdx-tabs-more {
+  display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 12px; border: 0; border-radius: var(--sd-radius-sm); color: var(--sd-muted); background: transparent; box-shadow: none;
+  font: 550 13px/1 var(--sd-font); text-decoration: none; cursor: pointer; white-space: nowrap;
+  transition: background-color .16s var(--sd-ease-out), color .16s var(--sd-ease-out), box-shadow .16s var(--sd-ease-out), transform .22s var(--sd-ease-spring);
+}
+.sdx-tabbar-pill .sdx-tab:hover, .sdx-tabbar-pill .sdx-tabs-more:hover, .sdx-tabbar-pill .sdx-tabs-more[data-state="open"]:not(.active) { color: var(--sd-ink); background: var(--sdx-hover); }
+.sdx-tabbar-pill .sdx-tab:active, .sdx-tabbar-pill .sdx-tabs-more:active { transform: scale(.96); }
+.sdx-tabbar-pill .sdx-tab.active, .sdx-tabbar-pill .sdx-tabs-more.active { color: var(--sd-accent-strong); background: var(--sd-accent-soft); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sd-accent) 14%, transparent); }
+/* Counts: plain --sd-muted on the 5 % ink chip misses 4.5:1 over --sd-bg, so the inactive count mixes
+   towards the ink. Inside the soft fill the chip turns --sd-panel so it stays visible; toned counts
+   (online, warning, critical) keep their tone from the rules above. */
+.sdx-tabbar-pill .sdx-tab b { color: color-mix(in srgb, var(--sd-muted) 72%, var(--sd-ink)); background: var(--sdx-hover); }
+.sdx-tabbar-pill .sdx-tab.active b:not(.sdx-count-online, .sdx-count-warning, .sdx-count-critical) { color: var(--sd-accent-strong); background: var(--sd-panel); }
+
+/* Underline variant: the device area tabs, sticky under the top bar while scrolling. The strip
+   scrolls sideways inside the bar's side padding. Dense, so 11 device areas fit at 1440×900 (HIG
+   tab-bars › Avoid overflow tabs): 8px tab padding, no gap, and a 20px lead so the first label starts
+   on the 28px content edge; the underline stays 2px wider than the label on each side. */
+.sdx-tabs {
+  position: sticky; top: -20px; z-index: 5; margin: 0 -28px 20px; padding: 0 16px 0 0; gap: 0;
+  border-bottom: 1px solid var(--sd-line); background: color-mix(in srgb, var(--sd-bg) 82%, transparent); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+}
+.sdx-tabs > .sdx-tablist { gap: 0; padding: 0 12px 0 20px; }
+.sdx-tabs:not(:has(> .sdx-tabs-more)) { padding-right: 16px; }
+.sdx-tabs :is(.sdx-tab, .sdx-tabs-more) {
+  position: relative; display: inline-flex; flex: none; align-items: center; gap: 7px; height: 44px; padding: 0 8px; border: 0; border-radius: 0; color: var(--sd-muted); background: transparent;
+  font: 550 13px/1 var(--sd-font); text-decoration: none; white-space: nowrap; cursor: pointer;
+  transition: color .16s var(--sd-ease-out);
+}
+.sdx-tabs :is(.sdx-tab, .sdx-tabs-more)::after { content: ""; position: absolute; left: 6px; right: 6px; bottom: -1px; height: 2px; border-radius: 99px 99px 0 0; background: var(--sd-accent); transform: scaleX(0); transition: transform .22s var(--sd-ease-out); }
+.sdx-tabs :is(.sdx-tab, .sdx-tabs-more):hover { color: var(--sd-ink); }
+.sdx-tabs :is(.sdx-tab, .sdx-tabs-more).active { color: var(--sd-accent-strong); }
+.sdx-tabs :is(.sdx-tab, .sdx-tabs-more).active::after { transform: scaleX(1); }
+.sdx-tabs .sdx-tabs-more[data-state="open"] { color: var(--sd-ink); }
+
+/* Cards */
+.sdx-card { display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--sd-line); border-radius: var(--sd-radius-lg); background: var(--sd-panel); box-shadow: var(--sd-shadow-sm); }
+.sdx-card > :not(.sdx-card-head) { margin: 0 16px 16px; }
+.sdx-card-flush > :not(.sdx-card-head) { margin: 0; }
+.sdx-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 14px 16px 12px; }
+.sdx-card-head :is(h2, h3) { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 650; }
+.sdx-card-head :is(h2, h3) > svg { color: var(--sd-muted); }
+.sdx-card-head p { margin-top: 2px; color: var(--sd-muted); font-size: 12px; }
+.sdx-card-actions { display: flex; align-items: center; gap: 4px; margin: -4px -6px 0 0; }
+
+/* Lift: the one hover depth of clickable surfaces (Card interactive, interactive Kpi). Static cards never react. */
+.sdx-lift { transition: box-shadow var(--sd-dur-fast) var(--sd-ease-out), border-color var(--sd-dur-fast) var(--sd-ease-out), transform var(--sd-dur-fast) var(--sd-ease-out); }
+.sdx-lift:hover, .sdx-lift:focus-within { border-color: var(--sdx-edge); box-shadow: var(--sd-shadow-md); transform: translateY(-1px); }
+.sdx-lift:active { box-shadow: var(--sd-shadow-sm); transform: none; }
+/* Card interactive: the title button stretches over the card; controls inside stay above it. */
+.sdx-card-interactive { position: relative; }
+.sdx-card-hit { padding: 0; border: 0; color: inherit; background: none; font: inherit; text-align: left; cursor: pointer; }
+.sdx-card-hit::after { content: ""; position: absolute; inset: 0; border-radius: var(--sd-radius-lg); }
+.sdx-card > .sdx-card-hit-bare { position: absolute; inset: 0; margin: 0; border-radius: var(--sd-radius-lg); }
+.sdx-card-interactive .sdx-card-hit:focus-visible { outline: none; }
+.sdx-card-interactive .sdx-card-hit:focus-visible::after, .sdx-card-interactive .sdx-card-hit-bare:focus-visible { outline: 2px solid var(--sd-accent); outline-offset: 2px; }
+.sdx-card-interactive :is(.sdx-card-actions, a, button:not(.sdx-card-hit), input, select, label) { position: relative; z-index: 1; }
+
+/* Icon tile: the anchor of a card head, list row or KPI. */
+.sdx-icon-tile { display: inline-grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: var(--sd-radius-sm); }
+.sdx-icon-tile-sm { width: 28px; height: 28px; }
+.sdx-icon-tile-accent { color: var(--sd-accent-strong); background: var(--sd-accent-soft); }
+.sdx-icon-tile-success { color: var(--sd-success); background: var(--sd-success-bg); }
+.sdx-icon-tile-warning { color: var(--sd-warn); background: var(--sd-warn-bg); }
+.sdx-icon-tile-danger { color: var(--sd-danger); background: var(--sd-danger-bg); }
+.sdx-icon-tile-neutral { color: var(--sd-muted); background: color-mix(in srgb, var(--sd-ink) 5%, var(--sd-panel)); }
+
+.sdx-notice { display: flex; align-items: center; gap: 10px; padding: 10px 12px 10px 14px; border: 1px solid; border-radius: var(--sd-radius); font-size: 13px; }
+.sdx-notice > svg { flex: none; }
+.sdx-notice > div { flex: 1; min-width: 0; }
+/* The emergency alarm notice (emergency-alarm-notice.tsx): the audit link and Acknowledge side by side. */
+.sdx-notice > .sdx-alarm-notice-actions { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.sdx-notice-info { color: var(--sd-accent-strong); border-color: color-mix(in srgb, var(--sd-accent) 18%, transparent); background: var(--sd-accent-soft); }
+.sdx-notice-success { color: var(--sd-success); border-color: color-mix(in srgb, var(--sd-success) 20%, transparent); background: var(--sd-success-bg); }
+.sdx-notice-warning { color: var(--sd-warn); border-color: color-mix(in srgb, var(--sd-warn) 20%, transparent); background: var(--sd-warn-bg); }
+.sdx-notice-danger { color: var(--sd-danger); border-color: color-mix(in srgb, var(--sd-danger) 20%, transparent); background: var(--sd-danger-bg); }
+.sdx-notice > div { color: var(--sd-ink); }
+.sdx-inline-note { display: flex; align-items: center; gap: 6px; color: var(--sd-muted); font-size: 12px; }
+
+.sdx-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 32px 20px; color: var(--sd-muted); text-align: center; }
+.sdx-empty strong { color: var(--sd-ink); font-size: 14px; font-weight: 600; }
+.sdx-empty p { max-width: 420px; font-size: 12.5px; line-height: 1.5; }
+.sdx-empty > :last-child:not(p):not(strong) { margin-top: 8px; }
+.sdx-empty-art { display: grid; place-items: center; margin-bottom: var(--sd-space-1); }
+.sdx-empty-with-art { padding: var(--sd-space-4) var(--sd-space-4) var(--sd-space-5); }
+.sdx-empty-icon { display: grid; place-items: center; width: 46px; height: 46px; margin-bottom: 4px; border-radius: var(--sd-radius-lg); color: var(--sd-muted); background: color-mix(in srgb, var(--sd-ink) 5%, var(--sd-panel)); }
+/* A page outside the console frame (the paused /remote-desktop page): one centred card on the page background. */
+.sdx.sdx-standalone { grid-template-rows: minmax(0, 1fr); place-items: center; padding: var(--sd-space-5); background: var(--sd-bg); }
+.sdx-standalone > .sdx-card { width: min(100%, 520px); padding: var(--sd-space-4); }
+
+/* Meters: the data color below the warning level, then amber and red. */
+.sdx-meter { position: relative; display: block; width: 100%; height: 6px; overflow: hidden; border-radius: 99px; background: var(--sd-meter-track); }
+.sdx-meter-sm { height: 4px; }
+.sdx-meter > span { display: block; height: 100%; border-radius: inherit; background: var(--sd-meter); transition: width .5s var(--sd-ease-out); }
+.sdx-meter-warning > span { background: var(--sd-warn); }
+.sdx-meter-critical > span { background: var(--sd-danger); }
+.sdx-meter-unknown > span { display: none; }
+
+/* Inputs */
+.sdx-searchfield { position: relative; display: inline-flex; align-items: center; width: 280px; max-width: 100%; }
+.sdx-searchfield > svg { position: absolute; left: 10px; color: var(--sd-muted); pointer-events: none; }
+:is(.sdx, .sdx-layer) .sdx-searchfield input { width: 100%; height: 32px; padding: 0 30px 0 32px; border-radius: var(--sd-radius-sm); font-size: 13px; }
+.sdx-searchfield > button { position: absolute; right: 5px; display: grid; place-items: center; width: 22px; height: 22px; border: 0; border-radius: var(--sd-radius-sm); color: var(--sd-muted); background: transparent; cursor: pointer; }
+.sdx-searchfield > button:hover { background: var(--sdx-hover); }
+/* The field brings its own clear button; hide the browser's second one. */
+.sdx-searchfield input::-webkit-search-cancel-button { display: none; -webkit-appearance: none; }
+:is(.sdx, .sdx-layer) .sdx-select { height: 32px; padding: 0 30px 0 10px; border-radius: var(--sd-radius-sm); font-size: 13px; }
+.sdx-field { display: grid; gap: 6px; }
+.sdx-field > span { color: var(--sd-ink); font-size: 12.5px; font-weight: 600; }
+.sdx-field input:not(:where([type="checkbox"], [type="radio"])), .sdx-field select { width: 100%; height: 36px; }
+.sdx-field > .sdx-field-label { color: var(--sd-ink); font-size: 12.5px; font-weight: 600; }
+
+/* ---------- Fleet ---------- */
+.sdx-fleet { display: flex; flex-direction: column; }
+/* The scope tabs (Tabs underline) and their panel: KPI row, toolbar, table or cards, or an analysis tab. */
+.sdx-fleet-panel { display: flex; flex-direction: column; min-width: 0; }
+.sdx-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
+/* The toolbar of a flush DataTable sits inside a flush Card: it takes the card's inner padding, and the table head follows directly. */
+.sdx-toolbar:has(+ .sdx-table-wrap-flush) { margin: 0; padding: var(--sd-space-3) var(--sd-space-4); }
+.sdx-toolbar-spacer { flex: 1; }
+:is(.sdx, .sdx-layer) .sdx-icon-btn-framed { border: 1px solid var(--sd-line); background: var(--sd-panel); box-shadow: var(--sd-shadow-sm); }
+:is(.sdx, .sdx-layer) .sdx-icon-btn-framed[data-state="open"] { color: var(--sd-accent-strong); background: var(--sd-accent-soft); }
+:is(.sdx, .sdx-layer) .sdx-segmented-icons > button { padding-inline: 9px; }
+:is(.sdx, .sdx-layer) .sdx-toolbar .sdx-select { width: auto; flex: none; }
+.sdx-toolbar > .sdx-searchfield { flex: 1 1 240px; min-width: 150px; max-width: 420px; }
+/* The kit search keeps room for its placeholder ("Search name or display name…"); filters and actions wrap below it when they do not fit. */
+.sdx-toolbar > .sdx-toolbar-search { flex: 1 1 280px; min-width: 280px; }
+:is(.sdx, .sdx-layer) .sdx-toolbar .sdx-select { max-width: 168px; }
+.sdx-table-wrap { overflow: auto; border: 1px solid var(--sd-line); border-radius: var(--sd-radius-lg); background: var(--sd-panel); box-shadow: var(--sd-shadow-sm); }
+:is(.sdx, .sdx-layer) .sdx-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+:is(.sdx, .sdx-layer) .sdx-table th { position: sticky; top: 0; z-index: 1; height: var(--sd-head-h); padding: 0 8px; border-bottom: 1px solid var(--sd-line); color: var(--sd-muted); background: color-mix(in srgb, var(--sd-ink) 2%, var(--sd-panel)); font-size: 12px; font-weight: 600; text-align: left; white-space: nowrap; }
+:is(.sdx, .sdx-layer) .sdx-table td { height: var(--sd-row-h); padding: 4px 8px; border-bottom: 1px solid var(--sd-soft-line); color: var(--sd-ink); font-size: 13px; vertical-align: middle; }
+/* A row whose cells hold a second line (a small note or a cell stack) gets the two-line height. */
+:is(.sdx, .sdx-layer) .sdx-table tr:not(.sdx-table-empty):has(> td :is(small, .sdx-cell-stack)) > td { height: var(--sd-row-h-2); }
+:is(.sdx, .sdx-layer) .sdx-table tbody tr { cursor: pointer; transition: background-color .12s var(--sd-ease-out); }
+:is(.sdx, .sdx-layer) .sdx-table tbody tr:hover { background: color-mix(in srgb, var(--sd-accent) 3.5%, var(--sd-panel)); }
+:is(.sdx, .sdx-layer) .sdx-table tbody tr[aria-selected="true"] { background: var(--sd-accent-soft); }
+:is(.sdx, .sdx-layer) .sdx-table tbody tr:last-child td { border-bottom: 0; }
+.sdx-col-check { width: var(--sd-col-check); padding-right: 0 !important; }
+.sdx-col-actions { width: 44px; text-align: right !important; }
+/* Table modifier: the actions column stays on the right edge of the wrap while the other columns scroll under it.
+   The cells are opaque and follow the row's hover and selection fill; the inset line marks the edge. */
+:is(.sdx, .sdx-layer) .sdx-table-sticky-actions .sdx-col-actions { position: sticky; right: 0; box-shadow: inset 1px 0 0 var(--sd-soft-line); }
+:is(.sdx, .sdx-layer) .sdx-table-sticky-actions th.sdx-col-actions { top: 0; z-index: 2; background: color-mix(in srgb, var(--sd-ink) 2%, var(--sd-panel)); }
+:is(.sdx, .sdx-layer) .sdx-table-sticky-actions td.sdx-col-actions { background: var(--sd-panel); transition: background-color .12s var(--sd-ease-out); }
+:is(.sdx, .sdx-layer) .sdx-table-sticky-actions tbody tr:hover > td.sdx-col-actions { background: color-mix(in srgb, var(--sd-accent) 3.5%, var(--sd-panel)); }
+:is(.sdx, .sdx-layer) .sdx-table-sticky-actions tbody tr[aria-selected="true"] > td.sdx-col-actions { background: var(--sd-accent-soft); }
+/* Table modifier (DataTable layout="fixed"): the columns take their widths from the head row, so a row whose content
+   changes lays out only itself, not the whole table. The primary column takes the rest; the inline min-width (the sum
+   of the column widths) lets the wrap scroll sideways when they do not fit. A cell clips what overflows its padding,
+   text with an ellipsis, so nothing paints over the next column; the 8px padding keeps focus rings inside the cell. */
+:is(.sdx, .sdx-layer) .sdx-table-fixed { table-layout: fixed; }
+:is(.sdx, .sdx-layer) .sdx-table-fixed tr:not(.sdx-table-empty) > td { overflow: hidden; text-overflow: ellipsis; }
+:is(.sdx, .sdx-layer) .sdx-table-fixed td .sdx-row-open { max-width: 100%; }
+/* An empty fixed table keeps its min-width, so with many columns its row is wider than the wrap: the message takes
+   the wrap's visible width and stays at its left edge, centred in view instead of off to the right. */
+:is(.sdx, .sdx-layer) .sdx-table-wrap:has(> .sdx-table-fixed) { container-type: inline-size; }
+:is(.sdx, .sdx-layer) .sdx-table-fixed tr.sdx-table-empty > td > * { position: sticky; left: 0; width: 100cqi; }
+.sdx-sort { display: inline-flex; align-items: center; gap: 5px; margin-left: -6px; padding: 4px 6px; border: 0; border-radius: var(--sd-radius-sm); color: inherit; background: transparent; font: inherit; cursor: pointer; }
+.sdx-sort svg { opacity: .45; }
+.sdx-sort:hover { color: var(--sd-ink); background: var(--sdx-hover); }
+.sdx-sort.active { color: var(--sd-accent-strong); }
+.sdx-sort.active svg { opacity: 1; }
+.sdx-device-cell { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 0; border: 0; color: inherit; background: transparent; text-align: left; cursor: pointer; }
+.sdx-device-cell > span:last-child { display: grid; min-width: 0; }
+.sdx-device-cell strong { overflow: hidden; color: var(--sd-ink); font-size: 13.5px; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
+.sdx-device-cell small { color: var(--sd-muted); font-size: 12px; }
+.sdx-device-cell:hover strong { color: var(--sd-accent-strong); }
+.sdx-muted-cell { color: var(--sd-muted); }
+.sdx-customer-cell { display: inline-flex; align-items: center; gap: 6px; }
+.sdx-meter-cell { display: grid; gap: 5px; width: 56px; }
+.sdx-disk-cell { display: grid; white-space: nowrap; }
+.sdx-disk-cell small, .sdx-seen-note { display: block; color: var(--sd-muted); font-size: 11.5px; }
+.sdx-seen { white-space: nowrap; }
+/* The Health cell: the level pill, then the issue counts per level (only with issues). */
+.sdx-health-cell { display: inline-flex; flex-wrap: nowrap; align-items: center; gap: var(--sd-space-2); white-space: nowrap; }
+.sdx-issue-counts { display: inline-flex; align-items: center; gap: 4px; }
+.sdx-issue-count { display: inline-flex; align-items: center; gap: 4px; min-width: 22px; height: 20px; padding: 0 7px 0 6px; border-radius: 99px; background: var(--sd-warn-bg); color: var(--sd-warn); font-size: 11.5px; font-weight: 650; font-variant-numeric: tabular-nums; line-height: 1; cursor: default; }
+.sdx-issue-count > svg { flex: none; }
+.sdx-issue-count.critical { background: var(--sd-danger-bg); color: var(--sd-danger); }
+.sdx-issue-count.info { background: color-mix(in srgb, var(--sd-muted) 12%, var(--sd-panel)); color: color-mix(in srgb, var(--sd-ink) 25%, var(--sd-muted)); }
+.sdx-foot-note { margin-top: 10px; color: var(--sd-muted); font-size: 12px; }
+.sdx-table-wrap > .sdx-empty { border-top: 1px solid var(--sd-soft-line); }
+/* The device list fills the workspace down to the job dock, so a short list
+   reads as one pane instead of a small card above an empty page. */
+.sdx-main:has(> .sdx-fleet > .sdx-fleet-panel > .sdx-table-wrap) { display: flex; flex-direction: column; padding-bottom: 20px; }
+.sdx-main > .sdx-fleet:has(> .sdx-fleet-panel > .sdx-table-wrap) { flex: 1 0 auto; width: 100%; }
+.sdx-fleet-panel:has(> .sdx-table-wrap) { flex: 1 0 auto; }
+.sdx-fleet-panel > .sdx-table-wrap { display: flex; flex: 1 0 auto; flex-direction: column; min-height: 220px; }
+.sdx-table-wrap > .sdx-table-foot { margin: auto 0 0; padding: 10px 14px; border-top: 1px solid var(--sd-soft-line); color: var(--sd-muted); font-size: 12px; }
+
+.sdx-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.sdx-cards > .sdx-empty { grid-column: 1 / -1; border: 1px dashed var(--sd-line); border-radius: var(--sd-radius-lg); }
+.sdx-device-card {
+  /* The card's spacing and the height of each section as rendered (1440x900, base 13px/1.5): the header (two text
+     lines), the status pill, one meter row with the gap to the next, the footer with its padding-top and border, and
+     the optional customer line. The size estimate below is built from them. */
+  --sdx-card-pad: 14px; --sdx-card-gap: var(--sd-space-3);
+  --sdx-card-header: 38px; --sdx-card-status: 24px; --sdx-card-meter-gap: var(--sd-space-2);
+  --sdx-card-meter-row: calc(18px + var(--sdx-card-meter-gap)); --sdx-card-footer: 36px; --sdx-card-customer: 18px;
+  /* The customer line and its gap, only on a card that shows it (below). */
+  --sdx-card-customer-space: 0px;
+  display: flex; flex-direction: column; gap: var(--sdx-card-gap); padding: var(--sdx-card-pad); border: 1px solid var(--sd-line); border-radius: var(--sd-radius-lg); background: var(--sd-panel); box-shadow: var(--sd-shadow-sm);
+  transition: box-shadow .18s var(--sd-ease-out), border-color .18s var(--sd-ease-out), transform .22s var(--sd-ease-spring);
+  /* Cards out of view skip style, layout and paint: a refresh that changes every device lays out only the visible
+     cards. The card keeps its own shadow and focus rings (they sit inside its padding); "auto" keeps a card's last size.
+     The estimate of a card not yet shown: padding and border at both ends, header, status, three meter rows (two gaps
+     between them), footer and the three gaps between the four sections. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto calc(2 * var(--sdx-card-pad) + 2 * 1px + var(--sdx-card-header) + var(--sdx-card-status) + 3 * var(--sdx-card-meter-row) - var(--sdx-card-meter-gap) + var(--sdx-card-footer) + 3 * var(--sdx-card-gap) + var(--sdx-card-customer-space));
+}
+.sdx-device-card:has(> .sdx-device-card-customer) { --sdx-card-customer-space: calc(var(--sdx-card-customer) + var(--sdx-card-gap)); }
+.sdx-device-card:hover { border-color: color-mix(in srgb, var(--sd-accent) 25%, var(--sd-line)); box-shadow: var(--sd-shadow-md); }
+.sdx-device-card.selected { border-color: var(--sd-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--sd-accent) 14%, transparent); }
+.sdx-device-card > header { display: flex; align-items: center; gap: 10px; }
+.sdx-device-card > header .sdx-device-cell { flex: 1; }
+.sdx-device-card-customer { display: flex; align-items: center; gap: 6px; min-width: 0; margin: 0; color: var(--sd-muted); font-size: 12px; }
+.sdx-device-card-customer > span:first-of-type { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sdx-device-card-customer > svg, .sdx-device-card-customer > .sdx-tag { flex: none; }
+.sdx-device-card-status { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.sdx-device-card-meters { display: grid; gap: var(--sdx-card-meter-gap); margin: 0; }
+.sdx-device-card-meters > div { display: grid; grid-template-columns: 64px 1fr; align-items: center; gap: 10px; }
+.sdx-device-card-meters dt { display: flex; align-items: center; gap: 4px; color: var(--sd-muted); font-size: 12px; }
+.sdx-device-card-meters dd { display: grid; grid-template-columns: 1fr 92px; align-items: center; gap: 10px; margin: 0; }
+.sdx-device-card-meters dd .mono { text-align: right; }
+.sdx-device-card > footer { display: flex; align-items: center; gap: 10px; padding-top: 10px; border-top: 1px solid var(--sd-soft-line); color: var(--sd-muted); font-size: 12px; }
+.sdx-device-card > footer > span:nth-child(2) { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sdx-card-open { display: inline-flex; align-items: center; gap: 2px; padding: 4px 6px 4px 8px; border: 0; border-radius: var(--sd-radius-sm); color: var(--sd-accent-strong); background: transparent; font: 600 12px var(--sd-font); cursor: pointer; }
+.sdx-card-open:hover { background: var(--sd-accent-soft); }
+
+.sdx-bulkbar {
+  position: sticky; bottom: 12px; z-index: 6; display: flex; align-items: center; gap: 8px; width: fit-content; margin: 14px auto 0; padding: 8px 8px 8px 16px;
+  border: 1px solid var(--sd-glass-edge); border-radius: var(--sd-radius-lg); background: var(--sd-glass-strong); -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: var(--sd-shadow-lg), inset 0 0 0 1px var(--sdx-edge); --sdx-rise-from: 8px; animation: sdx-rise var(--sd-dur) var(--sd-ease-out);
+}
+.sdx-bulkbar strong { margin-right: 6px; font-size: 13px; }
+
+/* ---------- Device ---------- */
+.sdx-platform { display: grid; place-items: center; flex: none; border-radius: var(--sd-radius-sm); color: var(--sd-accent-strong); background: var(--sd-accent-soft); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sd-accent) 12%, transparent); }
+.sdx-platform.pending { color: var(--sd-muted); background: color-mix(in srgb, var(--sd-ink) 5%, var(--sd-panel)); box-shadow: none; }
+.sdx-platform-sm { width: 30px; height: 30px; border-radius: var(--sd-radius-sm); }
+.sdx-platform-md { width: 38px; height: 38px; }
+.sdx-platform-lg { width: 54px; height: 54px; border-radius: var(--sd-radius-lg); }
+.sdx-device-body > .sdx-notice { margin-bottom: 16px; }
+
+.sdx-summary { display: grid; gap: 16px; }
+/* KPI tiles (kit Kpi and KpiRow): the headline numbers of a view. */
+.sdx-kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: var(--sd-space-3); }
+/* 88px without a visual (--sd-kpi-h): a 20px head line, the 22px value and a 16px detail line inside 12px padding. */
+.sdx-kpi { display: flex; flex-direction: column; gap: 0; min-width: 0; min-height: var(--sd-kpi-h); padding: var(--sd-space-3); border: 1px solid var(--sd-line); border-radius: var(--sd-radius-lg); color: var(--sd-ink); background: var(--sd-panel); box-shadow: var(--sd-shadow-sm); font: inherit; text-align: left; }
+.sdx-kpi-button { width: 100%; cursor: pointer; }
+/* A filter tile that is on (Kpi pressed): accent-soft fill plus a leading accent bar, so the state does not rely on color alone. */
+.sdx-kpi-pressed, .sdx-kpi-pressed.sdx-lift:hover, .sdx-kpi-pressed.sdx-lift:focus-within { border-color: color-mix(in srgb, var(--sd-accent) 25%, var(--sd-line)); background: var(--sd-accent-soft); box-shadow: var(--sd-shadow-sm), inset 3px 0 0 var(--sd-accent); }
+.sdx-kpi-head { display: flex; align-items: center; gap: var(--sd-space-2); min-width: 0; min-height: 20px; }
+.sdx-kpi-head > .sdx-icon-tile { width: 20px; height: 20px; border-radius: var(--sd-radius-sm); }
+.sdx-kpi-head > .sdx-icon-tile > svg { width: 12px; height: 12px; }
+.sdx-kpi-label { flex: 1; min-width: 0; overflow: hidden; color: var(--sd-muted); font-size: 12px; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
+.sdx-kpi-head .sdx-icon-btn { width: 28px; height: 28px; margin: calc(-1 * var(--sd-space-1)) calc(-1 * var(--sd-space-2)) calc(-1 * var(--sd-space-1)) 0; }
+.sdx-kpi-body { display: flex; flex: 1; align-items: center; gap: var(--sd-space-3); min-width: 0; }
+.sdx-kpi-visual { display: flex; flex: none; }
+.sdx-kpi-text { display: grid; flex: 1; gap: 0; min-width: 0; }
+.sdx-kpi-value { font: var(--sd-text-kpi); font-variant-numeric: tabular-nums; letter-spacing: -.02em; overflow-wrap: anywhere; }
+.sdx-kpi-unit { margin-left: var(--sd-space-1); color: var(--sd-muted); font-size: 14px; font-weight: 600; letter-spacing: 0; }
+/* The detail wraps instead of being cut, so a long processor name or a German text shows in full. */
+.sdx-kpi-detail { color: var(--sd-muted); font-size: 12px; line-height: 16px; overflow-wrap: anywhere; }
+.sdx-kpi-warning .sdx-kpi-value { color: var(--sd-warn); }
+.sdx-kpi-critical .sdx-kpi-value { color: var(--sd-danger); }
+/* A sparkline or a meter sits in one band below the text at the full width of the tile, at its
+   bottom, so the bands line up across the tiles of a row (the tiles share their height); a ring stays beside the value. */
+.sdx-kpi-body:has(.sdx-sparkline), .sdx-kpi-body:has(.sdx-meter) { flex-direction: column; align-items: stretch; gap: var(--sd-space-2); }
+.sdx-kpi-body:has(.sdx-sparkline) > .sdx-kpi-visual, .sdx-kpi-body:has(.sdx-meter) > .sdx-kpi-visual { display: flex; flex-direction: column; justify-content: flex-end; order: 1; margin-top: auto; }
+.sdx-sparkline { width: 100%; height: 32px; min-width: 0; }
+/* The compact KPI row at 760px or narrower: one line of tiles that scrolls sideways inside the row (the page does not);
+   each tile shows its label and its value with the unit on one line, --sd-kpi-h-compact high, without detail and visual.
+   The row takes a Tab stop only while it overflows (KpiRow); pressed tiles and the warning and critical tones stay. */
+@media (max-width: 760px) {
+  .sdx-kpi-row { min-width: 0; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; border-radius: var(--sd-radius-lg); }
+  .sdx-kpi-row .sdx-kpi-grid { display: flex; flex-wrap: nowrap; gap: var(--sd-space-2); width: max-content; min-width: 100%; }
+  .sdx-kpi-row .sdx-kpi { flex: none; flex-direction: row; align-items: center; gap: var(--sd-space-2); width: auto; height: var(--sd-kpi-h-compact); min-height: var(--sd-kpi-h-compact); padding: 0 var(--sd-space-3); }
+  .sdx-kpi-row .sdx-kpi-head { flex: none; }
+  .sdx-kpi-row .sdx-kpi-label { flex: none; max-width: 160px; }
+  .sdx-kpi-row .sdx-kpi-body, .sdx-kpi-row .sdx-kpi-body:has(.sdx-sparkline), .sdx-kpi-row .sdx-kpi-body:has(.sdx-meter) { flex: none; flex-direction: row; align-items: center; gap: 0; }
+  .sdx-kpi-row :is(.sdx-kpi-visual, .sdx-kpi-detail) { display: none; }
+  /* A cut edge fades like an overflowing tab bar (KpiRow sets data-fade-start/-end from the scroll position; alpha only). */
+  .sdx-kpi-row:is([data-fade-start], [data-fade-end]) {
+    --sdx-fade-start: 0px; --sdx-fade-end: 0px;
+    -webkit-mask-image: linear-gradient(to right, transparent, var(--sd-ink) var(--sdx-fade-start), var(--sd-ink) calc(100% - var(--sdx-fade-end)), transparent);
+    mask-image: linear-gradient(to right, transparent, var(--sd-ink) var(--sdx-fade-start), var(--sd-ink) calc(100% - var(--sdx-fade-end)), transparent);
+  }
+  .sdx-kpi-row[data-fade-start] { --sdx-fade-start: var(--sd-space-6); }
+  .sdx-kpi-row[data-fade-end] { --sdx-fade-end: var(--sd-space-6); }
+  /* The row is also the Tab stop while it overflows: with the keyboard focus the fade is off and the ring sits inside the
+     row, so the ring is whole on the cut side too (a mask would fade it, an outer ring could be clipped). */
+  .sdx .sdx-kpi-row[tabindex]:focus-visible { -webkit-mask-image: none; mask-image: none; outline-offset: -2px; }
+  .sdx-kpi-row .sdx-kpi-text { display: flex; }
+  .sdx-kpi-row .sdx-kpi-value { white-space: nowrap; overflow-wrap: normal; }
+}
+
+/* Cards in one row share their height (default stretch); System takes the full width. */
+.sdx-summary-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.sdx-span-2 { grid-column: span 2; }
+.sdx-span-full { grid-column: 1 / -1; }
+.sdx-chart { position: relative; }
+.sdx-chart-empty { display: grid; min-height: 220px; place-items: center; }
+.sdx-skeleton-bar { display: block; width: 100%; height: 200px; border-radius: var(--sd-radius); background: linear-gradient(90deg, var(--sd-soft-line), color-mix(in srgb, var(--sd-soft-line) 40%, var(--sd-panel)), var(--sd-soft-line)); background-size: 200% 100%; animation: sdx-shimmer 1.4s linear infinite; }
+/* Skeleton (kit.tsx): the shapes of a table, card grid, facts list or chart while the first load runs. */
+.sdx-skeleton-set { display: grid; gap: 12px; }
+.sdx-skeleton-shapes { display: grid; gap: 8px; }
+.sdx-skeleton-cards > .sdx-skeleton-shapes { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.sdx-skeleton-bar.sdx-skeleton-head { width: 40%; height: 32px; border-radius: var(--sd-radius-sm); }
+.sdx-skeleton-bar.sdx-skeleton-row { height: var(--sd-row-h); border-radius: var(--sd-radius-sm); }
+.sdx-skeleton-bar.sdx-skeleton-card { height: 120px; border-radius: var(--sd-radius); }
+.sdx-skeleton-bar.sdx-skeleton-chart { height: 200px; border-radius: var(--sd-radius); }
+.sdx-skeleton-fact { display: grid; grid-template-columns: 116px 1fr; gap: 12px; padding: 8px 0; }
+.sdx-skeleton-fact > .sdx-skeleton-bar { height: 16px; border-radius: var(--sd-radius-sm); }
+.sdx-skeleton-fact > .sdx-skeleton-bar:first-child { width: 72%; }
+.sdx-skeleton-slow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; color: var(--sd-muted); font-size: 12.5px; }
+
+.sdx-drives { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.sdx-drives li > :is(button, div) { display: grid; grid-template-columns: minmax(110px, 1fr) minmax(120px, 2fr) minmax(130px, auto) 16px; align-items: center; gap: 16px; width: 100%; padding: 10px 12px; border: 1px solid var(--sd-soft-line); border-radius: var(--sd-radius); color: inherit; background: transparent; font: inherit; text-align: left; }
+.sdx-drives li > button { cursor: pointer; transition: border-color .16s var(--sd-ease-out), background-color .16s var(--sd-ease-out), transform .22s var(--sd-ease-spring); }
+.sdx-drives li > button:hover { border-color: color-mix(in srgb, var(--sd-accent) 25%, var(--sd-line)); background: color-mix(in srgb, var(--sd-accent) 3%, var(--sd-panel)); }
+.sdx-drives li > button:active { transform: scale(.99); }
+.sdx-drive-name, .sdx-drive-free { display: grid; }
+.sdx-drive-name small, .sdx-drive-free small { color: var(--sd-muted); font-size: 12px; }
+.sdx-drive-free { text-align: right; }
+.sdx-drive-go { color: var(--sd-muted); }
+/* The selected drive (a link to one drive): accent-soft fill and a 3px accent bar on the leading edge, with aria-current. */
+.sdx-drives li > .sdx-drive-selected, .sdx-drives li > .sdx-drive-selected:hover { border-color: color-mix(in srgb, var(--sd-accent) 25%, var(--sd-line)); background: var(--sd-accent-soft); box-shadow: inset 3px 0 0 var(--sd-accent); }
+/* Component cards (Hardware → Components): the kind with its tile in the head, the value and one detail line.
+   Interactive cards lift (sdx-lift) and press in; static cards do not react. */
+.sdx-component-body { display: grid; gap: 4px; min-width: 0; }
+.sdx-component-value { font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.sdx-component-detail { color: var(--sd-muted); font-size: 12px; }
+.sdx-component-card .sdx-card-actions { pointer-events: none; }
+.sdx-component-go { color: var(--sd-muted); }
+.sdx-component-card.sdx-lift { transition: box-shadow var(--sd-dur-fast) var(--sd-ease-out), border-color var(--sd-dur-fast) var(--sd-ease-out), transform var(--sd-dur) var(--sd-ease-spring); }
+.sdx-component-card.sdx-card-interactive:active { transform: scale(.96); }
+
+:is(.sdx, .sdx-layer) .sdx-facts { display: grid; gap: 0; }
+:is(.sdx, .sdx-layer) .sdx-facts > div { display: grid; grid-template-columns: 116px 1fr; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--sd-soft-line); font-size: 13px; }
+:is(.sdx, .sdx-layer) .sdx-facts > div:last-child { border-bottom: 0; }
+:is(.sdx, .sdx-layer) .sdx-facts dt { color: var(--sd-muted); }
+:is(.sdx, .sdx-layer) .sdx-facts dd { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; min-width: 0; margin: 0; overflow-wrap: anywhere; }
+:is(.sdx, .sdx-layer) .sdx-facts dd small { color: var(--sd-muted); font-size: 12px; }
+
+.sdx-history { display: grid; gap: 16px; }
+
+/* Job list, dock and detail */
+.sdx-job-list { margin: 0; padding: var(--sd-space-1); list-style: none; }
+.sdx-job-list li { display: flex; align-items: center; gap: var(--sd-space-1); border-radius: var(--sd-radius-sm); }
+.sdx-job-list li:hover { background: var(--sdx-hover); }
+/* Density from the tokens: the two-line row height, the 4px rhythm for the inset (nodiverna-ui §2). */
+.sdx-job-row { display: grid; grid-template-columns: 128px minmax(0, 1fr) auto; align-items: center; gap: var(--sd-space-3); flex: 1; min-width: 0; min-height: var(--sd-row-h-2); padding: 0 var(--sd-space-3); border: 0; border-radius: var(--sd-radius-sm); color: inherit; background: transparent; font: inherit; text-align: left; cursor: pointer; }
+.sdx-job-text { display: grid; min-width: 0; }
+.sdx-job-text strong { font-size: 13px; font-weight: 600; }
+.sdx-job-text small { overflow: hidden; color: var(--sd-muted); font-size: 12px; white-space: nowrap; text-overflow: ellipsis; }
+.sdx-job-time { color: var(--sd-muted); font-size: 12px; white-space: nowrap; }
+.sdx-job-state { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; white-space: nowrap; transition: color var(--sd-dur) var(--sd-ease-out); }
+.sdx-job-success { color: var(--sd-success); }
+.sdx-job-danger { color: var(--sd-danger); }
+.sdx-job-accent { color: var(--sd-accent-strong); }
+.sdx-job-muted { color: var(--sd-muted); }
+
+.sdx-dock { position: relative; z-index: 8; border-top: 1px solid var(--sdx-edge); background: var(--sd-glass); -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 var(--sd-glass-edge), 0 -8px 24px -20px color-mix(in srgb, var(--sd-ink) 40%, transparent); }
+.sdx-dock-resize { position: absolute; left: 0; right: 0; top: -5px; z-index: 2; display: grid; place-items: center; height: 10px; cursor: ns-resize; touch-action: none; outline: none; }
+.sdx-dock-resize i { width: 44px; height: 4px; border-radius: 99px; background: color-mix(in srgb, var(--sd-ink) 18%, transparent); opacity: 0; transition: opacity .16s var(--sd-ease-out), background-color .16s var(--sd-ease-out), width .2s var(--sd-ease-out); }
+.sdx-dock:hover .sdx-dock-resize i, .sdx-dock-resize:focus-visible i { opacity: 1; }
+.sdx-dock-resize:hover i, .sdx-dock.resizing .sdx-dock-resize i, .sdx-dock-resize:focus-visible i { width: 64px; background: var(--sd-accent); opacity: 1; }
+.sdx-dock.resizing, .sdx-dock.resizing * { user-select: none; cursor: ns-resize; }
+.sdx-dock-bar { display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 14px 0 10px; }
+.sdx-dock-toggle { display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 10px; border: 0; border-radius: var(--sd-radius-sm); color: var(--sd-ink); background: transparent; font: 600 13px var(--sd-font); cursor: pointer; transition: background-color .14s, transform .22s var(--sd-ease-spring); }
+.sdx-dock-toggle:hover { background: var(--sdx-hover); }
+.sdx-dock-toggle:active { transform: scale(.96); }
+.sdx-dock-badge { min-width: 18px; padding: 1px 6px; border-radius: 99px; color: var(--sd-on-accent); background: var(--sd-accent); font-size: 11px; }
+.sdx-dock-current { position: relative; display: flex; flex: 1; align-items: center; gap: 12px; min-width: 0; height: 32px; padding: 0 10px; overflow: hidden; border: 0; border-radius: var(--sd-radius-sm); color: inherit; background: transparent; font: inherit; text-align: left; cursor: pointer; }
+.sdx-dock-current:hover { background: var(--sdx-hover); }
+.sdx-dock-task { display: flex; gap: 8px; min-width: 0; font-size: 12.5px; white-space: nowrap; }
+.sdx-dock-task span { overflow: hidden; color: var(--sd-muted); text-overflow: ellipsis; }
+.sdx-dock-progress { position: absolute; left: 10px; right: 10px; bottom: 2px; height: 2px; overflow: hidden; border-radius: 99px; background: color-mix(in srgb, var(--sd-accent) 14%, transparent); }
+.sdx-dock-progress i { position: absolute; inset: 0; width: 30%; border-radius: inherit; background: var(--sd-accent); animation: sdx-progress 1.4s var(--sd-ease-out) infinite; }
+.sdx-dock-time { margin-left: auto; color: var(--sd-muted); font-size: 12px; }
+.sdx-dock-idle { flex: 1; color: var(--sd-muted); font-size: 12.5px; }
+.sdx-dock-counts { display: flex; gap: 12px; color: var(--sd-muted); font-size: 12px; white-space: nowrap; }
+.sdx-dock-panel { min-height: 0; overflow-y: auto; border-top: 1px solid var(--sdx-edge); --sdx-rise-from: 8px; animation: sdx-rise var(--sd-dur) var(--sd-ease-out); }
+.sdx-dock.resizing .sdx-dock-panel { animation: none; }
+
+/* Detail drawers (job and activity): sections in the 4px rhythm, a small uppercase label per section. */
+.sdx-detail { display: grid; gap: var(--sd-space-4); }
+.sdx-job-detail { padding-top: var(--sd-space-1); }
+.sdx-detail-section, .sdx-detail-block { display: grid; gap: var(--sd-space-2); min-width: 0; }
+.sdx-detail-subhead { margin: 0; color: var(--sd-muted); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.sdx-detail-note { margin: 0; color: var(--sd-muted); font-size: 13px; }
+.sdx-disclosure-body > .sdx-output + .sdx-output, .sdx-disclosure-body > * + * { margin-top: var(--sd-space-2); }
+/* The focal point of the job drawer: did it work, and why not. The state tints the block; text and icon carry it too. */
+.sdx-job-result { display: grid; justify-items: start; gap: var(--sd-space-2); padding: var(--sd-space-3) var(--sd-space-4); border-radius: var(--sd-radius); background: color-mix(in srgb, var(--sd-ink) 3%, var(--sd-panel)); transition: background-color var(--sd-dur) var(--sd-ease-out); }
+.sdx-job-result[data-tone="success"] { background: var(--sd-success-bg); }
+.sdx-job-result[data-tone="danger"] { background: var(--sd-danger-bg); }
+.sdx-job-result[data-tone="accent"] { background: var(--sd-accent-soft); }
+.sdx-job-message { margin: 0; color: var(--sd-ink); font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
+/* The activity table: the meta columns stay on one line, the target takes at most two. */
+:is(.sdx, .sdx-layer) .sdx-table td.sdx-cell-nowrap { white-space: nowrap; }
+:is(.sdx, .sdx-layer) .sdx-table td.sdx-activity-target { min-width: 180px; max-width: 360px; white-space: normal; }
+.sdx-cell-clamp { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow-wrap: anywhere; }
+.sdx-activity-action strong, .sdx-job-cell strong, strong.sdx-job-cell { font-size: 13px; font-weight: 600; }
+.sdx-output { max-height: 50vh; margin: 0; padding: 12px 14px; overflow: auto; border-radius: var(--sd-radius); color: var(--sd-ink); background: color-mix(in srgb, var(--sd-ink) 4%, var(--sd-panel)); font: 12px/1.55 ui-monospace, "Cascadia Mono", Consolas, monospace; white-space: pre-wrap; }
+
+/* Agent area and registration */
+.sdx-choice { display: grid; gap: 8px; margin: 0; padding: 0; border: 0; }
+.sdx-choice legend { margin-bottom: 6px; color: var(--sd-ink); font-size: 12.5px; font-weight: 600; }
+.sdx-choice label { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--sd-line); border-radius: var(--sd-radius); cursor: pointer; transition: border-color .16s, background-color .16s, transform .22s var(--sd-ease-spring); }
+.sdx-choice label:hover { border-color: color-mix(in srgb, var(--sd-accent) 30%, var(--sd-line)); }
+.sdx-choice label:active { transform: scale(.99); }
+.sdx-choice label.selected { border-color: var(--sd-accent); background: var(--sd-accent-soft); box-shadow: 0 0 0 3px color-mix(in srgb, var(--sd-accent) 12%, transparent); }
+.sdx-choice label > svg { flex: none; color: var(--sd-muted); }
+.sdx-choice label.selected > svg { color: var(--sd-accent); }
+.sdx-choice input { position: absolute; opacity: 0; pointer-events: none; }
+.sdx-choice span { display: grid; }
+.sdx-choice small { color: var(--sd-muted); font-size: 12px; }
+
+/* ---------- Menus (portaled outside .sdx) ---------- */
+.sdx-menu {
+  z-index: 80; min-width: 220px; max-width: 320px; padding: 6px; border: 1px solid var(--sd-glass-edge); border-radius: var(--sd-radius-lg);
+  color: var(--sd-ink); background: var(--sd-glass-strong); -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: var(--sd-shadow-lg), inset 0 0 0 1px color-mix(in srgb, var(--sd-ink) 7%, transparent); font: 13px/1.4 var(--sd-font);
+  transform-origin: var(--radix-dropdown-menu-content-transform-origin); animation: sdx-pop var(--sd-dur) var(--sd-ease-out);
+}
+.sdx-menu-item { position: relative; display: grid; grid-template-columns: 18px 1fr auto; align-items: center; column-gap: 10px; min-height: 34px; padding: 6px 10px; border-radius: var(--sd-radius-sm); outline: none; cursor: pointer; user-select: none; }
+/* A link entry (MenuItemEntry href) looks like every other entry. */
+a.sdx-menu-item { color: inherit; text-decoration: none; }
+.sdx-menu-item > svg { color: var(--sd-muted); }
+.sdx-menu-item[data-highlighted] { color: var(--sd-accent-strong); background: var(--sd-accent-soft); }
+.sdx-menu-item[data-highlighted] > svg { color: var(--sd-accent); }
+.sdx-menu-item[data-disabled] { cursor: not-allowed; opacity: .55; }
+/* A blocked entry stays in the roving focus (aria-disabled, no radix disabled): muted ink instead of a fade, so its reason keeps its contrast; the highlight is neutral, because selecting it does nothing. */
+.sdx-menu-blocked, .sdx-menu-blocked.sdx-menu-danger, .sdx-menu-blocked > svg, .sdx-menu-blocked.sdx-menu-danger > svg { color: var(--sd-muted); cursor: not-allowed; }
+.sdx-menu-blocked[data-highlighted], .sdx-menu-blocked.sdx-menu-danger[data-highlighted] { color: var(--sd-ink); background: color-mix(in srgb, var(--sd-ink) 5%, var(--sd-panel)); }
+.sdx-menu-blocked[data-highlighted] > svg, .sdx-menu-blocked.sdx-menu-danger[data-highlighted] > svg { color: var(--sd-muted); }
+.sdx-menu-item small { grid-column: 2 / -1; color: var(--sd-muted); font-size: 12px; }
+.sdx-menu-danger, .sdx-menu-danger > svg { color: var(--sd-danger); }
+.sdx-menu-danger[data-highlighted] { color: var(--sd-danger); background: var(--sd-danger-bg); }
+.sdx-menu-danger[data-highlighted] > svg { color: var(--sd-danger); }
+.sdx-menu-spacer { width: 18px; }
+.sdx-menu-separator { height: 1px; margin: 5px 6px; background: var(--sd-line); }
+.sdx-menu-heading { padding: 6px 10px 4px; color: var(--sd-muted); font-size: 11.5px; font-weight: 600; }
+.sdx-menu-check { display: grid; place-items: center; color: var(--sd-accent); }
+.sdx-menu-item[data-highlighted] .sdx-menu-check { color: var(--sd-accent-strong); }
+/* Color scheme submenu. The open sub-trigger keeps its highlight. The swatch
+   reads the scheme variables that the scheme blocks in globals.css set on
+   [data-scheme-swatch]: the surface color behind, the lead color in front. */
+.sdx-menu-sub[data-state="open"] { color: var(--sd-accent-strong); background: var(--sd-accent-soft); }
+.sdx-menu-sub > svg:last-of-type { justify-self: end; }
+.sdx-scheme-swatch { position: relative; width: 18px; height: 14px; }
+.sdx-scheme-swatch::before, .sdx-scheme-swatch::after { content: ""; position: absolute; top: 1px; width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 0 1px color-mix(in srgb, var(--sd-ink) 18%, transparent); }
+.sdx-scheme-swatch::before { right: 0; background: light-dark(var(--scheme-light-surface), var(--scheme-dark-surface)); }
+.sdx-scheme-swatch::after { left: 0; background: light-dark(var(--scheme-light-accent), var(--scheme-dark-accent)); }
+.sdx-menu-switch { grid-template-columns: 1fr auto; }
+.sdx-switch-visual { position: relative; width: 32px; height: 19px; border-radius: 99px; background: color-mix(in srgb, var(--sd-ink) 16%, transparent); transition: background .2s var(--sd-ease-out); }
+.sdx-switch-visual::after { content: ""; position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: var(--sd-on-accent); box-shadow: var(--sd-shadow-sm); transition: transform .26s var(--sd-ease-spring), width .2s var(--sd-ease-out); }
+.sdx-menu-switch[data-state="checked"] .sdx-switch-visual { background: var(--sd-accent-grad); }
+.sdx-menu-switch[data-state="checked"] .sdx-switch-visual::after { transform: translateX(13px); }
+.sdx-menu-switch:active .sdx-switch-visual::after { width: 19px; }
+.sdx-menu-switch[data-state="checked"]:active .sdx-switch-visual::after { transform: translateX(9px); }
+.sdx-account-menu { min-width: 260px; }
+.sdx-account-head { display: flex; align-items: center; gap: 12px; padding: 8px 12px; }
+.sdx-account-head div { display: grid; min-width: 0; }
+.sdx-account-head strong { overflow: hidden; font-weight: 650; white-space: nowrap; text-overflow: ellipsis; }
+.sdx-account-head small { color: var(--sd-muted); font-size: 12px; }
+.sdx-account-head small { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sdx-menu .sdx-kbd { height: 18px; font-size: 10px; }
+.sdx-menu .sdx-avatar { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 50%; color: var(--sd-panel); background: var(--sd-ink); font-size: 12px; font-weight: 650; }
+
+/* ---------- Tooltip (portaled outside .sdx) ----------
+   ui/kit/tooltip.tsx: an inverted label above everything else (drawers 51, dialogs 50,
+   menus 80). It fades in; reduced motion shows it at once (ui/styles/motion.css). */
+.sdx-tooltip {
+  z-index: 90; max-width: 280px; padding: 4px 8px; border-radius: var(--sd-radius-sm);
+  color: var(--sd-panel); background: var(--sd-ink); box-shadow: var(--sd-shadow-md);
+  font: 500 12px/1.4 var(--sd-font); overflow-wrap: anywhere; user-select: none;
+  animation: sdx-fade var(--sd-dur-fast) var(--sd-ease-out);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1280px) {
+  /* Two columns: the wide cards take a row each, Protection and Throughput fill one row together. */
+  .sdx-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: row dense; }
+  .sdx-summary-grid .sdx-span-2 { grid-column: 1 / -1; }
+}
+@media (max-width: 900px) {
+  .sdx { --sdx-topbar: 54px; grid-template-rows: var(--sdx-topbar) minmax(0, 1fr) auto; }
+  .sdx-topbar { grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; padding: 0 8px; }
+  .sdx-search { width: 40px; justify-self: end; padding: 0; justify-content: center; }
+  :is(.sdx, .sdx-layer) .sdx-search :is(span, .sdx-kbd) { display: none; }
+  .sdx-card-head { flex-wrap: wrap; }
+  .sdx-freshness { display: none; }
+  .sdx-body, .sdx[data-navigator="closed"] .sdx-body { grid-template-columns: minmax(0, 1fr); padding-bottom: calc(62px + env(safe-area-inset-bottom)); }
+  .sdx-body > :is(.sdx-workspace, .sdx-dock) { grid-column: 1; }
+  /* No dock bar: the bottom bar's Jobs item opens the Jobs sheet (JobSheet). */
+  .sdx-dock { display: none; }
+  .sdx-rail-mobile { display: flex; }
+  .sdx-main { padding: 14px 16px 28px; }
+  .sdx-tabs { top: -14px; margin: 0 -16px 16px; padding-right: 4px; }
+  .sdx-tabs:not(:has(> .sdx-tabs-more)) { padding-right: 12px; }
+  .sdx-tabs > .sdx-tablist { padding: 0 4px 0 12px; }
+  .sdx-rail { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; flex-direction: row; justify-content: space-around; gap: 0; height: calc(62px + env(safe-area-inset-bottom)); padding: 4px 6px env(safe-area-inset-bottom); overflow: visible; border-top: 1px solid var(--sdx-edge); background: var(--sd-glass-strong); -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%); }
+  .sdx-rail-item-end { margin-top: 0; }
+  .sdx-rail-item.active::before { left: 50%; top: -4px; width: 22px; height: 3px; margin-left: -11px; border-radius: 0 0 99px 99px; }
+  .sdx-navigator, .sdx[data-navigator="closed"] .sdx-navigator { position: fixed; left: 8px; top: calc(var(--sdx-topbar) + 8px); bottom: calc(70px + env(safe-area-inset-bottom)); z-index: 60; width: min(320px, calc(100vw - 32px)); margin: 0; border: 1px solid var(--sd-glass-edge); border-radius: var(--sd-radius-lg); box-shadow: var(--sd-shadow-lg); visibility: hidden; opacity: 0; transform: translateX(-24px); transition: transform .26s var(--sd-ease-out), opacity .2s, visibility .26s; }
+  /* Visible at once on open (no visibility delay), so the focus move into the panel lands; on close it stays visible until the slide-out ends. */
+  .sdx-navigator.open, .sdx[data-navigator="closed"] .sdx-navigator.open { visibility: visible; opacity: 1; transform: none; transition: transform .26s var(--sd-ease-out), opacity .2s, visibility 0s; }
+  /* The scrim sits between the top bar and the bottom bar, so the navigator toggle and every bottom-bar item (Jobs too) stay tappable above it. */
+  .sdx-navigator-scrim { position: fixed; inset: var(--sdx-topbar) 0 calc(62px + env(safe-area-inset-bottom)); z-index: 55; display: block; visibility: hidden; opacity: 0; background: color-mix(in srgb, var(--sd-ink) 22%, transparent); transition: opacity .2s, visibility .2s; }
+  .sdx-navigator-scrim.open { visibility: visible; opacity: 1; }
+  .sdx-page-title { flex-wrap: wrap; }
+  .sdx-page-actions { flex-wrap: wrap; width: 100%; }
+  .sdx-page-copy p { overflow-wrap: anywhere; }
+  .sdx-page-actions > :last-child:is(.sdx-btn) { margin-left: auto; }
+  :is(.sdx, .sdx-layer) .sdx-page-line h1 { font-size: 21px; }
+  .sdx-platform-lg { width: 44px; height: 44px; border-radius: var(--sd-radius); }
+  .sdx-summary-grid { grid-template-columns: minmax(0, 1fr); }
+  .sdx-span-2 { grid-column: auto; }
+  .sdx-dock-counts, .sdx-dock-time { display: none; }
+  .sdx-searchfield { width: 100%; }
+  .sdx-layout-switch span { display: none; }
+  .sdx-drives li > :is(button, div) { grid-template-columns: 1fr auto; }
+  .sdx-drives li > :is(button, div) .sdx-meter { grid-column: 1 / -1; grid-row: 2; }
+  .sdx-drive-go { display: none; }
+  .sdx-job-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .sdx-job-row .sdx-job-state { grid-column: 1 / -1; }
+}
+@media (max-width: 760px) {
+  /* The demo pill keeps the flask and "End"; "Sample devices" stays its name (visually hidden) and its tooltip. */
+  .sdx-demo-pill { margin-right: 0; padding-left: var(--sd-space-2); }
+  .sdx-demo-pill-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+@media (max-width: 560px) {
+  .sdx-kpi-body { flex-direction: column; align-items: flex-start; gap: var(--sd-space-2); }
+  .sdx-brand strong { display: none; }
+  .sdx-toolbar > .sdx-segmented { order: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.sdx, .sdx-layer) *, .sdx-menu, .sdx-menu * { animation: none !important; transition: none !important; }
+}
+
+/* ---------- Side panels ----------
+   Forms, details and settings open as a panel from the right. Only urgent
+   prompts (MFA, destructive confirmations) stay centred. */
+.sdx-drawer-scrim { position: fixed; inset: 0; z-index: 50; background: color-mix(in srgb, var(--sd-ink) 16%, transparent); animation: sdx-fade var(--sd-dur) var(--sd-ease-out); }
+.sdx-drawer {
+  position: fixed; top: 8px; right: 8px; bottom: 8px; left: auto; z-index: 51;
+  width: min(560px, calc(100vw - 16px)); max-width: none; height: auto; max-height: none; margin: 0;
+  border: 1px solid var(--sd-glass-edge); border-radius: var(--sd-radius-lg);
+  color: var(--sd-ink); background: var(--sd-panel); box-shadow: var(--sd-shadow-lg), inset 0 0 0 1px var(--sdx-edge, color-mix(in srgb, var(--sd-ink) 8%, transparent));
+  translate: none; transform: none; animation: sdx-sheet-in var(--sd-dur-slow) var(--sd-ease-out);
+  font: 13px/1.45 var(--sd-font); outline: none;
+}
+.sdx-drawer[data-state="closed"] { animation: sdx-sheet-out var(--sd-dur) var(--sd-ease-out) forwards; }
+.sdx-drawer { display: flex; flex-direction: column; overflow: hidden; }
+.sdx-drawer-wide { width: min(720px, calc(100vw - 16px)); }
+.sdx-drawer-head { display: flex; align-items: flex-start; gap: 12px; padding: 18px 14px 14px 22px; border-bottom: 1px solid var(--sd-soft-line); }
+.sdx-drawer-head > div:not(.sdx-drawer-head-actions) { flex: 1; min-width: 0; }
+.sdx-drawer-head h2 { font-size: 17px; font-weight: 680; letter-spacing: -.3px; overflow-wrap: anywhere; }
+.sdx-drawer-head p { margin-top: 3px; color: var(--sd-muted); font-size: 12.5px; overflow-wrap: anywhere; }
+.sdx-drawer-body { flex: 1; min-height: 0; overflow-y: auto; padding: 18px 22px 22px; }
+/* Drawer variants: icon buttons in the head before the close button; a flush body that its content fills and scrolls in parts. */
+.sdx-drawer-head-actions { display: flex; flex: none; align-items: center; gap: 4px; }
+.sdx-drawer-body.sdx-drawer-body-flush { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+.sdx-drawer-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--sd-soft-line); background: color-mix(in srgb, var(--sd-ink) 2%, var(--sd-panel)); }
+.sdx-drawer-foot > .sdx-drawer-foot-start { margin-right: auto; }
+
+/* Form fields in panels */
+.sdx-form-grid { display: grid; gap: 16px; }
+:is(.sdx, .sdx-layer) .sdx-field input:not(:where([type="checkbox"], [type="radio"])),
+:is(.sdx, .sdx-layer) .sdx-field textarea,
+:is(.sdx, .sdx-layer) .sdx-field select { width: 100%; min-height: 36px; padding: 0 11px; border: 1px solid var(--sd-line); border-radius: var(--sd-radius-sm); color: var(--sd-ink); background: var(--sd-panel); font: 13px var(--sd-font); box-shadow: var(--sd-shadow-sm); transition: border-color .16s var(--sd-ease-out), box-shadow .16s var(--sd-ease-out); }
+:is(.sdx, .sdx-layer) .sdx-field textarea { min-height: 84px; padding: 9px 11px; resize: vertical; line-height: 1.45; }
+:is(.sdx, .sdx-layer) .sdx-field :is(input:not(:where([type="checkbox"], [type="radio"])), textarea, select):focus { border-color: var(--sd-accent); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--sd-accent) 18%, transparent); }
+.sdx-field > small { color: var(--sd-muted); font-size: 12px; }
+.sdx-field-error { color: var(--sd-danger); font-size: 12.5px; }
+.sdx-danger-zone { display: grid; gap: 10px; padding: 14px 16px; border: 1px solid color-mix(in srgb, var(--sd-danger) 22%, var(--sd-line)); border-radius: var(--sd-radius); background: color-mix(in srgb, var(--sd-danger-bg) 55%, var(--sd-panel)); }
+.sdx-danger-zone strong { font-size: 13.5px; }
+.sdx-danger-zone p { color: var(--sd-muted); font-size: 12.5px; }
+
+/* ---------- Selects ----------
+   Browsers with customizable selects render the option list in the console
+   style; others keep the native list but get the same closed control. */
+html[data-ui="redesign"] select:not([multiple]) {
+  appearance: none; min-height: 32px; padding: 0 32px 0 11px; border: 1px solid var(--sd-line); border-radius: var(--sd-radius-sm); color: var(--sd-ink);
+  /* Chevron from two diagonal strokes, so it takes the token color in both themes. */
+  background:
+    linear-gradient(45deg, transparent calc(50% - .6px), var(--sd-muted) calc(50% - .6px) calc(50% + .6px), transparent calc(50% + .6px)) right 16px center / 5px 5px no-repeat,
+    linear-gradient(-45deg, transparent calc(50% - .6px), var(--sd-muted) calc(50% - .6px) calc(50% + .6px), transparent calc(50% + .6px)) right 11px center / 5px 5px no-repeat,
+    var(--sd-panel);
+  box-shadow: var(--sd-shadow-sm); font: 13px var(--sd-font); cursor: pointer; transition: border-color .16s var(--sd-ease-out), box-shadow .16s var(--sd-ease-out);
+}
+html[data-ui="redesign"] select:not([multiple]):hover:not(:disabled) { border-color: color-mix(in srgb, var(--sd-ink) 22%, var(--sd-line)); }
+html[data-ui="redesign"] select:not([multiple]):focus-visible { border-color: var(--sd-accent); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--sd-accent) 18%, transparent); }
+html[data-ui="redesign"] select:disabled { opacity: .55; cursor: not-allowed; }
+@supports (appearance: base-select) {
+  html[data-ui="redesign"] select:not([multiple]) { appearance: base-select; display: inline-flex; align-items: center; background-image: none; }
+  html[data-ui="redesign"] select:not([multiple])::picker-icon { content: ""; width: 12px; height: 12px; margin-left: 8px; background: currentColor; color: var(--sd-muted); mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat; transition: rotate .2s var(--sd-ease-out); }
+  html[data-ui="redesign"] select:not([multiple]):open::picker-icon { rotate: 180deg; }
+  html[data-ui="redesign"] select:not([multiple]) { padding-right: 11px; }
+  html[data-ui="redesign"] select:not([multiple])::picker(select) {
+    appearance: base-select; margin-top: 6px; padding: 5px; border: 1px solid var(--sd-glass-edge); border-radius: var(--sd-radius);
+    background: var(--sd-glass-strong); -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%);
+    box-shadow: var(--sd-shadow-lg), inset 0 0 0 1px color-mix(in srgb, var(--sd-ink) 7%, transparent);
+  }
+  html[data-ui="redesign"] select:not([multiple]) option { display: flex; align-items: center; gap: 8px; min-height: 32px; padding: 6px 10px; border-radius: var(--sd-radius-sm); color: var(--sd-ink); font: 13px var(--sd-font); cursor: pointer; }
+  html[data-ui="redesign"] select:not([multiple]) option:hover, html[data-ui="redesign"] select:not([multiple]) option:focus-visible { color: var(--sd-accent-strong); background: var(--sd-accent-soft); outline: none; }
+  html[data-ui="redesign"] select:not([multiple]) option:checked { font-weight: 600; }
+  html[data-ui="redesign"] select:not([multiple]) option::checkmark { order: 1; margin-left: auto; color: var(--sd-accent); }
+  html[data-ui="redesign"] select:not([multiple]) option:disabled { opacity: .5; cursor: not-allowed; }
+}
+
+/* ---------- Selection, drag and drop ---------- */
+.sdx-check-hit { display: inline-grid; place-items: center; width: 32px; height: 32px; margin: -6px 0 -6px -6px; border-radius: var(--sd-radius-sm); cursor: pointer; }
+.sdx-check-hit:hover { background: var(--sdx-hover); }
+.sdx-layer input[type="checkbox"]:not([role="switch"]) {
+  appearance: none; -webkit-appearance: none; display: inline-grid; place-content: center; flex-shrink: 0; width: 16px; height: 16px; margin: 0;
+  border: 1px solid color-mix(in srgb, var(--sd-ink) 28%, var(--sd-line)); border-radius: var(--sd-radius-sm); background: var(--sd-panel); cursor: pointer;
+  transition: background-color .18s var(--sd-ease-out), border-color .18s var(--sd-ease-out), transform .3s var(--sd-ease-spring);
+}
+.sdx-layer input[type="checkbox"]:not([role="switch"])::after { content: ""; width: 9px; height: 9px; background: var(--sd-on-accent); clip-path: polygon(14% 52%, 0 66%, 38% 100%, 100% 22%, 86% 8%, 38% 72%); transform: scale(0); transition: transform .28s var(--sd-ease-spring); }
+.sdx-layer input[type="checkbox"]:not([role="switch"]):checked { border-color: var(--sd-accent-strong); background: var(--sd-accent); }
+.sdx-layer input[type="checkbox"]:not([role="switch"]):checked::after { transform: scale(1); }
+.sdx-layer input[type="checkbox"]:not([role="switch"]):active { transform: scale(.88); }
+:is(.sdx, .sdx-layer) .sdx-table tbody tr[draggable="true"] { cursor: grab; }
+:is(.sdx, .sdx-layer) .sdx-table tbody tr[draggable="true"]:active { cursor: grabbing; }
+.sdx-drag-chip { position: fixed; top: -100px; left: -100px; padding: 7px 12px; border-radius: var(--sd-radius-sm); color: var(--sd-on-accent); background: var(--sd-accent); box-shadow: var(--sd-shadow-md); font: 600 12.5px var(--sd-font); white-space: nowrap; }
+.sdx-tree-row.drop-target { color: var(--sd-accent-strong); background: var(--sd-accent-soft); box-shadow: inset 0 0 0 2px var(--sd-accent); }
+.sdx-tree-row.drop-target .sdx-tree-icon { color: var(--sd-accent); }
+
+/* Pick lists in panels */
+.sdx-pick { display: grid; gap: 12px; }
+.sdx .sdx-pick-search, .sdx-layer .sdx-pick-search { width: 100%; }
+.sdx-layer .sdx-searchfield input { width: 100%; height: 34px; padding: 0 30px 0 32px; border: 1px solid var(--sd-line); border-radius: var(--sd-radius-sm); color: var(--sd-ink); background: var(--sd-panel); font: 13px var(--sd-font); }
+.sdx-layer .sdx-searchfield input:focus { border-color: var(--sd-accent); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--sd-accent) 18%, transparent); }
+.sdx-pick-list { display: grid; gap: 2px; }
+.sdx-pick-row { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 6px 12px; border: 1px solid transparent; border-radius: var(--sd-radius); color: var(--sd-ink); background: transparent; font: inherit; text-align: left; cursor: pointer; transition: background-color .14s var(--sd-ease-out), border-color .14s var(--sd-ease-out), transform .22s var(--sd-ease-spring); }
+.sdx-pick-row:hover { background: var(--sdx-hover, color-mix(in srgb, var(--sd-ink) 5%, transparent)); }
+.sdx-pick-row:active { transform: scale(.99); }
+.sdx-pick-row.selected { border-color: color-mix(in srgb, var(--sd-accent) 30%, transparent); background: var(--sd-accent-soft); }
+.sdx-pick-icon { display: grid; place-items: center; flex: none; width: 30px; height: 30px; border-radius: var(--sd-radius-sm); color: var(--sd-muted); background: color-mix(in srgb, var(--sd-ink) 5%, var(--sd-panel)); }
+.sdx-pick-row.selected .sdx-pick-icon { color: var(--sd-accent); background: var(--sd-panel); }
+.sdx-pick-text { display: grid; flex: 1; min-width: 0; }
+.sdx-pick-text strong { overflow: hidden; font-size: 13px; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
+.sdx-pick-text small { color: var(--sd-muted); font-size: 12px; }
+.sdx-pick-check { flex: none; color: var(--sd-accent); }
+/* A blocked checkbox row (PickCheckRow blocked): no hover fill or press, a muted label, the reason as a second muted line. */
+.sdx-pick-row.sdx-pick-blocked { cursor: not-allowed; }
+.sdx-pick-row.sdx-pick-blocked:hover { background: transparent; }
+.sdx-pick-row.sdx-pick-blocked:active { transform: none; }
+.sdx-pick-blocked .sdx-check { opacity: .55; }
+.sdx-pick-blocked .sdx-pick-text strong { color: var(--sd-muted); }
+/* Checkbox rows in groups (the role editor): one fieldset per group, its legend a small section label. */
+.sdx-pick-fieldset { display: grid; gap: var(--sd-space-1); min-width: 0; margin: 0; padding: 0; border: 0; }
+.sdx-pick-fieldset > legend { padding: 0 0 var(--sd-space-1); color: var(--sd-muted); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+
+/* Group settings */
+.sdx-settings { display: grid; gap: 16px; max-width: 760px; }
+.sdx-settings .sdx-form-grid { margin: 0 16px 16px; }
+.sdx-form-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.sdx-plain-list { display: grid; gap: 0; margin: 0 16px 12px !important; padding: 0; list-style: none; }
+.sdx-plain-list li { display: flex; align-items: center; gap: 10px; padding: 9px 2px; border-top: 1px solid var(--sd-soft-line); font-size: 13px; }
+.sdx-plain-list li > svg { color: var(--sd-muted); }
+.sdx-plain-list li span { flex: 1; }
+.sdx-plain-list li small { color: var(--sd-muted); font-size: 12px; }
+.sdx-danger-zone { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+
+/* Device overview */
+:is(.sdx, .sdx-layer) .sdx-facts-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
+:is(.sdx, .sdx-layer) .sdx-facts-2 > div:nth-last-child(2):nth-child(odd) { border-bottom: 0; }
+.sdx-throughput { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; }
+.sdx-throughput > div { display: grid; gap: 4px; padding: 12px; border-radius: var(--sd-radius); background: color-mix(in srgb, var(--sd-ink) 3%, var(--sd-panel)); }
+.sdx-throughput dt { color: var(--sd-muted); font-size: 12px; }
+.sdx-throughput dd { margin: 0; font-size: 15px; font-weight: 650; }
+.sdx-throughput > .warn dd { color: var(--sd-warn); }
+/* Protection: flat rows with a divider; only rows that open an area react to hover and press. */
+.sdx-protection { display: grid; margin: 0; padding: 0; list-style: none; }
+.sdx-protection li + li { border-top: 1px solid var(--sd-soft-line); }
+.sdx-protection li > :is(button, div) { display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px; border: 0; color: inherit; background: transparent; font: inherit; text-align: left; }
+.sdx-protection li > button { cursor: pointer; transition: background-color var(--sd-dur-fast) var(--sd-ease-out), transform var(--sd-dur) var(--sd-ease-spring); }
+.sdx-protection li > button:hover { background: var(--sdx-hover); }
+.sdx-protection li > button:active { transform: scale(.96); }
+.sdx-protection-text { display: grid; flex: 1; min-width: 0; }
+.sdx-protection-text small { color: var(--sd-muted); font-size: 12px; }
+.sdx-protection-text strong { font-size: 13px; font-weight: 600; }
+.sdx-protection-text em { color: var(--sd-muted); font-size: 12px; font-style: normal; overflow-wrap: anywhere; }
+
+/* History: the measurement and the range sit in the head on one line; at 760px or narrower they wrap below the title.
+   The chart fills the card when its row partner is taller; it never makes the row taller than 230px of chart. */
+.sdx-history-card .sdx-card-actions { flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.sdx-history-card > :is(.sdx-chart, .sdx-chart-empty) { flex: 1; min-height: 232px; }
+.sdx-history-card > .sdx-chart > .sdx-chart-fill { position: absolute; inset: 0; }
+/* System: the facts in 3 columns from 1281px, 2 up to 1280px and 1 at 760px; the last row has no divider. */
+@media (min-width: 1281px) {
+  .sdx-system-card .sdx-facts-3 > div:nth-child(3n+1):nth-last-child(-n+3), .sdx-system-card .sdx-facts-3 > div:nth-child(3n+1):nth-last-child(-n+3) ~ div { border-bottom: 0; }
+}
+@media (min-width: 761px) and (max-width: 1280px) {
+  :is(.sdx, .sdx-layer) .sdx-system-card .sdx-facts-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sdx-system-card .sdx-facts-3 > div:nth-child(2n+1):nth-last-child(-n+2), .sdx-system-card .sdx-facts-3 > div:nth-child(2n+1):nth-last-child(-n+2) ~ div { border-bottom: 0; }
+}
+@media (max-width: 760px) {
+  .sdx-history-card > .sdx-card-head { flex-wrap: wrap; }
+  .sdx-history-card .sdx-card-actions { flex-basis: 100%; justify-content: flex-start; margin: 0; }
+}
+
+/* Health line: the focal point of the Overview. The state tile and pill, the most urgent issue
+   and its fix link, then the other issues behind one disclosure button. It does not react to hover. */
+.sdx-health-line { display: grid; min-width: 0; padding: var(--sd-space-3) var(--sd-space-4); border: 1px solid var(--sd-line); border-radius: var(--sd-radius-lg); background: var(--sd-panel); box-shadow: var(--sd-shadow-sm); }
+.sdx-health-line-critical { border-color: color-mix(in srgb, var(--sd-danger) 32%, var(--sd-line)); }
+.sdx-health-line-warning { border-color: color-mix(in srgb, var(--sd-warn) 32%, var(--sd-line)); }
+.sdx-health-line-main { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--sd-space-2) var(--sd-space-4); min-width: 0; }
+.sdx-health-line-state { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sd-space-3); }
+.sdx-health-line-state .sdx-pill { font-variant-numeric: tabular-nums; }
+.sdx-health-line-issue { display: grid; min-width: 0; margin: 0; overflow-wrap: anywhere; }
+.sdx-health-line-issue strong { font-size: 14px; font-weight: 650; }
+.sdx-health-line-issue span { color: var(--sd-muted); font-size: 12px; white-space: pre-line; }
+.sdx-health-line-calm { color: var(--sd-muted); }
+.sdx-health-line-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--sd-space-1); }
+.sdx-health-toggle svg { transition: transform var(--sd-dur) var(--sd-ease-out); }
+.sdx-health-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+.sdx-health-issues { display: grid; margin: var(--sd-space-3) 0 0; padding: var(--sd-space-1) 0 0; border-top: 1px solid var(--sd-soft-line); list-style: none; }
+.sdx-health-issues li { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; align-items: start; gap: var(--sd-space-1) var(--sd-space-3); padding: var(--sd-space-2) 0; }
+.sdx-health-issues li + li { border-top: 1px solid var(--sd-soft-line); }
+.sdx-health-issues li > svg { margin-top: 2px; }
+.sdx-health-issues li > .sdx-btn { align-self: center; }
+.sdx-health-issue-text { display: grid; min-width: 0; overflow-wrap: anywhere; }
+.sdx-health-issue-text strong { font-size: 13px; font-weight: 600; }
+.sdx-health-issue-text span { color: var(--sd-muted); font-size: 12px; white-space: pre-line; }
+/* An agent reason the catalog does not know, as received (ui/base/agent-reasons.ts): long paths break anywhere. */
+.sdx-agent-reason { overflow-wrap: anywhere; }
+.sdx-health-level-critical { color: var(--sd-danger); }
+.sdx-health-level-warning { color: var(--sd-warn); }
+.sdx-health-level-info { color: var(--sd-muted); }
+/* The list fades and rises in once when it opens (shared sdx-rise), the chevron turns; nothing moves under reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .sdx-health-issues { --sdx-rise-from: 4px; animation: sdx-rise var(--sd-dur) var(--sd-ease-out); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sdx-health-toggle svg { transition: none; }
+}
+@media (max-width: 760px) {
+  /* The tile and the pill take the first line; the issue and its links wrap below. */
+  .sdx-health-line-main { grid-template-columns: minmax(0, 1fr); }
+  .sdx-health-line-actions { justify-content: flex-start; margin-left: calc(-1 * var(--sd-space-2)); }
+  .sdx-health-issues li { grid-template-columns: 16px minmax(0, 1fr); }
+  .sdx-health-issues li > .sdx-btn { grid-column: 2; justify-self: start; margin-left: calc(-1 * var(--sd-space-2)); }
+}
+
+/* Device history */
+.sdx-history > .sdx-toolbar { margin-bottom: 0; }
+
+@media (max-width: 900px) {
+  :is(.sdx, .sdx-layer) .sdx-facts-2 { grid-template-columns: minmax(0, 1fr); }
+  .sdx-danger-zone { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* A kit panel of the device view (Runbooks, Desired State, Drift, Permissions): head, notices, tabs and cards in one column. */
+.sdx-panel-stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+/* Alert rules (ui/devices/monitoring/alert-rules.tsx): one table per scope and the edit drawer. */
+.sdx-alert-rules { display: grid; gap: 16px; }
+:is(.sdx, .sdx-layer) .sdx-alert-rules-table tbody tr { cursor: default; }
+.sdx-alert-rules-table td { white-space: nowrap; }
+.sdx-alert-rules-table td.sdx-alert-rule-cell, .sdx-alert-rules-table td.sdx-alert-origin-cell { white-space: normal; }
+/* The rule, alarm and origin cells wrap, so all eight columns fit the 1010px content column at 1440 x 900 next to the tree. */
+.sdx-alert-rule-cell { min-width: 160px; font-weight: 600; }
+.sdx-alert-rules-table td.sdx-alert-alarm-col { min-width: 112px; }
+.sdx-alert-origin small { display: block; margin-top: 4px; color: var(--sd-muted); font-size: 12px; }
+.sdx-alert-origin-cell { min-width: 160px; }
+.sdx-tag.sdx-tag-changed { border-color: color-mix(in srgb, var(--sd-accent) 30%, var(--sd-line)); color: var(--sd-accent-strong); background: var(--sd-accent-soft); }
+.sdx-alert-rule-switch { display: flex; align-items: center; gap: 10px; font-weight: 600; cursor: pointer; }
+/* Fields of one row align to the top, so a longer hint only extends its own field. A column needs 200px
+   (a number plus "Threads je Prozessor"), so the narrow drawer stacks the fields in one column. */
+.sdx-alert-rule-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); align-items: start; gap: 16px; }
+.sdx-alert-rule-steps > .sdx-field { min-width: 0; }
+/* Number field with a unit: the span draws the field frame (same values as .sdx-field input) and holds the
+   input and the unit, so every field of a row has the same width whatever the unit is. */
+:is(.sdx, .sdx-layer) .sdx-input-unit { display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; min-height: 36px; border: 1px solid var(--sd-line); border-radius: var(--sd-radius-sm); background: var(--sd-panel); box-shadow: var(--sd-shadow-sm); cursor: text; transition: border-color .16s var(--sd-ease-out), box-shadow .16s var(--sd-ease-out); }
+:is(.sdx, .sdx-layer) .sdx-input-unit:focus-within { border-color: var(--sd-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--sd-accent) 18%, transparent); }
+:is(.sdx, .sdx-layer) .sdx-field .sdx-input-unit > input { flex: 1; width: auto; min-width: 0; height: 34px; min-height: 0; padding: 0 0 0 11px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+:is(.sdx, .sdx-layer) .sdx-field .sdx-input-unit > input:focus { border: 0; outline: none; box-shadow: none; }
+.sdx-input-unit > span { flex: none; padding-right: 11px; color: var(--sd-muted); font-size: 12.5px; white-space: nowrap; }
+:is(.sdx, .sdx-layer) .sdx-input-unit:has(> input:disabled), :is(.sdx, .sdx-layer) .sdx-field .sdx-input-unit > input:disabled { cursor: not-allowed; }
+.sdx-alert-rule-inherited { margin: 0; color: var(--sd-muted); font-size: 12px; }
+
+/* Removal dialog: the switch that lets the agent uninstall itself, with its hint. */
+.sdx-uninstall-choice { display: grid; gap: 6px; padding: 12px 14px; border: 1px solid var(--sd-line); border-radius: var(--sd-radius); background: var(--sd-bg); }
+.sdx-uninstall-choice label { display: flex; align-items: center; gap: 10px; color: var(--sd-ink); font-size: 13px; font-weight: 600; cursor: pointer; }
+.sdx-uninstall-choice label:has(input:disabled) { color: var(--sd-muted); cursor: not-allowed; }
+.sdx-uninstall-choice small { padding-left: 48px; color: var(--sd-muted); font-size: 12px; line-height: 1.5; }
+
+/* Offboarding drawer: one status row per device of a removal with uninstall. */
+.sdx-offboarding-list { margin: 0; padding: 0; list-style: none; }
+.sdx-offboarding-row { align-items: flex-start; cursor: default; }
+.sdx-offboarding-row:hover, .sdx-offboarding-row:active { background: transparent; transform: none; }
+.sdx-offboarding-row .sdx-pick-text small { line-height: 1.5; overflow-wrap: anywhere; }
+.sdx-offboarding-row .sdx-pill { flex: none; margin-top: 5px; }
+@media (max-width: 480px) { .sdx-offboarding-row { flex-wrap: wrap; } .sdx-offboarding-row .sdx-pill { margin-left: 40px; margin-top: 0; } .sdx-uninstall-choice small { padding-left: 0; } }
+
+/* Device metadata below the name line of the page header: the description (device-description.tsx) and the tags (device-tags.tsx).
+   In the compact header a description with text and the editors take a line of their own; the tag row has one.
+   "More actions" opens the description editor and the add-tag form (device.tsx). */
+.sdx-device-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; margin-top: 4px; }
+.sdx-device-meta:empty { display: none; }
+.sdx-device-meta > .sdx-device-description-filled, .sdx-device-meta > .sdx-description-editor, .sdx-device-meta > .sdx-device-tags-editing { flex: 1 0 100%; }
+/* Wide header (761px and up): one meta line below the title row with the facts (OS, build, address), the description in
+   one line and up to three tag chips with "+N". Only the description shrinks; a chip that does not fit moves behind "+N"
+   (device-tags.tsx measures the line). An open editor or form, an expanded
+   description or all tags shown let the line wrap. */
+.sdx-device-meta-line { flex-wrap: nowrap; gap: 8px 12px; }
+.sdx-device-facts { flex: none; color: var(--sd-muted); font-size: 13px; line-height: 1.5; white-space: nowrap; }
+.sdx-device-meta-line > .sdx-device-description-filled { flex: 0 1 auto; min-width: 96px; }
+.sdx-device-meta-line > .sdx-device-tags { flex: none; flex-wrap: nowrap; }
+.sdx-device-meta-line > .sdx-device-tags .sdx-device-tag-list > li { flex: none; }
+.sdx-device-meta-line:has(.sdx-description-editor, .sdx-device-tag-form, .sdx-device-description-full, .sdx-device-tags-open, .sdx-device-tags-failed) { flex-wrap: wrap; }
+.sdx-device-meta-line > .sdx-device-tags-open { flex: 1 1 100%; flex-wrap: wrap; }
+.sdx-device-meta-line > .sdx-device-tags-editing { flex: 1 0 100%; flex-wrap: wrap; }
+.sdx-device-description { display: flex; align-items: center; gap: 2px; min-width: 0; max-width: 100%; }
+.sdx-device-description-text { min-width: 0; margin: 0; color: var(--sd-ink); font-size: 13px; line-height: 1.5; }
+.sdx-page-copy .sdx-device-description-text { margin-top: 0; color: var(--sd-ink); }
+.sdx-device-description-line { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sdx-device-description-full { white-space: pre-line; overflow-wrap: anywhere; }
+.sdx-device-description:has(.sdx-device-description-full) { align-items: flex-start; }
+/* An expandable description: ink text in every state, a muted chevron that turns when it is open (instant with reduced motion). */
+:is(.sdx, .sdx-layer) .sdx-device-description-toggle { display: inline-flex; align-items: center; gap: 4px; min-width: 0; max-width: 100%; margin: 0 -4px; padding: 0 4px; border: 0; border-radius: var(--sd-radius-sm); color: var(--sd-ink); background: none; font: inherit; font-size: 13px; text-align: left; cursor: pointer; transition: background-color var(--sd-dur-fast) var(--sd-ease-out); }
+:is(.sdx, .sdx-layer) .sdx-device-description-toggle:is(:hover, :focus-visible, :active, [aria-expanded="true"]) { color: var(--sd-ink); }
+:is(.sdx, .sdx-layer) .sdx-device-description-toggle:hover { background: var(--sdx-hover); }
+:is(.sdx, .sdx-layer) .sdx-device-description-toggle[aria-expanded="true"] { align-items: flex-start; }
+.sdx-device-description-chevron { flex: none; color: var(--sd-muted); transition: transform var(--sd-dur) var(--sd-ease-out); }
+.sdx-device-description-toggle[aria-expanded="true"] > .sdx-device-description-chevron { margin-top: 3px; transform: rotate(180deg); }
+.sdx-description-editor { display: grid; gap: 8px; max-width: 640px; margin-top: 6px; }
+.sdx-device-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; max-width: 100%; }
+.sdx-device-tag-list { display: contents; margin: 0; padding: 0; list-style: none; }
+.sdx-device-tag-list > li { display: flex; min-width: 0; max-width: 100%; }
+.sdx-tag.sdx-device-tag { max-width: min(320px, 100%); min-width: 0; height: 26px; transition: opacity var(--sd-dur) var(--sd-ease-out), transform var(--sd-dur) var(--sd-ease-out); }
+.sdx-device-tag-label { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sdx-tag.sdx-device-tag:has(.sdx-device-tag-remove) { padding-right: 1px; }
+.sdx-tag.sdx-device-tag[aria-busy="true"] { opacity: .6; }
+/* A removed direct chip fades and shrinks a little before it leaves the row (device-tags.tsx); the reduced-motion rule turns the transition off. */
+:is(.sdx, .sdx-layer) .sdx-tag.sdx-device-tag-leaving { opacity: 0; transform: scale(.96); pointer-events: none; }
+:is(.sdx, .sdx-layer) .sdx-device-tag-remove { position: relative; display: inline-grid; flex: none; place-items: center; width: 24px; height: 24px; margin-left: -2px; padding: 0; border: 0; border-radius: 99px; color: var(--sd-muted); background: none; cursor: pointer; transition: background .16s var(--sd-ease-out), color .16s var(--sd-ease-out); }
+:is(.sdx, .sdx-layer) .sdx-device-tag-remove:hover:not(:disabled) { color: var(--sd-ink); background: var(--sdx-hover); }
+:is(.sdx, .sdx-layer) .sdx-device-tag-remove:disabled { cursor: default; opacity: .5; }
+.sdx-device-tag-form { display: flex; flex: 1 0 100%; flex-wrap: wrap; align-items: flex-start; gap: 8px 12px; max-width: 640px; margin-top: 4px; }
+.sdx-device-tag-form > .sdx-field { flex: 1 1 200px; min-width: 0; }
+.sdx-device-tag-form-actions { display: flex; flex: 1 0 100%; gap: 8px; }
+.sdx-page-copy p.sdx-device-tags-failed { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; color: var(--sd-danger); font-size: 12.5px; }
+/* Touch: the remove button reaches 32px through an invisible margin around it; the wider gap keeps neighbouring targets apart. */
+@media (max-width: 900px), (pointer: coarse) { .sdx-device-tags { gap: 8px; } :is(.sdx, .sdx-layer) .sdx-device-tag-remove::after { content: ""; position: absolute; inset: -4px; } }
+/* An inherited header chip: the label, a hairline, then "Inherited" and the origin group (InheritedOrigin inline). The dashed border stays. */
+.sdx-device-tag > .sdx-inherited-inline { flex: 0 1 auto; }
+.sdx-device-tag > .sdx-inherited-inline::before { content: ""; flex: none; align-self: center; width: 1px; height: 12px; margin-right: 2px; background: var(--sd-line); }
+/* "+N" reveals the rest of a collapsed tag row; the revealed chips rise in once. */
+.sdx-device-tag-list > li.sdx-device-tag-revealed { --sdx-rise-from: 4px; animation: sdx-rise var(--sd-dur) var(--sd-ease-out) backwards; }
+.sdx-device-tags-more { flex: none; }
+
+/* Device header (device.tsx, PageHeader className). Wide: the platform tile and the actions centre on the
+   32px name line, not on the whole block with description and tags. */
+.sdx-page-head-device .sdx-page-title { align-items: flex-start; }
+.sdx-page-head-device .sdx-page-line { min-height: 32px; }
+/* 56px tile, 32px name line and a 32px actions row, both 12px down: the three centres meet on the 4px grid. */
+.sdx-page-head-device .sdx-page-title > .sdx-platform-lg { width: 56px; height: 56px; }
+.sdx-page-head-device .sdx-page-copy { padding-top: 12px; }
+.sdx-page-head-device .sdx-page-actions { height: 32px; margin-top: 12px; }
+.sdx-page-line-actions { display: flex; flex: none; align-items: center; gap: 4px; margin-left: auto; }
+.sdx-tag.sdx-tag-icon { justify-content: center; width: 24px; padding: 0; }
+@media (max-width: 900px) {
+  /* 48px tile, 8px down; the actions wrap to a row of their own. */
+  .sdx-page-head-device .sdx-page-title > .sdx-platform-lg { width: 48px; height: 48px; }
+  .sdx-page-head-device .sdx-page-copy { padding-top: 8px; }
+  .sdx-page-head-device .sdx-page-actions { height: auto; margin-top: 0; }
+}
+/* Compact header at 760px or narrower: no tile; one line with name, status, mode icon, refresh, "Ask assistant" and "More actions";
+   the tag row and the subtitle stay on one line each. Every control is at least 32px high. */
+@media (max-width: 760px) {
+  .sdx-page-head-device .sdx-page-title > .sdx-platform { display: none; }
+  .sdx-page-head-device .sdx-page-copy { padding-top: 0; }
+  .sdx-page-head-device .sdx-page-line { flex-wrap: nowrap; gap: 8px; }
+  .sdx-page-head-device .sdx-page-line h1 { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .sdx-page-head-device .sdx-page-line > :is(.sdx-pill, .sdx-tag) { flex: none; }
+  .sdx-page-head-device .sdx-page-copy > p { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; overflow-wrap: normal; }
+  .sdx-page-head-device .sdx-crumbs a { display: inline-flex; align-items: center; min-height: 32px; margin: -6px 0; }
+  .sdx-page-head-device .sdx-device-description-toggle { min-height: 32px; }
+  .sdx-page-head-device .sdx-device-tags .sdx-btn-sm { height: 32px; }
+  .sdx-page-head-device .sdx-tag.sdx-device-tag { height: 32px; }
+  :is(.sdx, .sdx-layer) .sdx-page-head-device .sdx-device-tag-remove { width: 32px; height: 32px; margin-right: -4px; }
+  .sdx-page-head-device .sdx-inherited-inline .sdx-inherited-link { align-self: stretch; }
+  .sdx-device-tags-collapsed { flex-wrap: nowrap; }
+  /* "Ask assistant" keeps its label in the line, as high as the icon buttons beside it. */
+  :is(.sdx, .sdx-layer) .sdx-page-head-device .sdx-device-ask { position: relative; height: 32px; padding: 0 12px; }
+}
+/* At 520px or narrower the line has no room for the label: a tinted 32px square with the centred icon. The label is
+   clipped, not removed, so it stays the button's accessible name. */
+@media (max-width: 520px) {
+  :is(.sdx, .sdx-layer) .sdx-page-head-device .sdx-device-ask { width: 32px; padding: 0; gap: 0; }
+  :is(.sdx, .sdx-layer) .sdx-page-head-device .sdx-device-ask > span { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+}
+.sdx-description-editor-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.sdx-counter { margin-right: auto; color: var(--sd-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.sdx-counter.sdx-counter-over { color: var(--sd-danger); font-weight: 600; }
+.sdx-field-foot { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.sdx-field-foot .sdx-counter { margin-right: 0; }
+
+/* Tags (ui/devices/configuration/tags.tsx): the panel of a device or group, the drawers and the fleet chips. */
+/* The Tags tab: the head, then the Direct card and the Inherited card, 16px apart. */
+.sdx-tags { gap: 16px; }
+.sdx-tag-name strong { font-weight: 600; overflow-wrap: anywhere; }
+.sdx-tag-name, .sdx-tag-value-cell { max-width: 280px; white-space: normal; }
+.sdx-tag-value { overflow-wrap: anywhere; }
+.sdx-tag-origin-cell { min-width: 200px; white-space: normal; }
+.sdx-switch-field { display: grid; gap: 6px; }
+.sdx-switch-field label { display: flex; align-items: center; gap: 10px; color: var(--sd-ink); font-size: 13px; font-weight: 600; cursor: pointer; }
+.sdx-switch-field small { color: var(--sd-muted); font-size: 12px; line-height: 1.5; }
+.sdx-fleet-description { display: block; max-width: 200px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+/* Fleet tag cell: up to three chips shrink to their label (an ellipsis at the end, never cut by the cell); "+N" always shows in full. */
+.sdx-tag-chips { display: flex; flex-wrap: nowrap; align-items: center; gap: 4px; max-width: 320px; }
+.sdx-tag-chips > .sdx-tag { flex: 0 1 auto; min-width: 40px; max-width: 152px; height: 22px; padding: 0 8px; white-space: nowrap; }
+.sdx-tag-chips .sdx-tag-text { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sdx-tag.sdx-tag-inherited { border-style: dashed; }
+.sdx-tag-more { flex: none; color: var(--sd-muted); font-size: 12px; font-weight: 600; }
+
+/* ---------- Kit III: forms, menus, dialogs ----------
+   Select, Switch, FormActions (field.tsx), SettingsPage, CopyValue, CommandBlock, Steps, Disclosure and
+   the checkbox menu entry (kit.tsx). Tokens only, spacing on the 4px grid, motion from motion.css. */
+/* Select: md is the form control, sm the toolbar height. With customizable selects the chevron sits at the right edge. */
+:is(.sdx, .sdx-layer) .sdx-select-sm { height: 30px; min-height: 30px; font-size: 12.5px; }
+:is(.sdx, .sdx-layer) .sdx-select-blocked { color: var(--sd-muted); cursor: not-allowed; }
+/* Select wide: a toolbar select whose options carry long names keeps up to 320px; at 760px or narrower it takes the filter row. */
+:is(.sdx, .sdx-layer) .sdx-toolbar .sdx-select-wide { max-width: 320px; }
+/* Select fit: as wide as its longest option, never wider than its container, also inside a Field (whose grid stretches it). */
+:is(.sdx, .sdx-layer) select.sdx-select-fit, :is(.sdx, .sdx-layer) .sdx-field select.sdx-select-fit { width: auto; max-width: 100%; justify-self: start; }
+@media (max-width: 760px) {
+  .sdx-toolbar-filters:has(> .sdx-select-wide) { flex: 1 1 100%; }
+  :is(.sdx, .sdx-layer) .sdx-toolbar .sdx-select-wide { flex: 1 1 auto; max-width: none; }
+}
+@supports (appearance: base-select) {
+  html[data-ui="redesign"] select.sdx-select:not([multiple]) { justify-content: space-between; }
+  html[data-ui="redesign"] select.sdx-select:not([multiple])::picker-icon { margin-left: auto; padding-left: 8px; }
+}
+/* Switch: the label on one line, the hint and the blocked reason below. A blocked switch keeps its real state. */
+.sdx-switch-field label > span { min-width: 0; }
+.sdx-switch-blocked label { cursor: not-allowed; }
+.sdx-switch-blocked input[role="switch"] { cursor: not-allowed; opacity: .6; }
+.sdx-switch-field input[role="switch"][aria-busy="true"] { cursor: progress; }
+.sdx-switch-field .sdx-switch-reason { color: var(--sd-muted); }
+/* FormActions: Save takes its primary colour when the form becomes dirty, over --sd-dur. */
+:is(.sdx, .sdx-layer) .sdx-btn.sdx-form-save { transition-duration: .22s, var(--sd-dur), var(--sd-dur), var(--sd-dur), var(--sd-dur); }
+/* SettingsPage: the form column (.sdx-settings, 760px) and the wide content below it. */
+.sdx-settings-page { display: grid; gap: 16px; min-width: 0; }
+.sdx-settings-wide { min-width: 0; }
+/* SettingsPage aside (a live preview): the page is an inline-size container. At 820px or wider the aside is a second
+   column beside the card column and stays in view while the cards scroll (only in a viewport of 600px or higher, so
+   a short window never cuts it); narrower, it sits above the cards. It comes first in the document. */
+.sdx-settings-page-split { container-type: inline-size; }
+.sdx-settings-split { display: grid; gap: var(--sd-space-4); min-width: 0; }
+.sdx-settings-aside { min-width: 0; max-width: 760px; }
+@container (min-width: 820px) {
+  .sdx-settings-split { grid-template-columns: minmax(0, 760px) clamp(300px, 38cqi, 480px); justify-content: start; align-items: start; column-gap: var(--sd-space-5); }
+  .sdx-settings-split > .sdx-settings { grid-column: 1; grid-row: 1; }
+  .sdx-settings-split > .sdx-settings-aside { grid-column: 2; grid-row: 1; max-width: none; }
+}
+@media (min-height: 600px) {
+  @container (min-width: 820px) {
+    .sdx-settings-split > .sdx-settings-aside { position: sticky; top: var(--sd-space-4); }
+  }
+}
+/* A page with only wide content (a channel list, a guide) has an empty column: it takes no room and no gap. */
+.sdx-settings:empty { display: none; }
+/* CopyValue: the value in a quiet box, the copy button beside it. */
+.sdx-copy-value { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.sdx-copy-value > code { flex: 1; min-width: 0; padding: 8px 12px; border: 1px solid var(--sd-line); border-radius: var(--sd-radius-sm); color: var(--sd-ink); background: var(--sd-bg); font-size: 12px; overflow-wrap: anywhere; }
+.sdx-copy-value-custom > :first-child { flex: 1; min-width: 0; }
+/* CommandBlock: the command scrolls inside its box, so the page never scrolls sideways. */
+.sdx-command { display: grid; gap: 8px; min-width: 0; }
+.sdx-command-label { color: var(--sd-ink); font-size: 12px; font-weight: 600; }
+.sdx-command-box { position: relative; min-width: 0; }
+.sdx-command-box pre {
+  margin: 0; padding: 12px 48px 12px 16px; overflow: auto; border: 1px solid var(--sd-line); border-radius: var(--sd-radius);
+  color: var(--sd-ink); background: color-mix(in srgb, var(--sd-ink) 4%, var(--sd-panel));
+  font: 12px/1.6 ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace; white-space: pre; tab-size: 4;
+}
+:is(.sdx, .sdx-layer) .sdx-command-box pre code { padding: 0; border-radius: 0; background: none; font: inherit; overflow-wrap: normal; }
+.sdx-command-box pre.sdx-command-tall { max-height: 320px; }
+:is(.sdx, .sdx-layer) .sdx-command-box .sdx-command-copy { position: absolute; top: 4px; right: 4px; border-color: var(--sd-line); background: var(--sd-panel); box-shadow: var(--sd-shadow-sm); }
+:is(.sdx, .sdx-layer) .sdx-command-box .sdx-command-copy:hover:not(:disabled) { background: color-mix(in srgb, var(--sd-ink) 3%, var(--sd-panel)); }
+/* Steps: a number tile in the icon-tile look per step, joined by a line; done turns the tile into a success check. */
+.sdx-steps { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.sdx-step { position: relative; display: grid; gap: 8px; min-width: 0; padding: 4px 0 24px 44px; }
+.sdx-step:last-child { padding-bottom: 4px; }
+.sdx-step-tile {
+  position: absolute; left: 0; top: 0; display: grid; place-items: center; width: 28px; height: 28px; border-radius: var(--sd-radius-sm);
+  color: var(--sd-accent-strong); background: var(--sd-accent-soft); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sd-accent) 18%, transparent);
+  font-size: 13px; font-weight: 650; font-variant-numeric: tabular-nums; transition: color var(--sd-dur) var(--sd-ease-out), background-color var(--sd-dur) var(--sd-ease-out);
+}
+.sdx-step:not(:last-child)::after { content: ""; position: absolute; left: 14px; top: 36px; bottom: 4px; border-left: 1px solid var(--sd-line); transform: translateX(-50%); }
+.sdx-step-done .sdx-step-tile { color: var(--sd-success); background: var(--sd-success-bg); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sd-success) 22%, transparent); }
+.sdx-step-current .sdx-step-tile { box-shadow: inset 0 0 0 2px var(--sd-accent); }
+.sdx-step-waiting .sdx-step-tile { color: var(--sd-muted); background: color-mix(in srgb, var(--sd-ink) 5%, var(--sd-panel)); box-shadow: none; }
+.sdx-step-title { margin: 4px 0 0; color: var(--sd-ink); font-size: 14px; font-weight: 650; line-height: 1.4; }
+.sdx-step-body { display: grid; gap: 8px; min-width: 0; }
+/* Disclosure: a card-like details element; the chevron turns when it opens. */
+.sdx-disclosure { min-width: 0; border: 1px solid var(--sd-line); border-radius: var(--sd-radius-lg); background: var(--sd-panel); box-shadow: var(--sd-shadow-sm); }
+.sdx-disclosure > summary {
+  display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: var(--sd-radius-lg);
+  color: var(--sd-muted); list-style: none; cursor: pointer; user-select: none;
+  transition: background-color .16s var(--sd-ease-out), transform .22s var(--sd-ease-spring);
+}
+.sdx-disclosure > summary::-webkit-details-marker { display: none; }
+.sdx-disclosure > summary:hover { background: var(--sdx-hover); }
+.sdx-disclosure > summary:active { background: var(--sdx-press); transform: scale(.995); }
+.sdx-disclosure[open] > summary { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.sdx-disclosure-title { display: grid; flex: 1; gap: 0; min-width: 0; }
+.sdx-disclosure-title strong { color: var(--sd-ink); font-size: 14px; font-weight: 650; }
+.sdx-disclosure-title small { color: var(--sd-muted); font-size: 12px; }
+.sdx-disclosure-caret { flex: none; transition: transform var(--sd-dur) var(--sd-ease-out); }
+.sdx-disclosure[open] .sdx-disclosure-caret { transform: rotate(90deg); }
+.sdx-disclosure-body { display: grid; gap: 0; padding: 0 16px 4px; border-top: 1px solid var(--sd-soft-line); }
+/* Checkbox menu entries: the switch look; with an icon the icon takes the first column. */
+.sdx-menu-switch.sdx-menu-switch-icon { grid-template-columns: 18px 1fr auto; }
+.sdx-menu-switch:not(.sdx-menu-switch-icon) small { grid-column: 1 / -1; }
+.sdx-menu-switch[aria-disabled="true"] .sdx-switch-visual { opacity: .6; }
+@media (max-width: 560px) {
+  .sdx-step { padding-left: 40px; }
+  .sdx-disclosure > summary { padding-left: 12px; }
+  .sdx-disclosure-body { padding: 0 12px 4px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sdx-disclosure > summary, .sdx-disclosure-caret, .sdx-step-tile { transition: none; }
+  .sdx-disclosure > summary:active { transform: none; }
+}
+
+/* ---------- Kit foundations II: SectionHead, Facts, Field, DataTable, Toolbar, Pagination, ConfirmDialog ----------
+   (kit.tsx, field.tsx, data-table.tsx, confirm-dialog.tsx). Tokens only, motion from ui/styles/motion.css. */
+
+/* SectionHead: heading, description and meta at the start, actions then the primary action at the end.
+   Card heads (.sdx-card-head) keep their own wrap and spacing rules above. */
+.sdx-section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; min-width: 0; }
+.sdx-section-head:not(.sdx-card-head) { flex-wrap: wrap; }
+.sdx-section-head:not(.sdx-card-head) > .sdx-section-head-text { flex: 1 1 240px; }
+.sdx-section-head-text { min-width: 0; }
+/* Scoped like the kit, so the console's generic `.sd-console h2` (600) does not win. */
+:is(.sdx, .sdx-layer) .sdx-section-head :is(h2, h3) { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 650; }
+:is(.sdx, .sdx-layer) .sdx-section-head h3 { font-size: 13px; }
+.sdx-section-head :is(h2, h3) > svg { color: var(--sd-muted); }
+.sdx-section-head-text > p { margin-top: 2px; color: var(--sd-muted); font-size: 12px; }
+.sdx-section-head-meta { font-variant-numeric: tabular-nums; }
+.sdx-section-head-actions { display: flex; align-items: center; }
+.sdx-section-head-actions:not(.sdx-card-actions) { flex-wrap: wrap; gap: 8px; }
+/* SectionHead leading: the back control at the leading edge. The wrapper has the IconBtn height (32px), and the text
+   column next to it is at least that high and centres its lines, so a one-line head sits centred on the control. */
+.sdx-section-head-lead { display: flex; flex: none; align-items: center; height: 32px; }
+.sdx-section-head-lead + .sdx-section-head-text { display: flex; flex-direction: column; justify-content: center; min-height: 32px; }
+
+/* Facts in more columns; each column keeps the label beside its value. */
+:is(.sdx, .sdx-layer) .sdx-facts-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
+:is(.sdx, .sdx-layer) .sdx-facts-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 24px; }
+/* Facts stacked: the label above its value at every width. */
+:is(.sdx, .sdx-layer) .sdx-facts-stacked > div { grid-template-columns: minmax(0, 1fr); align-content: start; gap: 2px; }
+:is(.sdx, .sdx-layer) .sdx-facts-stacked dt { font-size: 12px; }
+
+/* Field inline: the switch or checkbox and its label on one line, the hint below (a switch keeps the 10px gap of classic-panels.css). */
+.sdx-field-inline > label { display: flex; align-items: center; gap: 8px; color: var(--sd-ink); font-size: 13px; font-weight: 600; cursor: pointer; }
+.sdx-field-inline > label:has(input:disabled) { color: var(--sd-muted); cursor: not-allowed; }
+
+/* DataTable: the wrap is a labelled scroll region (a Tab stop only while it overflows). */
+.sdx-table-wrap[role="region"] { scroll-margin-top: 64px; }
+.sdx-table-wrap-flush { border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+/* The foot stays in view while the table scrolls sideways; the pages sit at its end. */
+.sdx-table-wrap > div.sdx-table-foot { position: sticky; left: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
+.sdx-table-foot > .sdx-pagination { margin-left: auto; }
+/* Static rows never react to hover; only rows with onOpen point and tint. */
+:is(.sdx, .sdx-layer) .sdx-data-table tbody tr:not(.sdx-row-clickable) { cursor: default; }
+:is(.sdx, .sdx-layer) .sdx-data-table tbody tr:not(.sdx-row-clickable):hover { background: transparent; }
+:is(.sdx, .sdx-layer) .sdx-data-table tr.sdx-table-empty > td { height: auto; padding: 0; border-bottom: 0; }
+:is(.sdx, .sdx-layer) .sdx-table :is(th, td).sdx-cell-end { text-align: right; }
+:is(.sdx, .sdx-layer) .sdx-table th.sdx-cell-end .sdx-sort { margin: 0 -6px 0 0; }
+:is(.sdx, .sdx-layer) .sdx-table td.sdx-cell-wrap { white-space: normal; overflow-wrap: anywhere; }
+/* DataColumn aside: the cell content and a part outside the row open button (a tag with a Tooltip) on one line. */
+.sdx-cell-aside { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--sd-space-2); min-width: 0; }
+/* DataColumn tabular: counts in words line up in the column without the mono font (nodiverna-ui §8). */
+:is(.sdx, .sdx-layer) .sdx-table :is(th, td).sdx-cell-tabular { font-variant-numeric: tabular-nums; }
+/* Hidden columns, per breakpoint: below the named viewport width. */
+@media (max-width: 1439.98px) { :is(.sdx, .sdx-layer) .sdx-table :is(th, td).sdx-hide-below-1440 { display: none; } }
+@media (max-width: 1279.98px) { :is(.sdx, .sdx-layer) .sdx-table :is(th, td).sdx-hide-below-1280 { display: none; } }
+@media (max-width: 1099.98px) { :is(.sdx, .sdx-layer) .sdx-table :is(th, td).sdx-hide-below-1100 { display: none; } }
+@media (max-width: 899.98px) { :is(.sdx, .sdx-layer) .sdx-table :is(th, td).sdx-hide-below-900 { display: none; } }
+/* A hidden column of a fixed-layout table leaves its min-width too (fixedTableMinWidth multiplies its width by these). */
+@media (max-width: 1439.98px) { :is(.sdx, .sdx-layer) .sdx-table-fixed { --sdx-col-shown-1440: 0; } }
+@media (max-width: 1279.98px) { :is(.sdx, .sdx-layer) .sdx-table-fixed { --sdx-col-shown-1280: 0; } }
+@media (max-width: 1099.98px) { :is(.sdx, .sdx-layer) .sdx-table-fixed { --sdx-col-shown-1100: 0; } }
+@media (max-width: 899.98px) { :is(.sdx, .sdx-layer) .sdx-table-fixed { --sdx-col-shown-900: 0; } }
+
+/* Cards below 760px: the region holds a list of cards instead of the table. */
+.sdx-table-wrap.sdx-table-wrap-cards { overflow: visible; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.sdx-data-cards { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.sdx-table-wrap-flush.sdx-table-wrap-cards > .sdx-data-cards { padding: 0 12px 12px; }
+.sdx-data-card { display: grid; gap: 4px; min-width: 0; padding: 12px 16px; border: 1px solid var(--sd-line); border-radius: var(--sd-radius); background: var(--sd-panel); box-shadow: var(--sd-shadow-sm); }
+.sdx-data-card-title { min-width: 0; font-size: 13.5px; font-weight: 600; overflow-wrap: anywhere; }
+.sdx-data-card-title .sdx-row-open { font-size: inherit; overflow-wrap: anywhere; }
+.sdx-data-card-open { cursor: pointer; }
+/* The highlighted row or card of a DataTable (highlightKey): the selection look, a programmatic focus target. */
+.sdx-row-highlight > td { background: var(--sd-accent-soft); }
+.sdx-row-highlight > td:first-child { box-shadow: inset 3px 0 0 var(--sd-accent); }
+.sdx-data-card.sdx-row-highlight { border-color: color-mix(in srgb, var(--sd-accent) 25%, var(--sd-line)); border-inline-start: 3px solid var(--sd-accent); background: var(--sd-accent-soft); }
+/* A row or card that leaves the list (DataTable leavingKeys): it fades out and takes no pointer input; the page drops it after --sd-dur. */
+.sdx-row-leaving { pointer-events: none; }
+.sdx-row-leaving > td { opacity: 0; transition: opacity var(--sd-dur) var(--sd-ease-out); }
+.sdx-data-card.sdx-row-leaving { opacity: 0; transform: scale(.98); transition: opacity var(--sd-dur) var(--sd-ease-out), transform var(--sd-dur) var(--sd-ease-out); }
+:is(.sdx, .sdx-layer) .sdx-data-card .sdx-facts > div { padding: 4px 0; }
+/* Selectable cards (DataTable selection): the checkbox before the title; a selected card takes the selection look
+   (accent-soft fill and the 3px leading accent bar) and fades into it. The bar's 2 extra pixels come off the leading
+   padding (3 + 14 = 1 + 16), so the content does not move when a card is selected. */
+.sdx-data-card { transition: background-color var(--sd-dur-fast) var(--sd-ease-out), border-color var(--sd-dur-fast) var(--sd-ease-out), box-shadow var(--sd-dur-fast) var(--sd-ease-out), transform var(--sd-dur-fast) var(--sd-ease-out); }
+.sdx-data-card-title-check { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 4px; }
+/* The row Menu (every sdx-col-actions cell) at the end of the card title line. */
+.sdx-data-card-title-actions { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
+.sdx-data-card-title-check.sdx-data-card-title-actions { grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px; }
+.sdx-data-card-actions { display: inline-flex; align-items: center; gap: 4px; margin-block: -4px; }
+.sdx-check-blocked input { cursor: not-allowed; opacity: .45; }
+.sdx-data-card.sdx-data-card-selected { border-color: color-mix(in srgb, var(--sd-accent) 25%, var(--sd-line)); border-inline-start: 3px solid var(--sd-accent); padding-inline-start: 14px; background: var(--sd-accent-soft); }
+.sdx-data-cards-all { display: flex; align-items: center; gap: 4px; min-height: 32px; margin: 0 0 8px; padding-inline: 16px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.sdx-data-cards-all > .sdx-check-hit { margin-block: 0; }
+.sdx-table-wrap-flush.sdx-table-wrap-cards > .sdx-data-cards-all { padding-inline: 28px; }
+.sdx-table-wrap-cards > .sdx-empty { border: 1px dashed var(--sd-line); border-radius: var(--sd-radius-lg); }
+.sdx-table-wrap-flush.sdx-table-wrap-cards > .sdx-empty { border: 0; }
+.sdx-table-wrap.sdx-table-wrap-cards > .sdx-table-foot { position: static; padding: 12px 4px 0; border-top: 0; }
+.sdx-table-wrap-flush.sdx-table-wrap-cards > .sdx-table-foot { padding: 0 16px 12px; }
+
+/* Certificates: wrapping columns keep a readable width, so the thumbprint breaks into two lines instead of being cut. */
+.sdx-certificate-table td.sdx-cell-wrap { min-width: 120px; }
+.sdx-certificate-table td.mono.sdx-cell-wrap { min-width: 168px; }
+
+/* Toolbar: the search, the filters, a spacer and the actions. The search field has the framed look of the toolbar controls. */
+:is(.sdx, .sdx-layer) .sdx-toolbar-search input { border: 1px solid var(--sd-line); color: var(--sd-ink); background: var(--sd-panel); box-shadow: var(--sd-shadow-sm); }
+:is(.sdx, .sdx-layer) .sdx-toolbar-search input:focus { border-color: var(--sd-accent); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--sd-accent) 18%, transparent); }
+.sdx-toolbar-filters, .sdx-toolbar-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; max-width: 100%; }
+
+/* Pagination: previous, the range, next. */
+.sdx-pagination { display: inline-flex; align-items: center; gap: 8px; }
+.sdx-pagination-range { color: var(--sd-muted); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ConfirmDialog: a centred glass alert, at most 480px wide and 16px from the edges of a phone. The blur is the 24px of
+   the other glass chrome (top bar, navigator, dock, menus), not a larger one: while the surface fades and rises in over
+   the fading scrim, the backdrop blur is computed again on every frame, and its cost grows with the radius. */
+.sdx-confirm-scrim { position: fixed; inset: 0; z-index: 50; background: color-mix(in srgb, var(--sd-ink) 16%, transparent); animation: sdx-fade var(--sd-dur) var(--sd-ease-out); }
+.sdx-confirm-dialog {
+  --sdx-rise-from: 6px;
+  position: fixed; inset: 0; z-index: 51; display: flex; flex-direction: column; gap: 16px;
+  width: min(480px, calc(100vw - 32px)); height: fit-content; max-height: calc(100dvh - 32px); margin: auto; padding: 24px; overflow-y: auto;
+  border: 1px solid var(--sd-glass-edge); border-radius: var(--sd-radius-lg); color: var(--sd-ink); background: var(--sd-glass-strong);
+  -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%); box-shadow: var(--sd-shadow-lg);
+  font: 13px/1.5 var(--sd-font); outline: none; animation: sdx-rise var(--sd-dur) var(--sd-ease-out);
+}
+/* Dialog variant="search" (the command palette): near the top of the window and 640px wide; no padding and no gap, so
+   the search field, the result list and the foot hints run edge to edge. Its glass (the same tint, blur and edge) sits
+   on a layer behind the content (::before), not on the surface: a backdrop filter on the surface was computed again on
+   every frame its result list scrolled, which halved the frame rate while scrolling. The layer does not
+   move or change, so the blur is reused while the list scrolls; during the fade-in the surface is not yet opaque and
+   the layer shows its tint without the blur. The layer also draws the 1px edge, over its tint as before: the surface has
+   no border of its own and a 1px padding in its place, so the content sits where it did and the clip of the rounded
+   surface (overflow: hidden) is its outer edge, which the layer fills. */
+.sdx-confirm-dialog.sdx-dialog-search { gap: 0; width: min(640px, calc(100vw - 24px)); max-height: min(560px, calc(100dvh - 140px)); margin: min(14vh, 120px) auto auto; padding: 1px; border: 0; overflow: hidden; background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.sdx-confirm-dialog.sdx-dialog-search::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; border: 1px solid var(--sd-glass-edge); border-radius: var(--sd-radius-lg); background: var(--sd-glass-strong);
+  -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%); pointer-events: none;
+}
+/* Until the palette's entrance has ended (glassAfterEntrance in ui/kit/confirm-dialog.tsx), its glass layer has no
+   backdrop blur. The surface is a backdrop root while it fades in (opacity below 1), so the blur showed nothing then, but
+   the compositor still computed it on every entrance frame. At rest the layer blurs as before. */
+.sdx-confirm-dialog.sdx-dialog-search:not([data-sdx-entered])::before { -webkit-backdrop-filter: none; backdrop-filter: none; }
+/* Dialog closing (the command palette after Esc, a scrim click or a chosen entry): the scrim and the surface are gone
+   from the next paint and take no pointer, while the dialog waits one frame for its teardown. No animation: the
+   palette disappears at once, as before. */
+.sdx-confirm-scrim[data-sdx-closing], .sdx-confirm-dialog[data-sdx-closing] { visibility: hidden; }
+.sdx-confirm-title { font-size: 17px; font-weight: 680; letter-spacing: -.3px; line-height: 1.3; overflow-wrap: anywhere; }
+.sdx-confirm-body { display: grid; gap: 8px; color: var(--sd-muted); }
+.sdx-confirm-body > p { white-space: pre-line; }
+:is(.sdx, .sdx-layer) .sdx-confirm-lines { border-block: 1px solid var(--sd-soft-line); }
+.sdx-confirm-value { max-height: 160px; overflow-y: auto; overflow-wrap: anywhere; font-weight: 600; }
+.sdx-confirm-foot { display: flex; flex-wrap: wrap-reverse; justify-content: flex-end; gap: 8px; padding-top: 4px; }
+/* The step-up dialog (MfaStepUp in ui/session/mfa-step-up.tsx): the ConfirmDialog surface with the passkey choice, the code field and a toggle. */
+.sdx-stepup-passkeys { display: grid; gap: 8px; }
+.sdx-stepup-passkeys-title { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 650; }
+.sdx-stepup-passkeys-title > svg { color: var(--sd-accent); }
+.sdx-stepup-passkeys-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
+.sdx-stepup-hint, .sdx-stepup-status { color: var(--sd-muted); font-size: 12px; line-height: 20px; }
+.sdx-stepup-status { min-height: 20px; }
+.sdx-stepup-link { justify-self: start; color: var(--sd-accent-strong); font-size: 12px; font-weight: 600; }
+.sdx-stepup-divider { display: flex; align-items: center; gap: 8px; margin-top: 4px; color: var(--sd-muted); font-size: 12px; }
+.sdx-stepup-divider::before, .sdx-stepup-divider::after { content: ""; flex: 1; height: 1px; background: var(--sd-soft-line); }
+.sdx-stepup .sdx-stepup-toggle { align-self: flex-start; }
+
+@media (max-width: 760px) {
+  /* Facts: the label above its value; more columns become one. */
+  :is(.sdx, .sdx-layer) .sdx-facts > div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  :is(.sdx, .sdx-layer) .sdx-facts:is(.sdx-facts-2, .sdx-facts-3) { grid-template-columns: minmax(0, 1fr); }
+  /* SectionHead: the actions wrap below the title. */
+  .sdx-section-head:not(.sdx-card-head) > .sdx-section-head-actions { flex-basis: 100%; }
+  /* With a leading control, the control and the text keep the first line; the actions wrap below. */
+  .sdx-section-head:not(.sdx-card-head) > .sdx-section-head-lead + .sdx-section-head-text { flex-basis: 0; }
+  /* Toolbar: the search on its own row, the filters next, the actions at the end of the last row. */
+  .sdx-toolbar > .sdx-toolbar-search { flex-basis: 100%; min-width: 0; max-width: none; }
+}
+
+/* Devices table: the name is never cut (the strong is no scroll container, so the column takes
+   its width) and the column fits a 15-character NetBIOS name; the group stays on one line. */
+.sdx-col-device .sdx-device-cell { min-width: 176px; }
+.sdx-col-device .sdx-device-cell strong { overflow: visible; text-overflow: clip; }
+/* In the fixed-layout fleet table the column keeps the device's least width (--sd-col-device-min in the table's
+   min-width), so a name or address longer than the rest ends with an ellipsis; the open button names the device. */
+.sdx-table-fixed .sdx-col-device .sdx-device-cell { min-width: 0; }
+.sdx-table-fixed .sdx-col-device .sdx-device-cell :is(strong, small) { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sdx-table-fixed .sdx-customer-cell { max-width: 100%; }
+.sdx-table-fixed .sdx-customer-cell > span:first-child { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sdx-row-open > .sdx-device-cell small { font-weight: 400; }
+:is(.sdx, .sdx-layer) .sdx-table td.sdx-col-group { white-space: nowrap; }
+
+/* Devices toolbar at 760px or narrower: the filter group dissolves into the toolbar row, so "Filters" and the actions
+   (CSV, layout) share one row below the status filter and the first device card starts higher on a phone. */
+@media (max-width: 760px) {
+  .sdx-fleet-toolbar > .sdx-toolbar-filters { display: contents; }
+}
+
+/* A count on a kit button: the open agent updates, the filters that are set. */
+.sdx-btn-count { display: inline-grid; place-items: center; min-width: 20px; height: 20px; margin-left: 4px; padding: 0 4px; border-radius: 99px; color: var(--sd-accent-strong); background: var(--sd-accent-soft); font-size: 11px; font-weight: 650; line-height: 1; font-variant-numeric: tabular-nums; }
+:is(.sdx, .sdx-layer) .sdx-filter-trigger[data-state="open"] { background: var(--sdx-press); }
+
+/* FilterPopover: a small labelled dialog in the menu look. It fades in and rises 4px (reduced motion: none, through .sdx-menu). */
+.sdx-filter-popover { --sdx-rise-from: 4px; display: grid; gap: 12px; width: 288px; max-width: calc(100vw - 16px); padding: 12px; transform-origin: var(--radix-popover-content-transform-origin); animation: sdx-rise var(--sd-dur) var(--sd-ease-out); }
+.sdx-filter-popover-title { padding: 0 4px; color: var(--sd-ink); font-size: 13px; font-weight: 650; }
+.sdx-filter-popover-fields { display: grid; gap: 12px; padding: 0 4px; }
+.sdx-filter-popover-foot { display: flex; justify-content: flex-end; padding-top: 8px; border-top: 1px solid var(--sd-soft-line); }

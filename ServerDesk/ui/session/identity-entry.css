@@ -1,0 +1,12 @@
+/* The sign-in and invitation card (IdentityEntry in ui/session/identity-entry.tsx). */
+.sd-identity-card .sd-identity-help{font-size:12px;color:var(--sd-muted)}
+.sd-identity-card .sd-identity-form{display:flex;flex-direction:column;gap:12px}
+/* Sign-in with Microsoft Entra ID: the leading button and the divider before the built-in form. */
+.sd-identity-entra{display:grid;gap:12px}
+.sd-identity-divider{display:flex;align-items:center;gap:12px;color:var(--sd-muted);font-size:12px}
+.sd-identity-divider::before,.sd-identity-divider::after{content:'';flex:1;height:1px;background:var(--sd-line)}
+/* The amr detail of a refused Microsoft sign-in: a second, smaller line inside the danger Notice. */
+.sd-session-error-detail{display:block;margin-top:4px;font-size:12px}
+/* Microsoft sign-in only: the Disclosure "Use emergency access" opens the password form with a short fade (off under reduced motion). */
+.sd-identity-emergency{display:grid;gap:12px;animation:sdx-fade var(--sd-dur) var(--sd-ease-out)}
+.sd-identity-emergency-hint{font-size:12.5px;color:var(--sd-muted)}

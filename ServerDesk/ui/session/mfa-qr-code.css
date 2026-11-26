@@ -1,0 +1,8 @@
+/* QR code of an authenticator setup. The figure is a light island, so
+   the code stays dark on light in dark mode as well. */
+.sd-mfa-qr{display:grid;justify-items:center;gap:8px;margin:0;padding:12px;border-radius:var(--sd-radius);background:var(--sd-panel)}
+.sd-mfa-qr svg{display:block;width:min(100%,224px);height:auto;aspect-ratio:1;border:1px solid var(--sd-line);border-radius:var(--sd-radius-sm)}
+.sd-mfa-qr-surface{fill:var(--sd-panel)}
+.sd-mfa-qr-modules{fill:var(--sd-contrast)}
+.sd-mfa-qr figcaption{max-width:32ch;font-size:12px;line-height:1.5;color:var(--sd-muted);text-align:center}
+.sd-mfa-qr-expired{margin:0;font-size:13px;color:var(--sd-muted)}

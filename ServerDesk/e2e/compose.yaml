@@ -1,0 +1,31 @@
+# Browser container for pnpm test:e2e (scripts/e2e.mjs). Chromium runs here
+# behind `playwright run-server`; the test runner stays on the host and connects
+# over WebSocket, so neither the host nor the app image needs a browser.
+# The image tag and the run-server version equal the version of
+# @playwright/test in package.json (tests/repo/e2e-harness.mjs checks this).
+#
+# e2e/browser/forward.mjs forwards 127.0.0.1:<port of BASE_URL> in this
+# container to the same port on the Docker host, so Chromium opens BASE_URL
+# itself. Only e2e/browser/ is mounted, read-only; the repo stays outside.
+name: serverdesk-e2e
+services:
+  browser:
+    image: mcr.microsoft.com/playwright:v1.64.1-noble
+    init: true
+    shm_size: 1gb
+    user: pwuser
+    working_dir: /home/pwuser
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      E2E_APP_PORT: ${E2E_APP_PORT:?E2E_APP_PORT is the port of BASE_URL; start the container through pnpm test:e2e}
+      E2E_APP_UPSTREAM: ${E2E_APP_UPSTREAM:-}
+      NPM_CONFIG_UPDATE_NOTIFIER: "false"
+    ports:
+      - "127.0.0.1:${E2E_BROWSER_PORT:-3555}:3555"
+    volumes:
+      - ./browser:/e2e:ro
+    command:
+      - /bin/sh
+      - -c
+      - node /e2e/forward.mjs & exec npx -y playwright@1.64.1 run-server --port 3555 --host 0.0.0.0

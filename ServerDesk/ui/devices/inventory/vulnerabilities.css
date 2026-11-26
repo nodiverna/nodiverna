@@ -1,0 +1,29 @@
+/* The vulnerability check in the software views (ui/devices/inventory/vulnerability-list.tsx)
+   and its settings page (ui/settings/vulnerabilities-panel.tsx). Tokens only. */
+.sdx-vuln-muted { display: inline-flex; align-items: center; gap: 5px; color: var(--sd-muted); font-size: 12.5px; white-space: nowrap; }
+.sdx-vuln-clean svg { flex: none; }
+.sdx-vuln-pill-btn { display: inline-flex; min-height: 32px; align-items: center; padding: 0; border: 0; border-radius: 99px; background: none; color: inherit; font: inherit; cursor: pointer; transition: transform .16s var(--sd-ease-spring); }
+.sdx-vuln-pill-btn:hover .sdx-pill { box-shadow: inset 0 0 0 1px currentColor; }
+.sdx-vuln-pill-btn:active { transform: scale(.96); }
+.sdx-vuln-detail { display: grid; gap: 12px; }
+.sdx-vuln-recommendation { display: flex; align-items: flex-start; gap: 8px; margin: 0; font-weight: 600; }
+.sdx-vuln-recommendation svg { flex: none; margin-top: 2px; color: var(--sd-accent); }
+.sdx-vuln-list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--sd-soft-line); }
+.sdx-vuln-list li { display: grid; gap: 6px; padding: 12px 0; border-bottom: 1px solid var(--sd-soft-line); }
+.sdx-vuln-row-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.sdx-vuln-row-head a { display: inline-flex; align-items: center; gap: 4px; min-height: 24px; color: var(--sd-accent-strong); font-weight: 600; text-decoration: none; }
+.sdx-vuln-row-head a:hover { text-decoration: underline; }
+.sdx-vuln-exploited { border-color: color-mix(in srgb, var(--sd-danger) 35%, var(--sd-line)); color: var(--sd-danger); background: var(--sd-danger-bg); }
+.sdx-vuln-summary { display: -webkit-box; margin: 0; overflow: hidden; color: var(--sd-ink); line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; }
+.sdx-vuln-meta { display: flex; flex-wrap: wrap; gap: 12px; margin: 0; color: var(--sd-muted); font-size: 12px; }
+.sdx-vuln-drawer-section + .sdx-vuln-drawer-section { margin-top: 18px; }
+.sdx-vuln-drawer-section > h3 { margin: 0 0 8px; font-size: 13px; font-weight: 650; }
+.sdx-vuln-key-saved { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--sd-muted); font-size: 12.5px; }
+.sdx-vuln-privacy { margin: 0; color: var(--sd-muted); font-size: 12.5px; }
+.sdx-vuln-notice-foot { display: grid; gap: 4px; margin: 0; padding: 12px 16px; border-top: 1px solid var(--sd-soft-line); color: var(--sd-muted); font-size: 12px; }
+.sdx-vuln-notice-foot p { margin: 0; }
+/* The state pill changes its color with the state (idle, running, failed) instead of jumping. */
+.sdx-vuln-status .sdx-pill { transition: color var(--sd-dur) var(--sd-ease-out), background-color var(--sd-dur) var(--sd-ease-out); }
+.sdx-vuln-status { display: grid; gap: 12px; padding: 0 16px 16px; }
+.sdx-vuln-state { display: flex; align-items: center; gap: 8px; }
+@media (prefers-reduced-motion: reduce) { .sdx-vuln-pill-btn, .sdx-vuln-status .sdx-pill { transition: none; } .sdx-vuln-pill-btn:active { transform: none; } }

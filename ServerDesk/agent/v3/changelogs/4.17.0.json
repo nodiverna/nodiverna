@@ -1,0 +1,10 @@
+{
+  "version": "4.17.0",
+  "features": [
+    "Device assistant scripts: the broker runs a PowerShell script that a user started from the assistant, only in Management mode (capability assistant-powershell).",
+    "An assistant script has a time limit of 10 to 600 seconds and keeps at most 32 KiB of output and 8 KiB of errors.",
+    "Plugin jobs get their sealed secrets: the broker opens them with the device key and hands them to the plugin, for example a DHCP failover secret (capability plugin-secrets).",
+    "The broker masks these secrets in the job result, the message and the logged plugin errors."
+  ],
+  "fixes": []
+}

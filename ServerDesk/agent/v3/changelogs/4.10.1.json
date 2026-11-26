@@ -1,0 +1,10 @@
+{
+  "version": "4.10.1",
+  "features": [],
+  "fixes": [
+    "The portal uninstall refuses a staging folder that already exists. The broker creates it in one step, checks its owner and permissions and does not change an existing item with that name.",
+    "The broker no longer follows a junction or symbolic link when it deletes an uninstall staging folder in %SystemRoot%\\Temp. It checks and deletes each entry through the same handle.",
+    "On a credential refusal, the uninstaller starts only if the portal confirms it revoked the named uninstall job, not on a proxy 401/403. The broker rechecks the staged copy SHA-256 before the start.",
+    "The agent does not start its uninstaller when the portal did not revoke the device because the uninstall job had stopped. The portal answers with 409 and the agent stays installed."
+  ]
+}

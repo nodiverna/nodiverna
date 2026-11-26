@@ -1,0 +1,15 @@
+{
+  "version": "4.18.0",
+  "features": [
+    "Recovery: Windows restarts a crashed or killed agent service after 5 s, 30 s and 60 s. The setup applies and verifies this on install and at every broker start.",
+    "Tamper check: the broker checks the service permissions, the service SIDs, the recovery and the agent folders at start, every 5 minutes and after a service change.",
+    "The broker restores a changed protection and reports it. It reports a changed start type, but never changes it back.",
+    "Tamper alarms: the agent reports a stopped, ended, hung or removed agent and a changed protection to the portal (capability agent-integrity).",
+    "Watchdog: the broker starts a stopped worker and ends a worker that hangs for 3 minutes. The worker reports a broker that does not answer.",
+    "A local --uninstall informs the portal before it removes the agent. Updates, portal uninstalls and reboots create no alarm.",
+    "New self-tests --integrity-self-test and --service-lifecycle-self-test (install, kill, stop and remove two test services)."
+  ],
+  "fixes": [
+    "The update staging folder keeps its protected permissions."
+  ]
+}

@@ -1,0 +1,94 @@
+/* The console background (ConsoleBackdrop in ui/shell/console-backdrop.tsx, docs/branding.md): one blurred picture
+   behind the whole console, like a desktop wallpaper. The layer is fixed to the viewport below every part of the frame
+   (z-index -1 in the root stacking context; nothing between it and the page canvas paints a background); the image
+   is scaled up so the blur keeps no soft edge, and sits on its own compositing layer, so a workspace scroll repaints
+   nothing of it. No pointer events.
+   While it shows (.sdx[data-backdrop]), each region dims it with a scrim of --sd-bg and puts its material on top:
+   - bars (top bar, rail, job dock; the bottom bar at 900px or narrower): the glass (the bottom bar the strong glass)
+   - navigator: the strong glass
+   - workspace (.sdx-workspace, never the scroller .sdx-main): the scrim only; cards, tables, notices and drawers keep
+     their opaque panel, menus, the palette and the select picker their strong glass.
+   The bars and the docked navigator drop their backdrop-filter while the image shows: the image is blurred already,
+   and saturate() would push its colors out of the measured range. The scrim percentages come from the measured image
+   (lib/backdrop.ts, backdropScrims): the console writes --sdx-scrim-<region>-<mode> on .sdx; the fallbacks below are
+   backdropScrims(fallbackBackdropMeasure, null), safe for any image.
+   Secondary text right on a backdrop surface (the bars, the navigator, the workspace canvas) uses the backdrop tone
+   --sdx-muted-backdrop: in light mode --sd-ink 40 % (backdropMutedInkShare) over --sd-muted, in dark mode --sd-muted.
+   The opaque content containers in the workspace set --sd-muted back to --sdx-muted-content, so content looks as it
+   does without a background; menus, drawers and dialogs are portaled outside .sdx and keep --sd-muted.
+   tests/ui/styles/theme-backdrop.mjs checks ink and the secondary text at 4.5:1 on every surface, and the tab labels on
+   the sticky tab band (in light mode the active label joins the workspace scrim). The console does not render the
+   layer or set data-backdrop under reduced transparency or forced colors (useBackdropAllowed); the layer also hides
+   itself there. */
+.sdx-backdrop {
+  /* The image filter of each mode (backdropFilters in lib/backdrop.ts): blur, saturate and brightness only. */
+  --sdx-backdrop-filter-light: blur(48px) saturate(1.4);
+  --sdx-backdrop-filter-dark: blur(48px) saturate(1.2) brightness(.9);
+  position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
+}
+.sdx-backdrop-image {
+  position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: center;
+  filter: var(--sdx-backdrop-filter-light); transform: scale(1.15); will-change: transform;
+  animation: sdx-fade var(--sd-dur-slow) var(--sd-ease-out);
+}
+/* The dark filter in the dark appearance, with the selectors of the logo variants (ui/kit/brand-logo.css). */
+:root[data-theme="dark"] .sdx-backdrop-image { filter: var(--sdx-backdrop-filter-dark); }
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] .sdx-backdrop-image { filter: var(--sdx-backdrop-filter-dark); }
+}
+
+/* The scrim of each region, per mode. The Branding preview (.sdx-backdrop-scrims) reads the same custom properties. */
+.sdx[data-backdrop], .sdx-backdrop-scrims {
+  --sdx-backdrop-bars: light-dark(color-mix(in srgb, var(--sd-bg) var(--sdx-scrim-bars-light, 32%), transparent), color-mix(in srgb, var(--sd-bg) var(--sdx-scrim-bars-dark, 64%), transparent));
+  --sdx-backdrop-navigator: light-dark(color-mix(in srgb, var(--sd-bg) var(--sdx-scrim-navigator-light, 0%), transparent), color-mix(in srgb, var(--sd-bg) var(--sdx-scrim-navigator-dark, 5%), transparent));
+  --sdx-backdrop-workspace: light-dark(color-mix(in srgb, var(--sd-bg) var(--sdx-scrim-workspace-light, 85%), transparent), color-mix(in srgb, var(--sd-bg) var(--sdx-scrim-workspace-dark, 88%), transparent));
+}
+/* The frame paints no surface of its own (.sd-console has --sd-bg), so the layer below it shows; the page canvas
+   (the body background) stays under the layer. */
+.sdx[data-backdrop] {
+  background: none;
+  /* The secondary tones, resolved here on the frame before any region re-points --sd-muted. */
+  --sdx-muted-backdrop: light-dark(color-mix(in srgb, var(--sd-ink) 40%, var(--sd-muted)), var(--sd-muted));
+  --sdx-muted-content: var(--sd-muted);
+}
+/* The backdrop tone on the functional layer and the canvas ("vibrant" secondary text on a material), and the normal
+   tone again on the opaque content inside the workspace. The transparent table wraps (flush in a card, the card list
+   below 760px) keep the tone of what they sit on. */
+.sdx[data-backdrop] > .sdx-topbar,
+.sdx[data-backdrop] .sdx-rail,
+.sdx[data-backdrop] .sdx-navigator,
+.sdx[data-backdrop] .sdx-dock,
+.sdx[data-backdrop] .sdx-workspace { --sd-muted: var(--sdx-muted-backdrop); }
+.sdx[data-backdrop] .sdx-card,
+.sdx[data-backdrop] .sdx-table-wrap:not(.sdx-table-wrap-flush, .sdx-table-wrap-cards),
+.sdx[data-backdrop] .sdx-device-card,
+.sdx[data-backdrop] .sdx-kpi,
+.sdx[data-backdrop] .sdx-health-line,
+.sdx[data-backdrop] .sdx-disclosure,
+.sdx[data-backdrop] .sdx-data-card { --sd-muted: var(--sdx-muted-content); }
+.sdx[data-backdrop] > .sdx-topbar,
+.sdx[data-backdrop] .sdx-dock {
+  background: linear-gradient(var(--sd-glass), var(--sd-glass)), var(--sdx-backdrop-bars);
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+.sdx[data-backdrop] .sdx-navigator {
+  background: linear-gradient(var(--sd-glass-strong), var(--sd-glass-strong)), var(--sdx-backdrop-navigator);
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+.sdx[data-backdrop] .sdx-workspace { background: var(--sdx-backdrop-workspace); }
+@media (min-width: 901px) {
+  .sdx[data-backdrop] .sdx-rail { background: linear-gradient(var(--sd-glass), var(--sd-glass)), var(--sdx-backdrop-bars); border-right: 1px solid var(--sdx-edge); }
+}
+/* 900px or narrower: the bottom bar keeps the strong glass; the navigator overlay floats over the workspace content,
+   so it keeps a blur (without saturate) of what lies under it. */
+@media (max-width: 900px) {
+  .sdx[data-backdrop] .sdx-rail {
+    background: linear-gradient(var(--sd-glass-strong), var(--sd-glass-strong)), var(--sdx-backdrop-bars);
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+  }
+  .sdx[data-backdrop] .sdx-navigator { -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); }
+}
+/* Reduced transparency and forced colors: no image (the console also renders no layer and sets no data-backdrop). */
+@media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+  .sdx-backdrop { display: none; }
+}

@@ -1,0 +1,35 @@
+# Dependency version updates. GitHub opens Dependabot security update PRs only
+# against the default branch main, so security updates stay off, and every entry
+# sets target-branch: dev: the factory pushes only dev, and main changes only
+# through the dev -> main PR. Security findings come first through the daily
+# audit of the workflow CI and through Dependabot alerts.
+# tests/repo/ci-workflow.mjs checks this file.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /ServerDesk
+    target-branch: dev
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    # The same 7 days as minimumReleaseAge: 10080 in ServerDesk/pnpm-workspace.yaml.
+    cooldown:
+      default-days: 7
+    groups:
+      # Runtime dependencies first: they reach the image.
+      runtime:
+        dependency-type: production
+        update-types: [minor, patch]
+      tooling:
+        dependency-type: development
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 2
+    groups:
+      actions:
+        patterns: ['*']

@@ -1,0 +1,11 @@
+{
+  "version": "4.8.0",
+  "features": [
+    "Job results now carry a stable message code and its arguments next to the English text. The portal shows the message in the language of the user. Results of older agents keep their stored text.",
+    "Agent output is English: job messages, inventory warnings, storage protection reasons, diagnostics placeholders and log lines."
+  ],
+  "fixes": [
+    "A role or feature that does not exist now fails with a clear message instead of a ServerManager provider error.",
+    "Process termination and session actions report their own result message instead of a general diagnostic message."
+  ]
+}

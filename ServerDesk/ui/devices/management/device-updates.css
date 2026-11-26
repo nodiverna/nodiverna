@@ -1,0 +1,12 @@
+/* Management → Windows Update on the console kit (ui/devices/management/device-updates.tsx). The head, tiles,
+   notices and tables come from the kit; this file only lays out what sits around them. Tokens only,
+   spacing on the 4px grid, no own keyframes. */
+.sdx-updates { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.sdx-updates-card > .sdx-toolbar, .sdx-updates-hotfixes > .sdx-toolbar { margin: 0; padding: 12px 16px; }
+.sdx-updates-hotfixes > .sdx-toolbar { padding-top: 0; }
+.sdx-updates-job { display: grid; gap: 4px; }
+.sdx-updates-job small { color: var(--sd-muted); font-size: 12px; }
+.sdx-updates-output > summary { cursor: pointer; font-weight: 600; }
+.sdx-updates-output > pre { margin-top: 8px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; }
+.sdx-updates-output > p { margin-top: 8px; }
+.sdx-updates-restart { display: inline-flex; align-items: center; gap: 4px; }

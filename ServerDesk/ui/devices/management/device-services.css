@@ -1,0 +1,13 @@
+/* Management → Services on the console kit (ui/devices/management/device-services.tsx). The head, table and
+   drawer come from the kit; this file only lays out what sits around them. Tokens only, spacing on
+   the 4px grid, no own keyframes. The drawer rules do not depend on .sdx-services, because drawers
+   render in a portal. */
+.sdx-services { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.sdx-services-card > .sdx-toolbar { padding: 12px 16px; }
+.sdx-services-detail { display: grid; gap: 16px; }
+.sdx-services-section { display: grid; gap: 8px; padding-top: 16px; border-top: 1px solid var(--sd-soft-line); }
+.sdx-services-section > h3 { font-size: 13px; font-weight: 650; }
+.sdx-services-section > p { color: var(--sd-muted); font-size: 12px; }
+.sdx-services-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.sdx-services-startup { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 12px; }
+.sdx-services-startup > .sdx-field { flex: 1 1 200px; }

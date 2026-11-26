@@ -1,0 +1,8 @@
+{
+  "version": "4.13.2",
+  "features": [],
+  "fixes": [
+    "While the broker service is not available, the terminal, relay and channel connections of the worker wait 2 to 30 seconds and log at most one line per 30 seconds.",
+    "After a broker restart, a broker call on a connection that was idle opens a new connection once, instead of failing with \"broker unavailable\"."
+  ]
+}

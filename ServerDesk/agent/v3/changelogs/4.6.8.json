@@ -1,0 +1,7 @@
+{
+  "version": "4.6.8",
+  "features": [],
+  "fixes": [
+    "Eingebundene Kryptografiebibliotheken (System.Security.Cryptography.Xml/.Pkcs) auf 10.0.13 aktualisiert; behebt aktuelle Sicherheitsmeldungen zur XML-/CMS-Verarbeitung."
+  ]
+}

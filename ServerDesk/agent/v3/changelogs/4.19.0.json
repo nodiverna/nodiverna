@@ -1,0 +1,11 @@
+{
+  "version": "4.19.0",
+  "features": [
+    "Plugin changes run with the technician's AD account, not as LocalSystem (capability plugin-ad-identity).",
+    "The server checks the account's own rights, and the Windows Security log names the account.",
+    "The new job ad-sign-in checks an AD account and its password once. The password comes sealed to the device key, is used once and is never stored or logged.",
+    "The security telemetry reports the directory of the device: the AD domain, or the computer of a workgroup server, read locally without network.",
+    "The plugin folder grants Authenticated Users read and execute, so a plugin can start with the account's token. Installs from 4.16 to 4.18 get this once."
+  ],
+  "fixes": []
+}
