@@ -1,4 +1,4 @@
-import type {AgentIntegrityEvent,OpenAlert,Server,ServerSnapshot,Sample} from '@/lib/types';
+import type {AgentIntegrityEvent,OpenAlert,Server,ServerSnapshot,Sample,WindowsLicense} from '@/lib/types';
 import {alertReadings,alertRule,defaultAlertSettings,evaluateAlertRules,type AlertIssue,type AlertRuleSettingsMap} from '@/lib/alert-rules';
 import {deviceOsSupport,type EsuOverride} from '@/lib/os-support';
 import {normalizeSoftwareName,normalizeSoftwareVersion,softwareMatches,softwareSearchTokens,type SoftwareItem} from '@/lib/software-inventory';
@@ -87,7 +87,7 @@ export function demoData(){
   const description=app?'Web front end of the order portal.\nContact: IT operations, room 2.14':sql?'SQL Server for accounting and the ERP system.':dc?'Domain controller of the head office.':'';
   const tags=(app?[['Environment','Production'],['Owner','IT operations'],['Patch window','Tuesday']]:sql?[['Environment','Production'],['Backup','Daily'],['Owner','Finance'],['Patch window','Sunday']]:dc?[['Environment','Production'],['Critical','']]:[['Environment','Test']])
    .map(([tagName,value])=>({name:tagName,value,inherited:false,groupId:null}));
-  Object.assign(snapshot,demoHealth(id,time),demoHealthSignals2(id,time),demoDefender(id,time));
+  Object.assign(snapshot,demoHealth(id,time),demoHealthSignals2(id,time),demoDefender(id,time),{windowsLicense:demoWindowsLicense(id,time)});
   // Agent 4.15.0 on every sample device except SRV-DC01, which shows the "update the agent" state.
   if(!dc)snapshot.agentCapabilities=[...snapshot.agentCapabilities,'defender-status',...defenderJobKinds];
   // SRV-FILE01: Defender is passive next to another antivirus, so real-time protection is off.
@@ -118,6 +118,18 @@ const day=86400000;
 /** ESU dates of the sample devices: SRV-SQL01 runs Server 2016 with ESU for 120 more days, SRV-FILE01 had ESU until 2026-10-13. */
 function demoEsu(time:number):EsuOverride[]{
  return [{scopeType:'device',scopeId:'demo-db',until:new Date(time+120*day).toISOString().slice(0,10),updatedAt:time},{scopeType:'device',scopeId:'demo-file',until:'2026-10-13',updatedAt:time}];
+}
+/**
+ * The Windows activation of the sample devices (agent 4.22.0): SRV-SQL01 is an activated evaluation with 47 days left,
+ * SRV-FILE01 runs in notification mode with a retail key, SRV-APP01 is a KMS client whose activation runs 170 more days,
+ * SRV-DC01 is activated with an OEM key.
+ */
+function demoWindowsLicense(id:string,time:number):WindowsLicense{
+ const collectedAt=new Date(time-20*60_000).toISOString(),ahead=(days:number)=>new Date(time+days*day).toISOString();
+ if(id==='demo-db')return {available:true,collectedAt,status:'licensed',channel:'evaluation',expiresAt:ahead(47),evaluationEndsAt:null};
+ if(id==='demo-file')return {available:true,collectedAt,status:'notification',channel:'retail',expiresAt:null,evaluationEndsAt:null};
+ if(id==='demo-app')return {available:true,collectedAt,status:'licensed',channel:'volume-kms',expiresAt:ahead(170),evaluationEndsAt:null};
+ return {available:true,collectedAt,status:'licensed',channel:'oem',expiresAt:null,evaluationEndsAt:null};
 }
 type DemoProtector='tpm'|'numerical-password'|'tpm-pin';
 const demoVolume=(drive:string,volumeType:'os'|'fixed',conversion:'encrypted'|'encrypting'|'decrypted',protection:'on'|'off'|'suspended',protectors:DemoProtector[],percent:number|null=null,suspendedSince:string|null=null)=>({drive,volumeType,conversion,percent:percent??(conversion==='encrypted'?100:conversion==='decrypted'?0:null),protection,method:conversion==='decrypted'?'none' as const:'xts-aes-256' as const,protectors,suspendedSince});

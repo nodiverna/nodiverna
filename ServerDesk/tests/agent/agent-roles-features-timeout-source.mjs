@@ -47,15 +47,17 @@ ok(/await RolesAsync\(\);/.test(failureTests),'AgentFailurePathTests runs the ro
 ok(/NativeFeaturesProviderTests\.Run\(\)/.test(read('agent/v3/SelfTests.cs'))&&/NativeFeaturesProviderTests\.Run\(\)/.test(read('agent/v3/NativeFeaturesAbiTests.cs')),'the feature provider tests run in --self-test and --features-self-test');
 
 // ---- release 4.21.5 ----
-ok(read('agent/v3/Program.cs').includes('BaseVersion = "4.21.5"'),'Program.BaseVersion is 4.21.5');
-ok(read('agent/v3/ServerDesk.Agent.csproj').includes('<Version>4.21.5</Version>'),'the csproj version is 4.21.5');
+// A later release may raise the version; 4.21.5 stays the floor and keeps its notes.
+const atLeast=(text,pattern)=>{const m=pattern.exec(text);return !!m&&[Number(m[1]),Number(m[2]),Number(m[3])].reduce((r,v,i)=>r!==0?r:v-[4,21,5][i],0)>=0;};
+ok(atLeast(read('agent/v3/Program.cs'),/BaseVersion = "(\d+)\.(\d+)\.(\d+)"/),'Program.BaseVersion is 4.21.5 or later');
+ok(atLeast(read('agent/v3/ServerDesk.Agent.csproj'),/<Version>(\d+)\.(\d+)\.(\d+)<\/Version>/),'the csproj version is 4.21.5 or later');
 const readme=read('agent/v3/README.md');
-ok(readme.startsWith('# ServerDesk native agent 4.21.5')&&readme.includes('are `4.21.5`')&&readme.includes('Since 4.21.5, '),'the README names 4.21.5');
+ok(atLeast(readme,/^# ServerDesk native agent (\d+)\.(\d+)\.(\d+)/)&&readme.includes('Since 4.21.5, '),'the README names 4.21.5');
 ok(existsSync('agent/v3/changelogs/4.21.5.json'),'the 4.21.5 changelog exists');
 const changelog=JSON.parse(read('agent/v3/changelogs/4.21.5.json'));
 ok(changelog.version==='4.21.5'&&changelog.features.length===0&&changelog.fixes.length===1,'the changelog has one fix and no features');
 ok(JSON.parse(read('lib/agent-changelog-history.json')).some(entry=>entry.version==='4.21.5'),'the history has the 4.21.5 entry');
 const docs=read('docs/native-agent-v4.md');
-ok(docs.startsWith('# ServerDesk native agent 4.21.5')&&docs.includes('## Fixes in 4.21.5'),'docs/native-agent-v4.md has the 4.21.5 title and fixes');
+ok(atLeast(docs,/^# ServerDesk native agent (\d+)\.(\d+)\.(\d+)/)&&docs.includes('## Fixes in 4.21.5'),'docs/native-agent-v4.md has a 4.21.5 or later title and the 4.21.5 fixes');
 
 console.log(`agent roles and features timeout source: ${checks} checks passed.`);

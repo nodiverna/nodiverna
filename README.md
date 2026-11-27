@@ -144,6 +144,7 @@ The agent supports Windows Server 2022/2025 and Windows 11 Pro/Enterprise. In th
 - [Own login and RBAC](ServerDesk/docs/local-identity-rbac.md): accounts, invitations, MFA and roles.
 - [Customers](ServerDesk/docs/customers.md): several customers in one portal, the customer boundary, installers and actions for several customers.
 - [Usage data](ServerDesk/docs/usage-data.md): which technical values the portal can send, and only with your consent.
+- [Wiki](https://github.com/nodiverna/nodiverna/wiki): the same documentation as wiki pages with a sidebar.
 - [Releases](https://github.com/nodiverna/nodiverna/releases): the versions of the image and the agent, with their changes.
 
 ## Contributing and security

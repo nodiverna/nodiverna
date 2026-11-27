@@ -10,7 +10,7 @@ a peak value and a level. Refer to [Alarms](#alarms).
 
 ## The rules and their defaults
 
-There are 38 fixed rules of three kinds:
+There are 41 fixed rules of three kinds:
 
 - A threshold rule has a warning step and a critical step. You can leave one of
   the two steps empty, then that step does not apply.
@@ -39,6 +39,8 @@ A rule can be off by default. Then it makes no issues until you turn it on.
 | Recent crash | the newest crash is at most this number of days old | 30 days | 7 days | 1 to 30 days |
 | Support end | the security support of the operating system ends in this number of days or fewer (0: it has ended) | 180 days | 0 days | 0 to 1825 days |
 | OS support unknown | the agent reports `osInfo` and the lifecycle catalog has no entry for it | level info | | |
+| Evaluation edition | Windows runs as an evaluation edition, and the evaluation ends in this number of days or fewer (0 or less: it has ended) | 180 days | 14 days | 0 to 365 days |
+| Windows not activated | Windows reports that it is not activated: unlicensed, a grace period, notification mode or not genuine | level warning | | |
 | System drive not encrypted | BitLocker is available and the system drive is not encrypted | level warning | | |
 | BitLocker protection suspended | BitLocker protection is suspended on a volume (one issue for each volume) | level warning | | |
 | No recovery password | an encrypted system or fixed volume has no recovery password (one issue for each volume) | level info | | |
@@ -70,16 +72,16 @@ last inventory of an offline device.
 
 For a threshold rule, the warning threshold must come before the critical
 threshold. Thus for most rules, the warning value must be lower. For free disk
-space, recent crash, support end, stability index and the certificate rules,
-the warning value must be higher. All thresholds are whole numbers. A limit
+space, recent crash, support end, evaluation edition, stability index and the
+certificate rules, the warning value must be higher. All thresholds are whole numbers. A limit
 rule needs its threshold and its level, and it has no critical step.
 
 The rule **Device offline** applies only while the device is offline. It does
 not apply before the first Heartbeat or while an agent update runs. The issue
 goes away when the device is online again.
 
-The six rules from **Recent crash** to **No recovery password** use the health
-signals of agent 4.10.0. The twelve rules from **Device Manager error** to
+The rules from **Recent crash** to **OS support unknown** and the three
+BitLocker rules use the health signals of agent 4.10.0. The twelve rules from **Device Manager error** to
 **New suspicious autostart entry** use the health signals of agent 4.11.0
 ([device-health-signals.md](device-health-signals.md)). They make no issue
 while a device does not report the field, for example with an older agent. A
@@ -104,6 +106,23 @@ the device. For older agents, the rule reads `security.defender` as before.
 **Defender signature age** reads the new signature time when the agent sends
 it. From the tab **Monitoring** (**By device** and **By alarm**), the four Defender rules open the
 device area **Management → Defender**.
+
+The rules **Evaluation edition** and **Windows not activated** use the license
+state of agent 4.22.0 ([device-health-signals.md](device-health-signals.md#windows-activation)).
+They make no issue for older agents or while the agent cannot read the
+license state. Both rules open the **Overview** of the device.
+
+**Evaluation edition** applies when the agent reports the evaluation channel or
+the edition ID ends with `Eval`. The rule counts the days until the evaluation
+ends. When Windows reports no end, the rule fires at the warning step. When the
+rule has no warning step, it makes no issue. An evaluation in notification mode
+or without a license and without an end has ended. Then the rule fires at the
+critical step.
+
+**Windows not activated** fires when Windows is not activated. The status
+**Unknown** makes no issue. An evaluation that is not activated gets both
+issues: one says when the evaluation ends, the other says that Windows is not
+activated.
 
 The rules **DHCP scope almost full** and **DHCP service stopped** use the
 data of the DHCP plugin ([dhcp-server.md](dhcp-server.md)). They read only data
