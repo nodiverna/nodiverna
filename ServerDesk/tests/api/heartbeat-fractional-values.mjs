@@ -156,31 +156,31 @@ try{
  check([Number.isInteger(probe.cores),Number.isInteger(probe.processes[0].pid),Number.isInteger(probe.gpuDetails[0].pcieGeneration)],[true,true,true],'int fields get integers');
 
  // ---- A fractional 4.10.1 heartbeat ----
- const nfi=await device('NFI-WS01'),{key}=agents.get(nfi);
+ const workstation=await device('CT-WS01'),{key}=agents.get(workstation);
  // A CPU alarm below the fractional reading: the first beat inserts it as
  // pending, the second (after the duration) updates it to open.
- await insert('alert_rule_overrides',{id:uuid(),rule_id:'cpu',scope_type:'device',scope_id:nfi,enabled:1,warning:5,critical:90,level:null,duration_minutes:1,recovery:1,actor:'fixture',updated_at:clock});
- await insert('alert_rule_overrides',{id:uuid(),rule_id:'memory',scope_type:'device',scope_id:nfi,enabled:1,warning:40,critical:90,level:null,duration_minutes:0,recovery:1,actor:'fixture',updated_at:clock});
+ await insert('alert_rule_overrides',{id:uuid(),rule_id:'cpu',scope_type:'device',scope_id:workstation,enabled:1,warning:5,critical:90,level:null,duration_minutes:1,recovery:1,actor:'fixture',updated_at:clock});
+ await insert('alert_rule_overrides',{id:uuid(),rule_id:'memory',scope_type:'device',scope_id:workstation,enabled:1,warning:40,critical:90,level:null,duration_minutes:0,recovery:1,actor:'fixture',updated_at:clock});
  const {payload}=fractionalPayload(key);
  let answer;
- const firstLog=await logged(async()=>{answer=await post(heartbeatApi,nfi,payload);});
+ const firstLog=await logged(async()=>{answer=await post(heartbeatApi,workstation,payload);});
  check(answer.status,200,`the fractional heartbeat is stored: ${JSON.stringify(answer.body)}`);
  check([answer.body.ok,answer.body.intervalSeconds,answer.body.softwareResync],[true,30,true],'answer with the software resync hint');
  check(firstLog,[],'no part of the heartbeat logged an error (history, alarm sync, software check)');
- let row=await serverRow(nfi);
+ let row=await serverRow(workstation);
  check(Number(row.lastSeen),clock,'last_seen is the request time');
  const stored=JSON.parse(row.snapshot);
  check([stored.cpu,stored.memory],[6.42,41.37],'the snapshot keeps the exact CPU and RAM');
  // Plugin reports are stored with target and without role (lib/server/agent/telemetry.ts pluginReports); the generator sends both with the same value.
  check(stored,{...payload,plugins:payload.plugins.map(plugin=>Object.fromEntries(Object.entries(plugin).filter(([key])=>key!=='role')))},'the snapshot keeps every fractional value');
- let samples=await sampleRows(nfi);
+ let samples=await sampleRows(workstation);
  check(samples.map(sample=>[Number(sample.at),Number(sample.cpu),Number(sample.memory)]),[[clock,6,41]],'one sample with CPU and RAM rounded');
  check(JSON.parse(samples[0].gpus),payload.gpus,'the sample keeps the GPU JSON');
- const alarms=()=>d.query(sql`SELECT rule_id AS "ruleId",state,peak_value AS "peakValue",threshold FROM alerts WHERE server_id=${nfi} AND rule_id IN ('cpu','memory') ORDER BY rule_id`);
+ const alarms=()=>d.query(sql`SELECT rule_id AS "ruleId",state,peak_value AS "peakValue",threshold FROM alerts WHERE server_id=${workstation} AND rule_id IN ('cpu','memory') ORDER BY rule_id`);
  check(await alarms(),[{ruleId:'cpu',state:'pending',peakValue:6.42,threshold:5},{ruleId:'memory',state:'open',peakValue:41.37,threshold:40}],'the fractional readings insert alarms with exact peaks');
- check(Number((await d.one(sql`SELECT count(*) AS n FROM alerts WHERE server_id=${nfi}`)).n)>2,true,'more rules fire on the generated payload');
+ check(Number((await d.one(sql`SELECT count(*) AS n FROM alerts WHERE server_id=${workstation}`)).n)>2,true,'more rules fire on the generated payload');
  clock+=2*minute;
- const secondLog=await logged(async()=>{answer=await post(heartbeatApi,nfi,{...payload,cpu:7.81});});
+ const secondLog=await logged(async()=>{answer=await post(heartbeatApi,workstation,{...payload,cpu:7.81});});
  check([answer.status,secondLog],[200,[]],'the second fractional heartbeat');
  check(await alarms(),[{ruleId:'cpu',state:'open',peakValue:7.81,threshold:5},{ruleId:'memory',state:'open',peakValue:41.37,threshold:40}],'the alarm update stores the fractional peak');
 
@@ -188,65 +188,65 @@ try{
  // ones are stored. A new non-integer field there must be covered here.
  check(numberLeaves(inventory.softwareReport).fractional,[],'the software report has no non-integer numbers (cover a new one in this test)');
  const items=[{key:'{A1}',name:'Fixture App',version:'1.2.3',publisher:'Vendor',installDate:'2026-01-15',architecture:'x64',scope:'machine'}];
- const software=await softwareApi.POST(new Request('https://fractions.test/api/agent/software',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+agents.get(nfi).token},body:JSON.stringify({serverId:nfi,checksum:await inventory.softwareChecksum(items),count:1_000_000,truncated:true,items})}));
+ const software=await softwareApi.POST(new Request('https://fractions.test/api/agent/software',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+agents.get(workstation).token},body:JSON.stringify({serverId:workstation,checksum:await inventory.softwareChecksum(items),count:1_000_000,truncated:true,items})}));
  check(software.status,200,`the software report is stored: ${await software.clone().text()}`);
- check(Number((await d.one(sql`SELECT count FROM device_software_state WHERE server_id=${nfi}`)).count),1_000_000,'the largest count is stored');
+ check(Number((await d.one(sql`SELECT count FROM device_software_state WHERE server_id=${workstation}`)).count),1_000_000,'the largest count is stored');
 
  // Rounding half up; a null CPU stays null.
- clock+=minute;answer=await post(heartbeatApi,nfi,{...payload,cpu:41.5,memory:99.5});check(answer.status,200,'half values');
- clock+=minute;answer=await post(heartbeatApi,nfi,{...payload,cpu:null,memory:0.49});check(answer.status,200,'no CPU reading');
- samples=await sampleRows(nfi);
+ clock+=minute;answer=await post(heartbeatApi,workstation,{...payload,cpu:41.5,memory:99.5});check(answer.status,200,'half values');
+ clock+=minute;answer=await post(heartbeatApi,workstation,{...payload,cpu:null,memory:0.49});check(answer.status,200,'no CPU reading');
+ samples=await sampleRows(workstation);
  check(samples.slice(-3).map(sample=>[sample.cpu===null?null:Number(sample.cpu),Number(sample.memory)]),[[8,41],[42,100],[null,0]],'7.81 → 8, 41.5 → 42, 99.5 → 100, null stays null, 0.49 → 0');
 
  // ---- A failing history write keeps the heartbeat ----
  await createTrigger(d,'samples_insert_fails','samples','BEFORE INSERT',{message:'samples-down'});
- const before=(await sampleRows(nfi)).length;
+ const before=(await sampleRows(workstation)).length;
  clock+=minute;
- const historyLog=await logged(async()=>{answer=await post(heartbeatApi,nfi,{...payload,cpu:12.34});});
+ const historyLog=await logged(async()=>{answer=await post(heartbeatApi,workstation,{...payload,cpu:12.34});});
  await dropTrigger(d,'samples_insert_fails');
  check(answer.status,200,'a failing sample insert still answers 200');
- row=await serverRow(nfi);
+ row=await serverRow(workstation);
  check([Number(row.lastSeen),JSON.parse(row.snapshot).cpu],[clock,12.34],'last_seen and snapshot are committed');
- check((await sampleRows(nfi)).length,before,'no sample row');
+ check((await sampleRows(workstation)).length,before,'no sample row');
  check(historyLog.length,1,'one error line');
- check(historyLog[0].includes(nfi)&&historyLog[0].includes('samples-down'),true,'the line names the device and the error');
- check(/Fixture|NFI-WS01|12\.34/.test(historyLog[0]),false,'the line holds no snapshot data');
+ check(historyLog[0].includes(workstation)&&historyLog[0].includes('samples-down'),true,'the line names the device and the error');
+ check(/Fixture|CT-WS01|12\.34/.test(historyLog[0]),false,'the line holds no snapshot data');
 
  // ---- A failing software check omits the hint ----
  clock+=minute;
- const softwareLog=await logged(async()=>{answer=await post(brokenHeartbeatApi,nfi,{...payload,softwareChecksum:'b'.repeat(64)});});
+ const softwareLog=await logged(async()=>{answer=await post(brokenHeartbeatApi,workstation,{...payload,softwareChecksum:'b'.repeat(64)});});
  check([answer.status,answer.body.ok,'softwareResync' in answer.body],[200,true,false],'a failing software check answers 200 without softwareResync');
- check(softwareLog.length===1&&softwareLog[0].includes(nfi)&&softwareLog[0].includes('software-state-down'),true,'the failure is logged once with device and error');
- check(Number((await serverRow(nfi)).lastSeen),clock,'the core state is stored');
- check(Number((await sampleRows(nfi)).at(-1).at),clock,'the sample is stored');
+ check(softwareLog.length===1&&softwareLog[0].includes(workstation)&&softwareLog[0].includes('software-state-down'),true,'the failure is logged once with device and error');
+ check(Number((await serverRow(workstation)).lastSeen),clock,'the core state is stored');
+ check(Number((await sampleRows(workstation)).at(-1).at),clock,'the sample is stored');
 
  // ---- A failing core update still answers 500 ----
  await createTrigger(d,'servers_update_fails','servers','BEFORE UPDATE',{message:'servers-down'});
- const coreBefore=await serverRow(nfi),coreSamples=(await sampleRows(nfi)).length;
+ const coreBefore=await serverRow(workstation),coreSamples=(await sampleRows(workstation)).length;
  clock+=minute;
- await logged(async()=>{answer=await post(heartbeatApi,nfi,payload);});
+ await logged(async()=>{answer=await post(heartbeatApi,workstation,payload);});
  await dropTrigger(d,'servers_update_fails');
  check([answer.status,answer.body.code],[500,'INTERNAL_ERROR'],'the core failure answers 500');
- check([await serverRow(nfi),(await sampleRows(nfi)).length],[coreBefore,coreSamples],'and writes nothing');
+ check([await serverRow(workstation),(await sampleRows(workstation)).length],[coreBefore,coreSamples],'and writes nothing');
 
  // ---- Two parallel heartbeats give exactly one sample ----
  {
   const gate=count=>{let waiting=0,open;const opened=new Promise(resolve=>{open=resolve;});return async()=>{if(++waiting>=count)open();await opened;};};
   clock+=minute;const at=clock;times=[at,at+1];barrier=gate(2);
-  const results=await Promise.all([post(heartbeatApi,nfi,{...payload,cpu:21.4}),post(heartbeatApi,nfi,{...payload,cpu:33.6})]);barrier=null;times=[];
+  const results=await Promise.all([post(heartbeatApi,workstation,{...payload,cpu:21.4}),post(heartbeatApi,workstation,{...payload,cpu:33.6})]);barrier=null;times=[];
   check(results.map(result=>result.status).sort().join(),'200,429','one parallel heartbeat wins and one is throttled');
-  const winner=await serverRow(nfi),latest=(await sampleRows(nfi)).filter(sample=>Number(sample.at)>=at);
+  const winner=await serverRow(workstation),latest=(await sampleRows(workstation)).filter(sample=>Number(sample.at)>=at);
   check(latest.length,1,'exactly one sample');
   check([Number(latest[0].at),Number(latest[0].cpu)],[Number(winner.lastSeen),Math.round(JSON.parse(winner.snapshot).cpu)],'the sample comes from the winner');
  }
 
  // ---- A rejected heartbeat writes no sample: the admission needs last_seen = its time ----
  {
-  const lib=load('lib/server/agent/heartbeat.ts',imports),count=(await sampleRows(nfi)).length;
-  const late=await lib.recordHeartbeatSample({serverId:nfi,tokenHash:sha(agents.get(nfi).token),time:clock+5,publicKey:key.pinned,cpu:1,memory:1,gpus:null});
-  const foreignKey=await lib.recordHeartbeatSample({serverId:nfi,tokenHash:sha(agents.get(nfi).token),time:Number((await serverRow(nfi)).lastSeen),publicKey:agentKey().pinned,cpu:1,memory:1,gpus:null});
-  const wrongToken=await lib.recordHeartbeatSample({serverId:nfi,tokenHash:sha('other'),time:Number((await serverRow(nfi)).lastSeen),publicKey:key.pinned,cpu:1,memory:1,gpus:null});
-  check([late,foreignKey,wrongToken,(await sampleRows(nfi)).length],[false,false,false,count],'another time, key or token writes no sample');
+  const lib=load('lib/server/agent/heartbeat.ts',imports),count=(await sampleRows(workstation)).length;
+  const late=await lib.recordHeartbeatSample({serverId:workstation,tokenHash:sha(agents.get(workstation).token),time:clock+5,publicKey:key.pinned,cpu:1,memory:1,gpus:null});
+  const foreignKey=await lib.recordHeartbeatSample({serverId:workstation,tokenHash:sha(agents.get(workstation).token),time:Number((await serverRow(workstation)).lastSeen),publicKey:agentKey().pinned,cpu:1,memory:1,gpus:null});
+  const wrongToken=await lib.recordHeartbeatSample({serverId:workstation,tokenHash:sha('other'),time:Number((await serverRow(workstation)).lastSeen),publicKey:key.pinned,cpu:1,memory:1,gpus:null});
+  check([late,foreignKey,wrongToken,(await sampleRows(workstation)).length],[false,false,false,count],'another time, key or token writes no sample');
  }
 
  // ---- Dev builds: X.Y.Z-dev.<sha7> as agentVersion and as a plugin version; every other form is refused ----

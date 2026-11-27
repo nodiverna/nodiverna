@@ -172,27 +172,27 @@ The devices download a GPU driver package themselves from `us.download.nvidia.co
 
 Caddy redirects HTTP 8080 explicitly to `SITE_ORIGIN`, with the external HTTPS port 8443 and the request path. For this, the configuration disables the automatic Caddy redirect, because it does not know the different host port. The host ports stay 8080/8443. Only the proxy container uses 80/443 internally.
 
-`compose.yaml` does not build an image. It starts the image from `SERVERDESK_IMAGE`. If this value is empty, it uses `docker.io/lostindreamz/nodiverna:latest`. For a locally built image, first run `image --image serverdesk:local` and then `up --image serverdesk:local`. After a successful start, `up --image <tag>` saves the tag in the file `.env.deployment`, which is not secret. The pipeline runner loads this file itself for later commands.
+`compose.yaml` does not build an image. It starts the image from `SERVERDESK_IMAGE`. If this value is empty, it uses `ghcr.io/nodiverna/nodiverna:latest`. For a locally built image, first run `image --image serverdesk:local` and then `up --image serverdesk:local`. After a successful start, `up --image <tag>` saves the tag in the file `.env.deployment`, which is not secret. The pipeline runner loads this file itself for later commands.
 
 Direct Compose commands then need **both** files: `--env-file .env.runtime --env-file .env.deployment`. An explicit `--env-file` prevents the automatic load of a usual `.env` file. The secrets stay in `.env.runtime`. The Caddy configuration is inline in `compose.yaml` and is the same as `deploy/Caddyfile`. `compose.dev.yaml` continues to mount `deploy/Caddyfile` directly.
 
 ## Run with Docker Compose
 
-For your own server or a NAS, you need only Docker with Compose, the file `compose.yaml` and an environment file. The image `docker.io/lostindreamz/nodiverna` comes ready from Docker Hub, at this time only for `linux/amd64`. You do not need a checkout, a build or Node.js on the host. The Caddy configuration is inline in `compose.yaml`.
+For your own server or a NAS, you need only Docker with Compose, the file `compose.yaml` and an environment file. The image `ghcr.io/nodiverna/nodiverna` comes ready from the GitHub Container Registry, at this time only for `linux/amd64`. You do not need a checkout, a build or Node.js on the host. The Caddy configuration is inline in `compose.yaml`.
 
 1. Download `compose.yaml` and the template for the environment file into an empty directory:
 
    ```sh
    mkdir nodiverna && cd nodiverna
-   curl -fsSLO https://raw.githubusercontent.com/LostInDreamZ/nodiverna/main/ServerDesk/compose.yaml
-   curl -fsSLO https://raw.githubusercontent.com/LostInDreamZ/nodiverna/main/ServerDesk/deploy/runtime.env.example
+   curl -fsSLO https://raw.githubusercontent.com/nodiverna/nodiverna/main/ServerDesk/compose.yaml
+   curl -fsSLO https://raw.githubusercontent.com/nodiverna/nodiverna/main/ServerDesk/deploy/runtime.env.example
    ```
 
 2. Make the file `.env.runtime` and generate the secrets. The command uses the Node.js in the image:
 
    ```sh
    grep -v -E '^(SESSION_SECRET|PASSWORD_PEPPER|AGENT_JOB_SIGNING_KEY|DATABASE_PASSWORD)=' runtime.env.example > .env.runtime
-   docker run --rm --entrypoint node docker.io/lostindreamz/nodiverna:latest -e "const c=require('crypto'),r=()=>c.randomBytes(48).toString('base64url');console.log('SESSION_SECRET='+r()+'\nPASSWORD_PEPPER='+r()+'\nDATABASE_PASSWORD='+c.randomBytes(24).toString('hex')+'\nAGENT_JOB_SIGNING_KEY='+c.generateKeyPairSync('ec',{namedCurve:'prime256v1'}).privateKey.export({type:'pkcs8',format:'der'}).toString('base64'))" >> .env.runtime
+   docker run --rm --entrypoint node ghcr.io/nodiverna/nodiverna:latest -e "const c=require('crypto'),r=()=>c.randomBytes(48).toString('base64url');console.log('SESSION_SECRET='+r()+'\nPASSWORD_PEPPER='+r()+'\nDATABASE_PASSWORD='+c.randomBytes(24).toString('hex')+'\nAGENT_JOB_SIGNING_KEY='+c.generateKeyPairSync('ec',{namedCurve:'prime256v1'}).privateKey.export({type:'pkcs8',format:'der'}).toString('base64'))" >> .env.runtime
    chmod 600 .env.runtime
    ```
 
@@ -222,9 +222,9 @@ For your own server or a NAS, you need only Docker with Compose, the file `compo
    docker compose --env-file .env.runtime run --rm app node scripts/selfhost.mjs bootstrap-owner --username admin --display-name Administrator
    ```
 
-7. Set the image tag. Without a value, `compose.yaml` uses the tag `latest`. For a fixed version, add the line `SERVERDESK_IMAGE=docker.io/lostindreamz/nodiverna:<version>` to `.env.runtime`, for example `0.1.1`. The [Releases](https://github.com/LostInDreamZ/nodiverna/releases) page shows the versions. The tag `<major>.<minor>` follows the patch releases of this version. The tag `latest` follows only stable releases.
+7. Set the image tag. Without a value, `compose.yaml` uses the tag `latest`. For a fixed version, add the line `SERVERDESK_IMAGE=ghcr.io/nodiverna/nodiverna:<version>` to `.env.runtime`, for example `0.1.1`. The [Releases](https://github.com/nodiverna/nodiverna/releases) page shows the versions. The tag `<major>.<minor>` follows the patch releases of this version. The tag `latest` follows only stable releases.
 
-8. Update the portal. First, make a backup as [Backup before updates](#backup-before-updates) tells. Then run these commands. They download the new image, migrate the database and start the portal again:
+8. Update the portal. First, make a backup as [Backup before updates](#backup-before-updates) tells. An installation with the old image name changes it first, as [Change to the new image name](#change-to-the-new-image-name) tells. Then run these commands. They download the new image, migrate the database and start the portal again:
 
    ```sh
    docker compose --env-file .env.runtime pull
@@ -237,6 +237,35 @@ For your own server or a NAS, you need only Docker with Compose, the file `compo
 The project name, the ports and the volumes are the same as in the local Compose installation: `serverdesk_app-data`, `serverdesk_caddy-data`, `serverdesk_caddy-config` and `serverdesk_portal-ca`, HTTP 8080 and HTTPS 8443. An installation that exists keeps its data when you replace `compose.yaml` in the same directory. Instead of a named volume, you can also use a bind mount. UID/GID 1000 must own its data directory.
 
 Agent releases: The image does not contain an agent. A new installation imports the newest agent release from GitHub about one minute after its first start. Without access to GitHub, import a release folder with `import-release` (refer to [Agent releases from GitHub](#agent-releases-from-github)). After the import, the installers and the agent download use this release on every origin.
+
+### Quick-start file
+
+The [Quick start](../../README.md#quick-start) of the README uses the file `deploy/quickstart/compose.yaml`. It has the same services, project name and volumes as `compose.yaml`, and also the one-shot service `migrate`. Compose reads its values from the file `.env` next to it, so no command needs `--env-file`:
+
+- `SESSION_SECRET`, `PASSWORD_PEPPER`, `DATABASE_PASSWORD` and `AGENT_JOB_SIGNING_KEY`: the four secrets from `node scripts/selfhost.mjs secrets`. Without them, Compose does not start.
+- `PORTAL_HOST` (optional): the address of the portal, for example `192.168.1.10`. The default is `localhost`.
+- `SERVERDESK_IMAGE` (optional): a fixed image version, for example `ghcr.io/nodiverna/nodiverna:0.1.1`.
+
+Keep `.env` private and include it in your backups. Without `PASSWORD_PEPPER` and `SESSION_SECRET`, no sign-in works.
+
+To update, run `docker compose pull` and then `docker compose up -d`. Before a pending migration, `migrate` makes a backup, as [Automatic backup before migrations](#automatic-backup-before-migrations) tells. Then it applies the migration, and the app starts after it. For the commands in [Back up and restore](#back-up-and-restore), leave out `--env-file .env.runtime`.
+
+The quick-start file has limits. It uses only the local Caddy CA and the ports 8080 and 8443. For a public DNS name or other ports, use the full `compose.yaml` and the steps of this section.
+
+### Change to the new image name
+
+The image moved from `docker.io/lostindreamz/nodiverna` to `ghcr.io/nodiverna/nodiverna`. New versions come only from the new name. An installation that exists changes the name once:
+
+1. Open `.env.runtime` (and `.env.deployment`, if it exists). If a file has the line `SERVERDESK_IMAGE=docker.io/lostindreamz/nodiverna:<tag>`, replace it with `SERVERDESK_IMAGE=ghcr.io/nodiverna/nodiverna:<tag>`.
+2. Without such a line, download the new `compose.yaml` into the same directory:
+
+   ```sh
+   curl -fsSLO https://raw.githubusercontent.com/nodiverna/nodiverna/main/ServerDesk/compose.yaml
+   ```
+
+3. Run the update commands of step 8. They download the image from the new name, migrate the database and start the portal again.
+
+The data volumes stay. On Azure Container Apps, give `--image ghcr.io/nodiverna/nodiverna:<version>` at the next rollout (refer to [Azure Container Apps](#azure-container-apps)).
 
 ### HTTPS with the local Caddy CA
 
@@ -304,7 +333,7 @@ For user names that belong to no account, ServerDesk writes only the entry for t
 
 ## Azure Container Apps
 
-`node deploy/azure.mjs` updates a prepared container app to a tested image. Use any tested tag from Docker Hub (`docker.io/lostindreamz/nodiverna:<version>`), or a copy of it in a private registry such as Azure Container Registry (ACR).
+`node deploy/azure.mjs` updates a prepared container app to a tested image. Use any tested tag from the GitHub Container Registry (`ghcr.io/nodiverna/nodiverna:<version>`), or a copy of it in a private registry such as Azure Container Registry (ACR).
 
 For the company environment, first provision these resources in the applicable subscription:
 
@@ -373,7 +402,7 @@ For incompatible schema changes, plan a maintenance window and a backup first. D
 On Linux or WSL, with the Azure CLI signed in, the rollout command is:
 
 ```sh
-node deploy/azure.mjs --resource-group <group> --app <app> --image docker.io/lostindreamz/nodiverna:<version> --max-replicas 3
+node deploy/azure.mjs --resource-group <group> --app <app> --image ghcr.io/nodiverna/nodiverna:<version> --max-replicas 3
 # Include the schema change explicitly:
 node deploy/azure.mjs --resource-group <group> --app <app> --image <registry>.azurecr.io/serverdesk:<tag> --migration-job <job>
 ```

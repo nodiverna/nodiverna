@@ -6,6 +6,8 @@ Agent 4.11.0 adds five more signals: drivers and Device Manager errors, reliabil
 
 Agent 4.14.0 adds the state of Microsoft Defender. Refer to [Microsoft Defender](#microsoft-defender).
 
+Agent 4.22.0 adds the Windows activation state. Refer to [Windows activation](#windows-activation).
+
 Devices with an older agent show a note to update the agent. They do not get issues for the new rules.
 
 ## Crashes
@@ -157,6 +159,19 @@ In the report **Defender**, select devices to start one action on many devices a
 The server checks each device again. If one device cannot run the action, the portal creates no job and names that device. Remove the device from the selection, then try again.
 
 The rules are **Defender threat detected** (critical), **Defender scan age** (warning after 7 days) and the changed **Defender off** ([alert-rules.md](alert-rules.md)). The issues hold only the number of detections, the severity and the scan time. Thus they show no path or user to users without `defender.read`.
+
+## Windows activation
+
+Agent 4.22.0 reads the Windows license state once an hour. The collector only reads, and no product key leaves the device. The fields are in [v3-health-signals.md](v3-health-signals.md#windows-license-in-4220).
+
+- **Data.** The agent sends the license status, the license channel and two end times. The status tells if Windows is activated, in a grace period, in notification mode or not genuine. The channel is retail, OEM, volume (MAK or KMS) or evaluation.
+- **Device overview.** The card **System** shows the fact **Windows activation** after **OS support**. For an evaluation, it shows the days left and the end date, for example "Evaluation: 47 days left" and "Expires on 1/12/2027." An activated device shows **Activated** and its channel. A KMS client also shows the date until its activation is valid.
+- **Not activated.** The fact shows the status, the channel and the end of the grace period. Every text tells you to activate Windows or to install a full license.
+- **Color.** The color of an evaluation or of a device that is not activated follows the issue of its rule. When the rule is off, the color is the warning color.
+- **Older agents.** A device without the license state shows **Not reported** and a note to update the agent. When the agent cannot read the state, the fact shows **Not available**.
+- **Rules.** The rules **Evaluation edition** and **Windows not activated** make issues and alarms. Refer to [Alert rules](alert-rules.md).
+
+The days left count from the current time, also for an offline device. Windows reports the evaluation end as the remaining minutes while the evaluation is activated. Before the activation, these minutes are the activation grace period. Then the portal uses only the evaluation end date.
 
 ## The analysis tabs
 

@@ -1,0 +1,7 @@
+{
+  "version": "1.1.2",
+  "features": [],
+  "fixes": [
+    "The messages of the DHCP extension say what happened and what to do next, for example where to start a stopped service."
+  ]
+}

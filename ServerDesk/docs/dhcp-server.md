@@ -166,17 +166,17 @@ The schema also has fixed limits, for example 500 IPv4 scopes, 10000 leases and 
 | Code | Meaning |
 | --- | --- |
 | `PLUGIN_DHCP_READ_COMPLETED` | The read is complete. The job result has the number of scopes and leases. |
-| `PLUGIN_DHCP_SERVICE_STOPPED` | The DHCP Server service is stopped. The plugin sends the server facts without scopes. |
-| `PLUGIN_DHCP_NOT_INSTALLED` | The DHCP Server role is not installed on the device. |
-| `PLUGIN_DHCP_ACCESS_DENIED` | The DHCP API refused the access. |
+| `PLUGIN_DHCP_SERVICE_STOPPED` | The DHCP Server service is stopped. The plugin sends the server facts without scopes. The message tells the user to start the service in **Management → Services**. |
+| `PLUGIN_DHCP_NOT_INSTALLED` | The DHCP Server role is not installed on the device. The message tells the user to install the role in **Management → Roles & features**, or to remove the plugin. |
+| `PLUGIN_DHCP_ACCESS_DENIED` | The DHCP API refused the access. The message tells the user to check the members of the groups DHCP Administrators and DHCP Users on the server. |
 | `PLUGIN_DHCP_READ_FAILED` | The DHCP API gave another error. The job result has the error number. |
 | `PLUGIN_DHCP_CHANGED` | The change is complete. The plugin sends the new read. |
-| `PLUGIN_DHCP_CHANGED_NOT_READ` | The change is complete, but the read after it failed. The portal shows the change after the next read. |
-| `PLUGIN_DHCP_INVALID_CHANGE` | The plugin refused a value. The job result names the field. |
-| `PLUGIN_DHCP_OBJECT_EXISTS` | The object exists on the server already. Read the server again. |
-| `PLUGIN_DHCP_OBJECT_MISSING` | The object does not exist on the server. Read the server again. |
-| `PLUGIN_DHCP_IN_FAILOVER` | The scope is in a failover relationship. Remove it from the relationship first. |
-| `PLUGIN_DHCP_SECRET_MISSING` | The shared secret did not reach the plugin. The agent needs 4.17.0 or later. |
+| `PLUGIN_DHCP_CHANGED_NOT_READ` | The change is complete, but the read after it failed. The message tells the user to select **Read again** to see the change. |
+| `PLUGIN_DHCP_INVALID_CHANGE` | The plugin did not make the change because a value is not valid. The job result names the field. |
+| `PLUGIN_DHCP_OBJECT_EXISTS` | The object exists on the server already. The message tells the user to select **Read again** to see the current state. |
+| `PLUGIN_DHCP_OBJECT_MISSING` | The object does not exist on the server. The message tells the user to select **Read again** to see the current state. |
+| `PLUGIN_DHCP_IN_FAILOVER` | The scope is part of a failover relationship. The message tells the user to remove the scope from the relationship on the **Failover** tab, and to try again. |
+| `PLUGIN_DHCP_SECRET_MISSING` | The shared secret did not get to the plugin. The message tells the user to update the agent on the device to 4.17.0 or later. |
 | `PLUGIN_DHCP_CHANGE_FAILED` | The DHCP server refused the change. The job result has the error number. |
 
 For the codes of the broker, for example `AGENT_PLUGIN_TIMEOUT`, refer to [Crash behaviour](agent-plugins.md#crash-behaviour).

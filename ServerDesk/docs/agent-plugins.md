@@ -38,7 +38,7 @@ The plugin project names the target in `<PluginTarget>`. A project with only `<P
 
 The DHCP plugin 1.0.0 has `name` `dhcp`, `role` `dhcp`, `minAgentVersion` `4.16.0` and `capabilities` `["dhcp-read"]`.
 
-The DNS plugin 1.0.4 has `name` `dns`, `role` `dns`, `minAgentVersion` `4.21.2` and 16 `capabilities`: the reads `dns-read` and `dns-zone-read`, and the 14 changes of [DNS server](dns-server.md#the-changes).
+The DNS plugin 1.0.5 has `name` `dns`, `role` `dns`, `minAgentVersion` `4.21.2` and 16 `capabilities`: the reads `dns-read` and `dns-zone-read`, and the 14 changes of [DNS server](dns-server.md#the-changes).
 
 ## CI and signing
 

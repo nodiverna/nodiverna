@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { serverDeskRoot, repositoryRoot } from '../support/paths.mjs';
 
-// Public self-hosting: one compose.yaml with the Docker Hub image and
+// Public self-hosting: one compose.yaml with the GHCR image and
 // inline Caddy config, the env template, the image workflow, and no private
 // NAS tooling or traces left in the public tree.
 const root = serverDeskRoot;
@@ -18,7 +18,7 @@ const repository = repositoryRoot;
 const require = createRequire(import.meta.url);
 // js-yaml is an existing ESLint dependency, not a new application dependency.
 const yaml = createRequire(require.resolve('eslint/package.json'))('js-yaml');
-const publishedImage = '${SERVERDESK_IMAGE:-docker.io/lostindreamz/nodiverna:latest}';
+const publishedImage = '${SERVERDESK_IMAGE:-ghcr.io/nodiverna/nodiverna:latest}';
 const lf = text => text.replaceAll('\r\n', '\n').trim();
 const composeText = await readFile(path.join(root, 'compose.yaml'), 'utf8');
 const compose = yaml.load(composeText);
@@ -139,7 +139,7 @@ test('docker compose accepts compose.yaml alone in an empty directory', { skip: 
       return JSON.parse(result.stdout);
     };
     const resolved = config(environment);
-    assert.equal(resolved.services.app.image, 'docker.io/lostindreamz/nodiverna:latest');
+    assert.equal(resolved.services.app.image, 'ghcr.io/nodiverna/nodiverna:latest');
     // `config` prints a literal $ escaped as $$ again so its output stays valid
     // Compose input. Undo that: the result must be the unchanged Caddyfile.
     const content = resolved.configs.caddyfile.content;
@@ -180,7 +180,7 @@ test('deploy/runtime.env.example is the general env template without the private
   assert.doesNotMatch(template, /COMPOSE_PROFILES=maintenance/, 'no maintenance profile');
 });
 
-test('the Docker Hub workflow runs only by hand, plans the release first, smoke-tests before login and tags only after the push', async () => {
+test('the image workflow runs only by hand, plans the release first, smoke-tests before login and tags only after the push', async () => {
   const workflow = yaml.load(await readFile(path.join(repository, '.github', 'workflows', 'docker-image.yml'), 'utf8'));
   // Only workflow_dispatch with the release choice; the tag push trigger is gone.
   assert.deepEqual(Object.keys(workflow.on), ['workflow_dispatch']);
@@ -189,12 +189,15 @@ test('the Docker Hub workflow runs only by hand, plans the release first, smoke-
   assert.equal(input.type, 'choice'); assert.deepEqual(input.options, ['patch', 'minor', 'none']); assert.equal(input.default, 'patch');
   assert.deepEqual(workflow.permissions, { contents: 'read' });
   assert.deepEqual(workflow.concurrency, { group: 'docker-image', 'cancel-in-progress': false }, 'one fixed group: releases never run in parallel');
-  assert.match(workflow.env.IMAGE, /vars\.DOCKERHUB_IMAGE/);
-  assert.match(workflow.env.IMAGE, /'lostindreamz\/nodiverna'/);
+  // A fixed full reference: the login registry must match it.
+  assert.equal(workflow.env.IMAGE, 'ghcr.io/nodiverna/nodiverna');
   assert.deepEqual(Object.keys(workflow.jobs), ['publish', 'release']);
-  // The Docker Hub secrets live in the docker-hub environment, which allows only main and dev.
-  assert.equal(workflow.jobs.publish.environment, 'docker-hub');
+  // The GITHUB_TOKEN pushes the image: packages: write only on publish, no environment and no secret.
+  assert.equal(workflow.jobs.publish.environment, undefined);
   assert.equal(workflow.jobs.release.environment, undefined);
+  assert.deepEqual(workflow.jobs.publish.permissions, { contents: 'read', packages: 'write' });
+  const rawText = await readFile(path.join(repository, '.github', 'workflows', 'docker-image.yml'), 'utf8');
+  for (const word of ['DOCKERHUB', 'docker-hub', 'docker.io', 'Docker Hub']) assert.ok(!rawText.includes(word), `no ${word} in the workflow`);
   const allSteps = Object.values(workflow.jobs).flatMap(job => job.steps);
   const steps = workflow.jobs.publish.steps;
   const index = predicate => steps.findIndex(predicate);
@@ -222,20 +225,20 @@ test('the Docker Hub workflow runs only by hand, plans the release first, smoke-
   // The plan runs right after checkout and Node setup, before any build.
   const plan = index(step => step.id === 'plan');
   assert.equal(plan, 2);
-  assert.equal(steps[plan].run, 'node scripts/app-release.mjs plan --bump "$RELEASE" --image "docker.io/$IMAGE"');
+  assert.equal(steps[plan].run, 'node scripts/app-release.mjs plan --bump "$RELEASE" --image "$IMAGE"');
   assert.equal(steps[plan]['working-directory'], 'ServerDesk');
   assert.deepEqual(steps[plan].env, { RELEASE: '${{ inputs.release }}' });
   assert.equal(workflow.jobs.publish.outputs.agent_version, undefined, 'the image holds no agent, so there is no agent version');
   for (const name of ['version', 'tag', 'previous_tag', 'release', 'notes']) assert.equal(workflow.jobs.publish.outputs[name], `\${{ steps.plan.outputs.${name} }}`, name);
   const local = steps.find(step => uses('docker/build-push-action')(step) && step.with.load === true);
   assert.ok(plan < steps.indexOf(local) && plan < index(uses('docker/setup-qemu-action')), 'plan before the first build');
-  // A version that Docker Hub has already stops the run after the plan and before the first build.
-  const hub = index(step => step.name === 'Check Docker Hub for the version');
-  assert.ok(plan < hub && hub < index(uses('docker/build-push-action')), 'the Docker Hub check comes after the plan and before the first build');
-  assert.equal(steps[hub].if, "steps.plan.outputs.release == 'true'");
-  assert.equal(steps[hub].run, 'node scripts/app-release.mjs check-hub --image "docker.io/$IMAGE" --version "$VERSION"');
-  assert.equal(steps[hub]['working-directory'], 'ServerDesk');
-  assert.deepEqual(steps[hub].env, { VERSION: '${{ steps.plan.outputs.version }}' });
+  // A version that the registry has already stops the run after the plan and before the first build.
+  const registryCheck = index(step => step.name === 'Check the registry for the version');
+  assert.ok(plan < registryCheck && registryCheck < index(uses('docker/build-push-action')), 'the registry check comes after the plan and before the first build');
+  assert.equal(steps[registryCheck].if, "steps.plan.outputs.release == 'true'");
+  assert.equal(steps[registryCheck].run, 'node scripts/app-release.mjs check-registry --image "$IMAGE" --version "$VERSION"');
+  assert.equal(steps[registryCheck]['working-directory'], 'ServerDesk');
+  assert.deepEqual(steps[registryCheck].env, { VERSION: '${{ steps.plan.outputs.version }}', REGISTRY_USERNAME: '${{ github.actor }}', REGISTRY_TOKEN: '${{ github.token }}' });
   // The online dependency audit runs after the plan and before QEMU and any build.
   const audits = steps.filter(step => /\bpnpm check:audit\b/.test(step.run ?? ''));
   assert.equal(audits.length, 1, 'exactly one step runs pnpm check:audit');
@@ -259,7 +262,8 @@ test('the Docker Hub workflow runs only by hand, plans the release first, smoke-
   assert.deepEqual(steps[versionCheck].env, { VERSION: '${{ steps.plan.outputs.version }}' });
   assert.match(steps[versionCheck].run, /grep -Fqx "SERVERDESK_VERSION=\$VERSION"/);
   assert.ok(index(uses('docker/setup-qemu-action')) < steps.indexOf(local) && index(uses('docker/setup-buildx-action')) < steps.indexOf(local));
-  assert.deepEqual(steps[login].with, { username: '${{ secrets.DOCKERHUB_USERNAME }}', password: '${{ secrets.DOCKERHUB_TOKEN }}' });
+  assert.deepEqual(steps[login].with, { registry: 'ghcr.io', username: '${{ github.actor }}', password: '${{ secrets.GITHUB_TOKEN }}' });
+  assert.equal(steps[login].uses, 'docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550');
   const published = steps[push].with;
   assert.equal(published.context, 'ServerDesk'); assert.equal(published.target, 'runtime');
   // linux/arm64 stays off until the image has an arm64 smoke test.
@@ -270,6 +274,7 @@ test('the Docker Hub workflow runs only by hand, plans the release first, smoke-
   assert.deepEqual(buildArgs(local.with['build-args']), ['SERVERDESK_VERSION=${{ steps.plan.outputs.version }}']);
   assert.deepEqual(buildArgs(published['build-args']), buildArgs(local.with['build-args']));
   const meta = steps[index(uses('docker/metadata-action'))].with;
+  assert.equal(meta.images, '${{ env.IMAGE }}');
   const tags = meta.tags.trim().split('\n').map(line => line.trim());
   const release = "enable=${{ steps.plan.outputs.release == 'true' }}";
   const edge = "enable=${{ steps.plan.outputs.channel == 'edge' }}";
@@ -308,25 +313,31 @@ test('the Docker Hub workflow runs only by hand, plans the release first, smoke-
     assert.ok(!(step.run ?? '').includes('secrets.'), `no secret in run: ${step.name}`);
     assert.doesNotMatch(step.run ?? '', /\$\{\{[^}]*\b(?:secrets|steps|needs|inputs|github\.event)\./, `no inline expression in run: ${step.name}`);
   }
+  // No expression at all in the run: scripts of the publish job: the plan and the registry check get every value through env:.
+  for (const step of steps) assert.ok(!(step.run ?? '').includes('${{'), `no expression in run: ${step.name}`);
 });
 
-test('the Docker Hub workflow header names the docker-hub environment and its main and dev rule', async () => {
+test('the image workflow header names the GHCR image, the GITHUB_TOKEN and the public visibility, and no environment', async () => {
   const text = (await readFile(path.join(repository, '.github', 'workflows', 'docker-image.yml'), 'utf8')).replaceAll('\r\n', '\n');
   const header = text.slice(0, text.indexOf('\nname:')).split('\n').map(line => line.replace(/^#\s?/, '')).join(' ');
-  assert.match(header, /environment docker-hub/);
-  assert.match(header, /allows the branches main and dev/);
+  assert.match(header, /ghcr\.io\/nodiverna\/nodiverna/);
+  assert.match(header, /GITHUB_TOKEN \(packages: write\)/);
+  assert.match(header, /needs no secret and no environment/);
+  assert.match(header, /After the first push, an organisation owner sets the package visibility to public/);
   assert.match(header, /on dev it pushes dev and dev-<sha7>/);
   assert.match(header, /Releases \(patch and minor\) run only from main/);
+  assert.doesNotMatch(header, /DOCKERHUB|docker-hub|Docker Hub/);
   const workflow = yaml.load(text);
   assert.match(workflow.on.workflow_dispatch.inputs.release.description, /from main.*, or dev and dev- from dev\.$/);
+  // The comment above the publish permissions names the branch rule of planRelease, not an environment.
   const lines = text.split('\n');
-  const environmentComment = lines.slice(0, lines.findIndex(line => line.trim() === 'environment: docker-hub')).slice(-2).join(' ');
-  assert.match(environmentComment, /main \(releases, or edge and sha-\) and dev \(dev and dev-\)/);
-  assert.match(header, /DOCKERHUB_USERNAME and DOCKERHUB_TOKEN/);
-  assert.doesNotMatch(header, /set the repository secrets/);
+  const publish = lines.indexOf('  publish:');
+  const jobComment = lines.slice(publish + 1, lines.indexOf('    permissions:', publish)).join(' ');
+  assert.match(jobComment, /main \(releases, or edge and sha-\) and dev \(dev and dev-\)/);
+  assert.doesNotMatch(jobComment, /environment/);
 });
 
-test('actionlint accepts the CI, Docker Hub, agent and plugin release workflows', t => {
+test('actionlint accepts the CI, image, agent and plugin release workflows', t => {
   const result = spawnSync('actionlint', ['.github/workflows/ci.yml', '.github/workflows/docker-image.yml', '.github/workflows/agent-release.yml', '.github/workflows/plugin-release.yml'], { cwd: repository, encoding: 'utf8' });
   if (result.error?.code === 'ENOENT') { t.skip('actionlint not installed'); return; }
   assert.equal(result.status, 0, `${result.stdout}${result.stderr}${result.error ?? ''}`);
@@ -479,8 +490,12 @@ test('development smoke migrates the same persistent /data volume used by the va
   assert.deepEqual(result.calls.at(-1).args.slice(0, 2), ['network', 'rm'], 'only isolated smoke data and its network are removed');
 });
 
-// The strings are assembled so that this file does not match itself.
-const forbidden = [['192', '168', '178', '5'].join('.'), 'nifi' + '@', '/home/' + 'nifi', 'appgprj' + '_', 'deploy/' + 'nas.sh', 'compose.nas' + '.dev', 'pipeline.mjs' + ' nas'];
+// The strings are assembled so that this file does not match itself. The second
+// line holds real environment and personal names that test and demo data replaced
+// with documentation values (lab.example, CT-WS01, Contoso Devices).
+const forbidden = [['192', '168', '178', '5'].join('.'), 'nifi' + '@', '/home/' + 'nifi', 'appgprj' + '_', 'deploy/' + 'nas.sh', 'compose.nas' + '.dev', 'pipeline.mjs' + ' nas',
+  'nf' + 'i.local', 'NF' + 'I-WS', 'NF' + 'I-DC', 'Eizi' + 'kovich'];
+const forbiddenFindings = (name, text) => forbidden.filter(value => text.includes(value)).map(value => `${name}: ${value}`);
 const skippedPrefixes = ['factory' + '/', '.claude/', 'ServerDesk/public/downloads/'];
 function isBinary(file) {
   const handle = openSync(file, 'r');
@@ -490,7 +505,14 @@ function isBinary(file) {
   } finally { closeSync(handle); }
 }
 
-test('no tracked text file outside the factory and .claude folders contains a private NAS address, user, path or hosting ID', async t => {
+test('the forbidden list finds each real environment and personal name in a text', () => {
+  for (const value of ['nf' + 'i.local', 'NF' + 'I-WS01', 'NF' + 'I-DC01', 'Shaul ' + 'Eizi' + 'kovich']) {
+    assert.equal(forbiddenFindings('sample.cs', `const host = "${value}";`).length, 1, value);
+  }
+  assert.deepEqual(forbiddenFindings('sample.cs', 'lab.example CT-WS01 Contoso Devices 192.0.2.2'), []);
+});
+
+test('no tracked text file outside the factory and .claude folders contains a private NAS address, user, path, hosting ID, real environment name or personal name', async t => {
   const listed = spawnSync('git', ['ls-files', '-z'], { cwd: repository, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   if (listed.status !== 0) { t.skip('git ls-files is not available'); return; }
   const files = listed.stdout.split('\0').filter(name => name && !skippedPrefixes.some(prefix => name.startsWith(prefix)));
@@ -500,7 +522,7 @@ test('no tracked text file outside the factory and .claude folders contains a pr
     const file = path.join(repository, name);
     if (!existsSync(file) || isBinary(file)) continue;
     const text = await readFile(file, 'utf8');
-    for (const value of forbidden) if (text.includes(value)) findings.push(`${name}: ${value}`);
+    findings.push(...forbiddenFindings(name, text));
   }
   assert.deepEqual(findings, []);
 });

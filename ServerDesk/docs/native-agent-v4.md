@@ -1,10 +1,31 @@
-# ServerDesk native agent 4.21.4
+# ServerDesk native agent 4.22.0
 
 ## Delivery and compatibility
 
 The agent is a self-contained .NET 10 application. It comes as one x64 `ServerDesk.Agent.exe` of approximately 58 MiB. Supported hosts are Windows Server 2022, Windows Server 2025 and Windows 11 Pro/Enterprise. For the server editions, Server Core is also supported. You do not have to install .NET or PowerShell 7 separately. The download size is known, but nobody has measured the Windows resource consumption yet.
 
 Agent version 4.7.0 uses portal protocol version 3. The existing `agent/v3`, manifest URLs and build-script names stay compatible with device identities and portal records. A release ZIP contains one EXE. The signed manifest also identifies the hash and size of this EXE. Artifacts that active releases or update jobs refer to stay available. When you retire an unused release, the portal keeps its signed historical metadata and its completed job records.
+
+## Windows license in 4.22.0
+
+Agent 4.22.0 reports the Windows activation state in the new snapshot key `windowsLicense`. The broker reads it once an hour as the fixed, argument-free collector "Windows license", with a deadline of 30 seconds. A manual inventory refresh also reads it.
+
+- **Data.** The agent sends the license status, the license channel, the end of an evaluation or a grace period and the evaluation end date. The fields are in [Windows license in 4.22.0](v3-health-signals.md#windows-license-in-4220).
+- **No product key.** The collector reads `SoftwareLicensingProduct` only for the Windows application ID. It selects no product key and no part of one, and it calls no method of a licensing class.
+- **Older Windows.** When Windows does not know `ProductKeyChannel` or `EvaluationEndDate`, the agent reads again without them.
+- **Portal.** The device overview shows the fact **Windows activation**. The rules **Evaluation edition** and **Windows not activated** make issues and alarms. For the details, refer to [Windows activation](device-health-signals.md#windows-activation).
+- **Self-test.** `ServerDesk.Agent.exe --windows-license-self-test` checks every status, every channel rule, the end times, the second query and the failure results.
+
+## Fixes in 4.21.5
+
+- **Cause.** On some Windows servers, for example Windows Server 2025, the device page showed "Roles and features could not be read (TimeoutException)". The worker gave the broker read of the role list 45 seconds. The ServerManager enumeration can take up to 2 minutes. So a slow but working enumeration failed in every inventory cycle, and its late result was lost.
+- **Time budget.** "Roles and features" now has a deadline of 150 seconds (`NativeFeatures.InventoryDeadlineSeconds`). The worker's broker call waits 165 seconds. The deadline covers the 120-second enumeration (`NativeFeatures.ServerEnumerationSeconds`), four provider probes of 5 seconds and 10 seconds of margin. A run past 150 seconds still shows "the Windows provider does not answer in time".
+- **Joined broker reads.** The broker reads each privileged inventory in one run at a time. A request that arrives while the same read runs now waits for that run and gets its result or its failure. Agents up to 4.21.4 failed such a request after 30 seconds with "The privileged inventory is still running.". A failure is not kept: the next request reads again.
+- **Shared enumeration.** The telemetry and the drift inventory share one role enumeration. A list call that starts while an enumeration runs gets its result and does not start a second enumeration. A role installation or removal still excludes every list.
+- **Timing log line.** The broker writes "Broker telemetry Roles and features: read in <ms> ms (<count> components)." for the first successful role read after its start and for every read of 20 seconds or more.
+- **Customer move.** Moving a device to another customer does not cause the error. The move sends no job and no inventory refresh to the agent.
+
+`ServerDesk.Agent.exe --features-self-test` checks the time budget, the shared enumeration and the timing line. `--broker-self-test` checks the joined broker reads, and `--failure-paths-self-test` checks the device page lines of a slow read and of a real failure.
 
 ## Fixes in 4.21.4
 

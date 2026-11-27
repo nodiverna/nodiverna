@@ -26,8 +26,8 @@ This command runs the type check, lint, regression tests, self-hosting tests, th
 
 ## Operation and agent
 
-One Docker image runs on a NAS, on your own server and on Azure. Docker Hub supplies the image as `docker.io/lostindreamz/nodiverna`. To operate it, you need only `compose.yaml` and an environment file ([Run with Docker Compose](docs/self-hosting.md#run-with-docker-compose)). Operation with Compose uses PostgreSQL in its own container and local file storage. Many Azure replicas use Azure Database for PostgreSQL and Azure Blob Storage. [Installation and deployment](docs/self-hosting.md) also tells you about local pipelines, HTTPS, backups and Azure Container Apps.
+One Docker image runs on a NAS, on your own server and on Azure. The GitHub Container Registry supplies the image as `ghcr.io/nodiverna/nodiverna`. To operate it, you need only `compose.yaml` and an environment file ([Run with Docker Compose](docs/self-hosting.md#run-with-docker-compose)). Operation with Compose uses PostgreSQL in its own container and local file storage. Many Azure replicas use Azure Database for PostgreSQL and Azure Blob Storage. [Installation and deployment](docs/self-hosting.md) also tells you about local pipelines, HTTPS, backups and Azure Container Apps.
 
-The [releases](https://github.com/LostInDreamZ/nodiverna/releases) page lists the versions and their changes.
+The [releases](https://github.com/nodiverna/nodiverna/releases) page lists the versions and their changes.
 
 To register a Windows device, use **Add device** in the portal. That page gives you the agent EXE, the personal registration file and the installation instructions. Updates use signed packages. For more information, read [Windows agent](agent/v3/README.md), [Device areas and hardware](docs/device-workspace.md), [Groups](docs/device-groups.md) and [Automation](docs/automation.md).

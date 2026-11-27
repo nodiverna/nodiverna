@@ -11,6 +11,12 @@
  *   node --env-file=.env.local scripts/selfhost.mjs import-release <dir>
  *   node --env-file=.env.local scripts/selfhost.mjs backup [--output <file>]
  *   node --env-file=.env.local scripts/selfhost.mjs restore --input <file> [--replace]
+ *   node scripts/selfhost.mjs secrets
+ *
+ * secrets needs no environment and opens nothing: it prints new values for
+ * SESSION_SECRET, PASSWORD_PEPPER, DATABASE_PASSWORD and AGENT_JOB_SIGNING_KEY
+ * as env file lines, for the .env of the quick-start Compose file
+ * (deploy/quickstart/compose.yaml).
  *
  * DATABASE_URL is the PostgreSQL URL without a password
  * (postgres://serverdesk@db:5432/serverdesk); the password is in
@@ -106,7 +112,7 @@
  * pnpm db:schema-lock rewrites it, and a test compares both.
  */
 import { spawn } from 'node:child_process';
-import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { createHash, generateKeyPairSync, randomBytes, randomUUID } from 'node:crypto';
 import { createReadStream, existsSync } from 'node:fs';
 import { mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -667,6 +673,24 @@ export function backupDirectory(env = process.env) {
   return path.resolve(projectRoot, env.BACKUP_DIRECTORY || path.join('.data', 'backups'));
 }
 
+/**
+ * New secrets as env file lines: two 48-byte base64url secrets, a 24-byte hex
+ * database password and an ECDSA P-256 job signing key (PKCS#8 DER, base64,
+ * one line), the same formats as scripts/init-local.mjs. The comment lines
+ * come first; Compose and Node ignore them in an env file.
+ */
+export function generateSecrets() {
+  const jobSigningKey = generateKeyPairSync('ec', { namedCurve: 'prime256v1' }).privateKey.export({ type: 'pkcs8', format: 'der' }).toString('base64');
+  return [
+    '# Nodiverna secrets. Keep this file private and back it up.',
+    '# Generate it only once: the database keeps its first password.',
+    `SESSION_SECRET=${randomBytes(48).toString('base64url')}`,
+    `PASSWORD_PEPPER=${randomBytes(48).toString('base64url')}`,
+    `DATABASE_PASSWORD=${randomBytes(24).toString('hex')}`,
+    `AGENT_JOB_SIGNING_KEY=${jobSigningKey}`,
+  ];
+}
+
 export const usage = [
   'Usage: node --env-file=.env.local scripts/selfhost.mjs migrate [--skip-backup]',
   '       node --env-file=.env.local scripts/selfhost.mjs bootstrap-owner --username admin --display-name "Administrator" [--email admin@example.com]',
@@ -676,12 +700,19 @@ export const usage = [
   '       node --env-file=.env.local scripts/selfhost.mjs import-release <dir>',
   '       node --env-file=.env.local scripts/selfhost.mjs backup [--output <file>]',
   '       node --env-file=.env.local scripts/selfhost.mjs restore --input <file> [--replace]',
+  '       node scripts/selfhost.mjs secrets',
 ].join('\n');
 
 async function main() {
   const [command, ...args] = process.argv.slice(2);
   if (!command || command === '--help' || command === '-h') {
     console.log(usage);
+    return;
+  }
+  // secrets reads no environment and no file and opens no database.
+  if (command === 'secrets') {
+    if (args.length) throw new Error('secrets accepts no further arguments.');
+    process.stdout.write(`${generateSecrets().join('\n')}\n`);
     return;
   }
   if (!['migrate', 'bootstrap-owner', 'maintenance', 'rewrap-secrets', 'reset-totp', 'import-release', 'backup', 'restore'].includes(command)) throw new Error(`Unknown command: ${command}`);

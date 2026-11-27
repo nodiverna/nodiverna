@@ -90,6 +90,14 @@ export const defenderState=z.union([
 // a top-level key next to the strict defender object, so an older portal drops it
 // and accepts the heartbeat. Absent while no portal scan runs.
 export const defenderScanState=z.object({kind:z.enum(['quick','full']),startedAt:isoDate}).strict();
+// The Windows activation state of agent 4.22.0 (docs/v3-health-signals.md, "Windows license in 4.22.0"):
+// strict, so an unknown key (a product key, for example) or value rejects the heartbeat.
+export const windowsLicenseStatuses=['unlicensed','licensed','initial-grace','additional-grace','non-genuine-grace','notification','extended-grace','unknown'] as const;
+export const windowsLicenseChannels=['evaluation','oem','volume-kms','volume-mak','retail','unknown'] as const;
+export const windowsLicenseState=z.union([
+ z.object({available:z.literal(false),reason:z.enum(['not-found','access-denied','error']),collectedAt:isoDate}).strict(),
+ z.object({available:z.literal(true),collectedAt:isoDate,status:z.enum(windowsLicenseStatuses),channel:z.enum(windowsLicenseChannels),expiresAt:isoDate.nullable(),evaluationEndsAt:isoDate.nullable()}).strict(),
+]);
 /** The heartbeat key agentIntegrity (agent 4.18.0): strict, at most 2 services and 16 findings. */
 export const agentIntegrity=z.object({
  checkedAt:z.string().max(40).datetime({offset:true}),
@@ -195,6 +203,7 @@ export const telemetry=z.object({hostname:text,os:text,build:text,manufacturer:t
  softwareChecksum:z.string().regex(/^[0-9a-f]{64}$/).nullable().optional(),
  driverHealth:driverHealth.optional(),reliability:reliabilityState.optional(),diskHealth:diskHealthState.optional(),battery:batteryState.optional(),certificates:certificateInventory.optional(),
  autostartChecksum:z.string().regex(/^[0-9a-f]{64}$/).nullable().optional(),defender:defenderState.optional(),defenderScan:defenderScanState.optional(),
+ windowsLicense:windowsLicenseState.optional(),
  collectorErrors:collectorErrors.optional(),
  plugins:pluginReports.optional(),
  // The broker's integrity check of agent 4.18.0 (lib/agent-integrity-contract.ts): both start types and the open findings.

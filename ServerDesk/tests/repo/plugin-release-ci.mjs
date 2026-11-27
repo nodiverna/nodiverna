@@ -247,10 +247,10 @@ test('the DHCP plugin project names its version, target, minimum agent and capab
   const project = await readFile(path.join(root, 'agent/plugins/dhcp/ServerDesk.Plugin.Dhcp.csproj'), 'utf8'), program = await readFile(path.join(root, 'agent/plugins/dhcp/Program.cs'), 'utf8');
   const agent = await readFile(path.join(root, 'agent/v3/ServerDesk.Agent.csproj'), 'utf8');
   const metadata = pluginProjectMetadata(project, 'dhcp');
-  // DHCP plugin 1.1.1 (1.1.0 added the 25 changes; 1.1.1 fixes the heap corruption on a server with scopes): the read and the 25 changes.
+  // DHCP plugin 1.1.2 (1.1.0 added the 25 changes; 1.1.1 fixes the heap corruption on a server with scopes; 1.1.2 rewrites the result messages): the read and the 25 changes.
   const changes = await readFile(path.join(root, 'agent/plugins/dhcp/DhcpChanges.cs'), 'utf8');
   const operations = [...(/Operations =\s*\[([^\]]+)\]/.exec(changes)?.[1] ?? '').matchAll(/"([a-z0-9-]+)"/g)].map(match => match[1]);
-  assert.deepEqual([metadata.version, metadata.target, metadata.capabilities], ['1.1.1', 'dhcp', ['dhcp-read', ...operations]]);
+  assert.deepEqual([metadata.version, metadata.target, metadata.capabilities], ['1.1.2', 'dhcp', ['dhcp-read', ...operations]]);
   assert.equal(Object.hasOwn(metadata, 'role'), false, 'the metadata name the target, not the role');
   assert.equal(metadata.capabilities.length, 26, 'dhcp-read and 25 changes, within the limit of 32');
   // The plugin's minimum stays when the agent moves on (4.17.0 added assistant scripts and plugin secrets): the agent of this repository must be able to run it.
@@ -264,35 +264,38 @@ test('the DHCP plugin project names its version, target, minimum agent and capab
   assert.match(agent, /<Compile Include="\.\.\/plugins\/shared\/PluginProtocol\.cs"/, 'the agent links the same protocol file');
   const notes = JSON.parse(await readFile(path.join(root, `agent/plugins/dhcp/changelogs/${metadata.version}.json`), 'utf8'));
   assert.equal(planPluginRelease({ csproj: project, ref: 'refs/heads/main', name: 'dhcp', changelog: notes }).release, true, 'the changelog of the version is valid');
+  // 1.1.2 rewrites the result messages in plain language; no new feature.
+  assert.deepEqual([notes.features, notes.fixes.length], [[], 1]);
+  assert.match(notes.fixes[0], /messages of the DHCP extension/);
+  assert.deepEqual(planPluginRelease({ csproj: project, ref: 'refs/heads/main', tags: [], name: 'dhcp', changelog: notes }), { name: 'dhcp', version: '1.1.2', tag: 'plugin-dhcp-v1.1.2', release: true, prerelease: false }, 'the release plans plugin-dhcp-v1.1.2');
   assert.throws(() => pluginProjectMetadata(project.replace('<PluginRole>dhcp</PluginRole>', '<PluginRole>mail</PluginRole>'), 'dhcp'), /^Error: The plugin dhcp needs <PluginTarget> with an id of the detection catalog\.$/);
 });
 
-test('the DNS plugin project names version 1.0.4, target dns, the agent of this repository and the 16 capabilities of the plugin', async () => {
+test('the DNS plugin project names version 1.0.5, target dns, the agent of this repository and the 16 capabilities of the plugin', async () => {
   const project = await readFile(path.join(root, 'agent/plugins/dns/ServerDesk.Plugin.Dns.csproj'), 'utf8'), program = await readFile(path.join(root, 'agent/plugins/dns/Program.cs'), 'utf8');
   const agent = await readFile(path.join(root, 'agent/v3/ServerDesk.Agent.csproj'), 'utf8');
   const metadata = pluginProjectMetadata(project, 'dns');
   const changes = await readFile(path.join(root, 'agent/plugins/dns/DnsChanges.cs'), 'utf8');
   const operations = [...(/Operations =\s*\[([^\]]+)\]/.exec(changes)?.[1] ?? '').matchAll(/"([a-z0-9-]+)"/g)].map(match => match[1]);
-  assert.deepEqual([metadata.version, metadata.target, metadata.capabilities], ['1.0.4', 'dns', ['dns-read', 'dns-zone-read', ...operations]]);
+  assert.deepEqual([metadata.version, metadata.target, metadata.capabilities], ['1.0.5', 'dns', ['dns-read', 'dns-zone-read', ...operations]]);
   assert.equal(metadata.capabilities.length, 16, 'two reads and 14 changes, within the limit of 32');
   // The DNS reads need the agent whose upload of the read data works: 4.21.2, which the agent of this repository includes.
   const parts = version => version.split('.').map(Number), atLeast = (a, b) => { for (let i = 0; i < 3; i++) if (a[i] !== b[i]) return a[i] > b[i]; return true; };
-  assert.equal(metadata.minAgentVersion, '4.21.2', 'the DNS plugin 1.0.4 needs agent 4.21.2');
+  assert.equal(metadata.minAgentVersion, '4.21.2', 'the DNS plugin 1.0.5 needs agent 4.21.2');
   assert.ok(atLeast(parts(/<Version>([^<]+)<\/Version>/.exec(agent)[1]), parts(metadata.minAgentVersion)), 'the agent of this repository runs the DNS plugin');
   const { pluginOperations } = await import('../../lib/plugin-catalog.ts');
   assert.deepEqual(metadata.capabilities, Object.entries(pluginOperations).filter(([, definition]) => definition.plugin === 'dns').map(([id]) => id), 'the portal knows exactly the operations of the plugin');
-  assert.match(program, /Name = "dns", BaseVersion = "1\.0\.4", Version = BaseVersion \+ BuildVersion\.DevSuffix;/);
+  assert.match(program, /Name = "dns", BaseVersion = "1\.0\.5", Version = BaseVersion \+ BuildVersion\.DevSuffix;/);
   assert.match(program, /Capabilities = \["dns-read", "dns-zone-read", \.\. DnsChanges\.Operations\]/);
   assert.match(project, /<PublishSingleFile>true<\/PublishSingleFile>/);
   assert.match(project, /<PublishTrimmed>true<\/PublishTrimmed>/);
   assert.match(project, /<Compile Include="\.\.\/shared\/PluginProtocol\.cs"/);
   const notes = JSON.parse(await readFile(path.join(root, `agent/plugins/dns/changelogs/${metadata.version}.json`), 'utf8'));
-  validateReleaseChangelog(notes, '1.0.4');
-  // 1.0.4 creates zones through the modern DNS provider first, lists and deletes its zones and shows the Windows error text; no new feature.
-  assert.deepEqual([notes.features, notes.fixes.length], [[], 3]);
-  assert.match(notes.fixes.join(' '), /DNS zone/);
-  assert.match(notes.fixes.join(' '), /Windows error text/);
-  assert.deepEqual(planPluginRelease({ csproj: project, ref: 'refs/heads/main', tags: [], name: 'dns', changelog: notes }), { name: 'dns', version: '1.0.4', tag: 'plugin-dns-v1.0.4', release: true, prerelease: false }, 'the release plans plugin-dns-v1.0.4');
+  validateReleaseChangelog(notes, '1.0.5');
+  // 1.0.5 rewrites the result messages in plain language; no new feature.
+  assert.deepEqual([notes.features, notes.fixes.length], [[], 1]);
+  assert.match(notes.fixes[0], /messages of the DNS extension/);
+  assert.deepEqual(planPluginRelease({ csproj: project, ref: 'refs/heads/main', tags: [], name: 'dns', changelog: notes }), { name: 'dns', version: '1.0.5', tag: 'plugin-dns-v1.0.5', release: true, prerelease: false }, 'the release plans plugin-dns-v1.0.5');
   assert.equal(pluginPaths('dns').project, 'agent/plugins/dns/ServerDesk.Plugin.Dns.csproj');
 });
 

@@ -4,7 +4,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
-    <AssemblyName>ServerDesk.Plugin.Dhcp</AssemblyName><RootNamespace>ServerDesk.Plugin.Dhcp</RootNamespace><Version>1.1.1</Version>
+    <AssemblyName>ServerDesk.Plugin.Dhcp</AssemblyName><RootNamespace>ServerDesk.Plugin.Dhcp</RootNamespace><Version>1.1.2</Version>
     <PluginRole>dhcp</PluginRole><PluginMinAgentVersion>4.16.0</PluginMinAgentVersion><PluginCapabilities>dhcp-read;dhcp-scope-create;dhcp-scope-edit;dhcp-scope-activate;dhcp-scope-deactivate;dhcp-scope-delete;dhcp-superscope-create;dhcp-superscope-edit;dhcp-superscope-activate;dhcp-superscope-deactivate;dhcp-superscope-delete;dhcp-exclusion-add;dhcp-exclusion-remove;dhcp-reservation-add;dhcp-reservation-edit;dhcp-reservation-remove;dhcp-lease-delete;dhcp-option-set;dhcp-option-remove;dhcp-policy-create;dhcp-policy-edit;dhcp-policy-delete;dhcp-failover-create;dhcp-failover-edit;dhcp-failover-remove;dhcp-scope-apply</PluginCapabilities>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks><InvariantGlobalization>true</InvariantGlobalization><UseSystemResourceKeys>true</UseSystemResourceKeys>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier><SelfContained>true</SelfContained><PublishSingleFile>true</PublishSingleFile>

@@ -83,8 +83,8 @@ const table={
  'extensions/dns':['dns-service-stopped'],
  // The four Defender rules open the Defender area (agent 4.14.0).
  'management/defender':['threat-detected','scan-age','defender-off','signatures-age'],
- // The three agent rules of 4.18.0 open the Overview: the health line names the change.
- overview:['agent-stopped','agent-removed','agent-protection-changed','firewall-off','os-support-end','os-support-unknown','inventory-incomplete','device-offline'],
+ // The three agent rules of 4.18.0 and the two Windows activation rules of 4.22.0 open the Overview: the health line names the change.
+ overview:['agent-stopped','agent-removed','agent-protection-changed','firewall-off','os-support-end','os-support-unknown','windows-evaluation','windows-not-activated','inventory-incomplete','device-offline'],
 };
 check(Object.values(table).flat().sort(),[...alertRuleIds].sort(),'the table covers every rule exactly once');
 for(const [target,ids] of Object.entries(table))for(const id of ids){

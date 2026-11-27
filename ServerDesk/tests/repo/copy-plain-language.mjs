@@ -10,7 +10,8 @@
 // intros), slice 2 the Move drawer, group deletion, the Tags, Software and Windows Update intros and the assistant drawer,
 // slice 3 the Automation inheritance hints, the alert rules intro, the runbook schedule and output texts and the help tips
 // that used to state a key order, slice 4 the extension intros, the automation status texts and the Entra MFA error. The
-// test also checks the keys that the slices removed. In the device and fleet copy, every permission named in quotes must
+// DHCP and DNS extension result messages (agentMessage.PLUGIN_*) are pinned too: they agree with their portal twins and
+// count as "Scopes: {scopes}", never "{scopes} scopes". The test also checks the keys that the slices removed. In the device and fleet copy, every permission named in quotes must
 // be the exact label of a permission.*.
 import '../support/register.mjs';
 import assert from 'node:assert/strict';
@@ -163,5 +164,40 @@ for(const [language,catalog] of catalogs){
  check(named.filter(([,found])=>!labels.has(found)),[],`every quoted permission in the ${language} device copy is a permission label`);
 }
 
+// The exact copy of the DHCP and DNS extension result messages (agentMessage.PLUGIN_*), in both languages. The plugins
+// send the same English text with "plugin" for "extension" (tests/agent/agent-messages.mjs checks that).
+const pluginCopy={
+ 'agentMessage.PLUGIN_DHCP_READ_COMPLETED':['The DHCP server was read. Scopes: {scopes}, leases: {leases}.','Der DHCP-Server wurde gelesen. Bereiche: {scopes}, Leases: {leases}.'],
+ 'agentMessage.PLUGIN_DHCP_SERVICE_STOPPED':['The DHCP Server service is stopped. Start the service in Management → Services.','Der Dienst DHCP-Server ist gestoppt. Starte den Dienst unter Verwaltung → Dienste.'],
+ 'agentMessage.PLUGIN_DHCP_ACCESS_DENIED':['The DHCP server refused access to the DHCP extension. On the server, check the members of the groups DHCP Administrators and DHCP Users.','Der DHCP-Server hat der DHCP-Erweiterung den Zugriff verweigert. Prüfe auf dem Server die Mitglieder der Gruppen „DHCP-Administratoren“ und „DHCP-Benutzer“.'],
+ 'agentMessage.PLUGIN_DHCP_NOT_INSTALLED':['The DHCP Server role is not installed on this device. Install the role in Management → Roles & features, or remove the DHCP extension in the Extensions area.','Die Rolle DHCP-Server ist auf diesem Gerät nicht installiert. Installiere die Rolle unter Verwaltung → Rollen & Features oder entferne die DHCP-Erweiterung im Bereich Erweiterungen.'],
+ 'agentMessage.PLUGIN_DHCP_CHANGED_NOT_READ':['The DHCP server was changed, but the extension could not read it afterwards. Select “Read again” to see the change.','Der DHCP-Server wurde geändert, aber die Erweiterung konnte ihn danach nicht lesen. Wähle „Erneut lesen“, um die Änderung zu sehen.'],
+ 'agentMessage.PLUGIN_DHCP_INVALID_CHANGE':['The DHCP extension did not make the change because the value of {field} is not valid. Correct the value and try again.','Die DHCP-Erweiterung hat die Änderung nicht ausgeführt, weil der Wert von {field} ungültig ist. Korrigiere den Wert und versuche es erneut.'],
+ 'agentMessage.PLUGIN_DHCP_OBJECT_EXISTS':['{object} already exists on the DHCP server. Select “Read again” to see the current state.','{object} existiert schon auf dem DHCP-Server. Wähle „Erneut lesen“, um den aktuellen Stand zu sehen.'],
+ 'agentMessage.PLUGIN_DHCP_OBJECT_MISSING':['{object} does not exist on the DHCP server. Select “Read again” to see the current state.','{object} existiert nicht auf dem DHCP-Server. Wähle „Erneut lesen“, um den aktuellen Stand zu sehen.'],
+ 'agentMessage.PLUGIN_DHCP_IN_FAILOVER':['Scope {scope} is part of a failover relationship. Remove the scope from the relationship on the Failover tab, and try again.','Der Bereich {scope} gehört zu einer Failover-Beziehung. Nimm den Bereich auf dem Tab Failover aus der Beziehung und versuche es erneut.'],
+ 'agentMessage.PLUGIN_DHCP_SECRET_MISSING':['The shared secret did not reach the DHCP extension. Update the agent on this device to 4.17.0 or later, and try again.','Das gemeinsame Geheimnis hat die DHCP-Erweiterung nicht erreicht. Aktualisiere den Agent auf diesem Gerät auf 4.17.0 oder neuer und versuche es erneut.'],
+ 'agentMessage.PLUGIN_DNS_READ_COMPLETED':['The DNS server was read. Zones: {zones}.','Der DNS-Server wurde gelesen. Zonen: {zones}.'],
+ 'agentMessage.PLUGIN_DNS_ZONE_READ_COMPLETED':['Zone {zone} was read. Records: {records}.','Die Zone {zone} wurde gelesen. Einträge: {records}.'],
+ 'agentMessage.PLUGIN_DNS_SERVICE_STOPPED':['The DNS Server service is stopped. Start the service in Management → Services.','Der Dienst DNS-Server ist gestoppt. Starte den Dienst unter Verwaltung → Dienste.'],
+ 'agentMessage.PLUGIN_DNS_NOT_INSTALLED':['The DNS Server role is not installed on this device. Install the role in Management → Roles & features, or remove the DNS extension in the Extensions area.','Die Rolle DNS-Server ist auf diesem Gerät nicht installiert. Installiere die Rolle unter Verwaltung → Rollen & Features oder entferne die DNS-Erweiterung im Bereich Erweiterungen.'],
+ 'agentMessage.PLUGIN_DNS_ACCESS_DENIED':['The DNS server refused access to the DNS extension. On the server, check the members of the group DnsAdmins.','Der DNS-Server hat der DNS-Erweiterung den Zugriff verweigert. Prüfe auf dem Server die Mitglieder der Gruppe DnsAdmins.'],
+ 'agentMessage.PLUGIN_DNS_CHANGED_NOT_READ':['The DNS server was changed, but the extension could not read it afterwards. Select “Read again” to see the change.','Der DNS-Server wurde geändert, aber die Erweiterung konnte ihn danach nicht lesen. Wähle „Erneut lesen“, um die Änderung zu sehen.'],
+ 'agentMessage.PLUGIN_DNS_INVALID_CHANGE':['The DNS extension did not make the change because the value of {field} is not valid. Correct the value and try again.','Die DNS-Erweiterung hat die Änderung nicht ausgeführt, weil der Wert von {field} ungültig ist. Korrigiere den Wert und versuche es erneut.'],
+ 'agentMessage.PLUGIN_DNS_OBJECT_EXISTS':['{object} already exists on the DNS server. Select “Read again” to see the current state.','{object} existiert schon auf dem DNS-Server. Wähle „Erneut lesen“, um den aktuellen Stand zu sehen.'],
+ 'agentMessage.PLUGIN_DNS_OBJECT_MISSING':['{object} does not exist on the DNS server. Select “Read again” to see the current state.','{object} existiert nicht auf dem DNS-Server. Wähle „Erneut lesen“, um den aktuellen Stand zu sehen.'],
+ 'agentMessage.PLUGIN_DNS_NOT_DOMAIN_CONTROLLER':['This server is not a domain controller, so it cannot store zones in Active Directory. Store the zone in a file on this server instead.','Dieser Server ist kein Domänencontroller und kann deshalb keine Zonen in Active Directory speichern. Speichere die Zone stattdessen in einer Datei auf diesem Server.'],
+};
+check(Object.keys(pluginCopy).length,20,'the 20 rewritten extension result messages');
+for(const [key,[english,german]] of Object.entries(pluginCopy))check([en[key],de[key]],[english,german],`the exact copy of ${key}`);
+// The result message and the blocked reason of the portal say the same about a stopped service.
+for(const [plugin,portal] of [['agentMessage.PLUGIN_DHCP_SERVICE_STOPPED','dhcp.blocked.stopped'],['agentMessage.PLUGIN_DNS_SERVICE_STOPPED','dns.blocked.stopped']])check([en[plugin],de[plugin]],[en[portal],de[portal]],`${plugin} equals ${portal}`);
+// The failover message names the Failover tab and the same action as the portal's failover error.
+ok(en['agentMessage.PLUGIN_DHCP_IN_FAILOVER'].includes(en['dhcp.tab.failover'])&&de['agentMessage.PLUGIN_DHCP_IN_FAILOVER'].includes(de['dhcp.tab.failover']),'PLUGIN_DHCP_IN_FAILOVER names the Failover tab');
+for(const [catalog,action] of [[en,'Remove the scope from the relationship on the Failover tab, and try again.'],[de,'Nimm den Bereich auf dem Tab Failover aus der Beziehung und versuche es erneut.']])ok(catalog['agentMessage.PLUGIN_DHCP_IN_FAILOVER'].endsWith(action)&&catalog['dhcp.error.inFailover'].endsWith(action),`PLUGIN_DHCP_IN_FAILOVER and dhcp.error.inFailover end with the same action: ${action}`);
+// No extension result message counts with "{n} noun" or says "is no".
+const pluginEnglish=Object.entries(en).filter(([key])=>/^agentMessage\.PLUGIN_/.test(key));
+ok(pluginEnglish.length>=27,'the scan sees the extension result messages');
+check(pluginEnglish.filter(([,message])=>values(message).some(text=>/\{(scopes|leases|zones|records)\} (scopes|leases|zones|records)\b/.test(text)||/\bis no \w/.test(text))).map(([key])=>key),[],'no extension result message says "{n} scopes" or "is no"');
 
-console.log(`PASS copy plain language (${checks} checks): forbidden phrases in the four catalogs, the pending list, the self-check samples, the exact copy of slices 1 to 4, the removed keys and the quoted permission names of the device copy.`);
+console.log(`PASS copy plain language (${checks} checks): forbidden phrases in the four catalogs, the pending list, the self-check samples, the exact copy of slices 1 to 4 and of the extension result messages, the removed keys and the quoted permission names of the device copy.`);

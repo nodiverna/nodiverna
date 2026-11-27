@@ -7,7 +7,8 @@
 // texts are ink and the secondary text of each material: the backdrop tone (light: ink 40 % over muted, the share
 // declared in ui/shell/console-backdrop.css; dark: muted) on the bars, the navigator and the canvas, muted on the
 // workspace's strong glass, and in light mode --sd-accent-strong on the tab band over the canvas (its share from
-// ui/styles/console.css). The exact scrims of the fallback and the bundled measures, and no light scrim above the
+// ui/styles/console.css). The exact scrims of the fallback and the bundled measures, their light workspace scrim equal
+// to the one the texts alone need (the tab band never binds for a built-in scheme), and no light scrim above the
 // earlier rule (ink and muted on every material). The token constants equal app/globals.css and the scheme list
 // equals lib/color-schemes.ts.
 import '../support/register.mjs';
@@ -140,9 +141,10 @@ const earlierTexts=mode=>[textTokens[mode].ink,textTokens[mode].muted];
 /**
  * Every contrast check of backdropScrims for one mode, region and n: each text ≥ 4.5 on material over scrim over the
  * low and the high pixel; in light mode the workspace adds --sd-accent-strong on the tab band over the canvas (4.5, or
- * the ratio on --sd-bg for a brand label that misses 4.5 there already). The earlier rule has no band check.
+ * the ratio on --sd-bg for a brand label that misses 4.5 there already). The earlier rule has no band check, and
+ * band=false leaves it out for the texts alone.
  */
-function failures(mode,region,n,measure,surfaces,textsOf=texts){
+function failures(mode,region,n,measure,surfaces,textsOf=texts,band=textsOf===texts){
  const out=[];
  for(const surface of surfaces)for(const pixel of [measure[mode].low,measure[mode].high]){
   const scrimmed=over({...surface.bg,a:n/100},{...parse(pixel),a:1});
@@ -150,7 +152,7 @@ function failures(mode,region,n,measure,surfaces,textsOf=texts){
    const shown=material===null?scrimmed:over({...surface.panel,a:material/100},scrimmed);
    for(const text of textsOf(mode,region,material))if(contrast(text,shown)<4.5)out.push(`${surface.id} ${material} ${pixel}`);
   }
-  if(mode==='light'&&region==='workspace'&&textsOf===texts){
+  if(mode==='light'&&region==='workspace'&&band){
    const shown=over({...surface.bg,a:backdropTabBand/100},scrimmed);
    if(contrast(surface.accentStrong,shown)<Math.min(4.5,contrast(surface.accentStrong,surface.bg)))out.push(`${surface.id} tab band ${pixel}`);
   }
@@ -199,21 +201,28 @@ for(let round=0;round<40;round++){
  for(const mode of backdropModes)for(const region of backdropRegions){assert.ok(b[mode][region]<=a[mode][region],`random box ${round} ${mode} ${region}: the narrower measure needs no more`);checks++;}
 }
 // The exact scrims (bars/navigator/workspace) without a brand scheme. Dark is unchanged by the backdrop tone.
-// The light workspace includes the tab band check: Ember's --sd-accent-strong (4.8:1 on its --sd-bg) needs a few more
-// points over dark images than the texts alone (fallback 82, dusk and slate 79, tide 77, bloom 78, dune 0).
+// The light workspace includes the tab band check, but it does not bind for the built-in schemes: every light
+// --sd-accent-strong has more than 5:1 on its own --sd-bg, so the texts alone set the workspace scrim (below).
 const expected={
- fallback:{light:[32,0,85],dark:[64,5,88]},
+ fallback:{light:[32,0,82],dark:[64,5,88]},
  mist:{light:[0,0,0],dark:[59,0,86]},
- dusk:{light:[22,0,83],dark:[0,0,0]},
- tide:{light:[13,0,81],dark:[0,0,47]},
- dune:{light:[0,0,7],dark:[57,0,85]},
- slate:{light:[22,0,83],dark:[0,0,0]},
- bloom:{light:[17,0,82],dark:[0,0,26]},
+ dusk:{light:[22,0,79],dark:[0,0,0]},
+ tide:{light:[13,0,77],dark:[0,0,47]},
+ dune:{light:[0,0,0],dark:[57,0,85]},
+ slate:{light:[22,0,79],dark:[0,0,0]},
+ bloom:{light:[17,0,78],dark:[0,0,26]},
 };
 check(Object.keys(expected).filter(name=>name!=='fallback').sort(),brandingBackgrounds.map(background=>background.id).sort(),'every bundled background has its expected scrims');
 for(const [name,modes] of Object.entries(expected)){
  const scrims=backdropScrims(named[name],null);
  for(const mode of backdropModes)check(backdropRegions.map(region=>scrims[mode][region]),modes[mode],`${name} ${mode}: the scrims`);
 }
+
+// Without a brand scheme, the light workspace scrim is the one the texts alone need (no tab band check), computed
+// from the stylesheet tokens: no built-in scheme's tab label raises it.
+const builtIn=surfacesOf('light',null);
+const textScrim=measure=>{let n=0;while(n<100&&failures('light','workspace',n,measure,builtIn,texts,false).length)n++;return n;};
+for(const name of Object.keys(expected))check(backdropScrims(named[name],null).light.workspace,textScrim(named[name]),`${name} light workspace: the texts alone set the scrim`);
+for(const surface of builtIn)ok(contrast(surface.accentStrong,surface.bg)>=4.5,`light ${surface.id}: --sd-accent-strong has 4.5:1 on its own --sd-bg`);
 
 console.log(`PASS backdrop (${checks} checks): filter matrices, measurement (solid, stripes, blur order, transparency, reduction), constants = app/globals.css, scrims valid and minimal for ${Object.keys(named).length} measures × ${brands.length} brand states, narrower never needs more.`);

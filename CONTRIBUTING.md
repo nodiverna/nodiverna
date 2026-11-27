@@ -4,7 +4,7 @@ Thank you for your help with ServerDesk. Read all of this page before you open a
 
 ## Workflow
 
-1. Prepare the environment as the [README](README.md#run-from-source) tells you.
+1. Prepare the environment as [Develop and test locally](ServerDesk/docs/self-hosting.md#develop-and-test-locally) tells you.
 2. Before you open the pull request, run the full check in `ServerDesk/`:
 
    ```powershell
@@ -21,8 +21,9 @@ Thank you for your help with ServerDesk. Read all of this page before you open a
 5. The database is PostgreSQL 17. To change the schema, follow these steps:
    1. Change `ServerDesk/db/schema.ts`.
    2. Run `pnpm db:generate`. It writes the next migration to `ServerDesk/drizzle/`.
-   3. Write triggers by hand in the migration, as PL/pgSQL functions with `RAISE EXCEPTION '<literal>'`. Register each new literal in `lib/server/errors/db-codes.ts`.
-   4. Run `pnpm db:schema-lock` and commit `drizzle/schema.lock.sql` together with the migration.
+   3. Delete the snapshot of the previous migration in `ServerDesk/drizzle/meta/`. Git tracks only `_journal.json` and the newest snapshot, and `tests/repo/tracked-files.mjs` checks this.
+   4. Write triggers by hand in the migration, as PL/pgSQL functions with `RAISE EXCEPTION '<literal>'`. Register each new literal in `lib/server/errors/db-codes.ts`.
+   5. Run `pnpm db:schema-lock` and commit `drizzle/schema.lock.sql` together with the migration.
 
    SQL lives only in domain modules under `ServerDesk/lib/server/`, never in `ServerDesk/app/` or `ServerDesk/ui/`. Values go into SQL only through the `sql` tag of the data layer. The tests need PostgreSQL: set `TEST_DATABASE_URL` or start Docker.
 6. In the description of the pull request, write the consent sentence from the section [Consent](#consent).
@@ -169,6 +170,8 @@ Write all documentation in English after ASD-STE100 (Simplified Technical Englis
 - Do not change the text of code blocks and inline code when you edit the text around them.
 
 The test uses these counting rules. A sentence ends at `.`, `!`, `?` or `:` before a space or the end of the line. Inline code, bold text and a bare URL count as one word each, and a link counts as its text. The test does not count headings, tables, code blocks and HTML comments. A list item with its indented lines is one unit. Lines of text up to the next blank line, list or heading are one paragraph.
+
+The workflow **Docs wiki** mirrors `ServerDesk/docs/` into the GitHub wiki after each merge to `main`. Change the documentation only in `ServerDesk/docs/`, because each run replaces the wiki pages. Write links between docs as relative `.md` links, for example `[Customers](customers.md)`. Put images into `ServerDesk/docs/images/`.
 
 ## Contribution terms
 

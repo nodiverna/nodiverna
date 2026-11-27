@@ -1,5 +1,5 @@
 // The "Alert rules" area (ui/devices/monitoring/alert-rules.tsx) rendered with React SSR:
-// all 39 rules on All devices, a group and a device with the default origin,
+// all 41 rules on All devices, a group and a device with the default origin,
 // the "Changed" tag with the inherited line, the inherited origin link, blocked
 // menu entries with their reason, demo mode, error texts by code, the
 // number and level fields of the edit drawer with aria-describedby, the CSS of
@@ -30,16 +30,16 @@ const rows=html=>{const body=html.slice(html.indexOf('<tbody'),html.indexOf('</t
 const cells=row=>[...row.html.matchAll(/<td[^>]*>(.*?)<\/td>/g)].map(match=>match[1]);
 const text=value=>value.replace(/<[^>]+>/g,'').replace(/&amp;/g,'&');
 
-// ---- All 39 rules with the muted default origin on all three levels ----
+// ---- All 41 rules with the muted default origin on all three levels ----
 for(const scope of [{type:'global',id:'*'},{type:'group',id:groupId},{type:'device',id:deviceId}]){
  const view=rules.defaultAlertRuleView({...scope,name:'X'});
  const html=render(view,scope),list=rows(html);
- check(list.map(row=>row.id),rules.alertRuleIds,`${scope.type}: 39 rules in catalog order`);
+ check(list.map(row=>row.id),rules.alertRuleIds,`${scope.type}: 41 rules in catalog order`);
  check(list.every(row=>cells(row).at(-2)==='<span class="sdx-muted-cell">Default</span>'),true,`${scope.type}: origin Default everywhere, as muted text`);
  ok(/^<div class="sdx-table-wrap sdx-alert-rules-table sdx-table-sticky-actions" role="region" aria-label="Alert rules" tabindex="0"><table class="sdx-table sdx-data-table">/.test(html),`${scope.type}: a DataTable region (the direct table of the tab, not flush) with the sticky actions modifier`);
  ok(!/<small/.test(html.slice(html.indexOf('<tbody>'))),`${scope.type}: no description line in the rows`);
  ok(/<th scope="col" class="sdx-col-actions">(?:(?!<th).)*<\/th><\/tr><\/thead>/.test(html),`${scope.type}: the last header cell is the actions column`);
- check(list.filter(row=>/<td class="sdx-col-actions">(?:(?!<td).)*<\/td>$/.test(row.html)).length,39,`${scope.type}: the last cell of each of the 39 rows is the actions column`);
+ check(list.filter(row=>/<td class="sdx-col-actions">(?:(?!<td).)*<\/td>$/.test(row.html)).length,41,`${scope.type}: the last cell of each of the 41 rows is the actions column`);
  check([...html.matchAll(/<th scope="col"[^>]*>(.*?)<\/th>/g)].map(match=>text(match[1])),['Rule','Warning','Critical','Alarm','Level','Status','Origin','Actions'],`${scope.type}: columns`);
 }
 const defaults=rules.defaultAlertRuleView({type:'global',id:'*',name:''}),html=render(defaults,{type:'global',id:'*'});
@@ -140,7 +140,7 @@ check(panel.alertOriginLabel({type:'device',id:deviceId,name:'SRV-1',visible:tru
 
 // ---- Demo and loading: the panel without server data ----
 const demoHtml=renderToStaticMarkup(h(LocaleProvider,{locale:'en'},h(panel.default,{scope:{type:'global',id:'*'},scopeName:'All devices',demo:true,onRefresh:noop,onOpenOrigin:noop})));
-check(rows(demoHtml).length,39,'demo mode shows the 39 default rules');
+check(rows(demoHtml).length,41,'demo mode shows the 41 default rules');
 ok(/<section class="sdx-health-tab sdx-alert-rules" aria-labelledby="([^"]+)"><header class="sdx-section-head"><div class="sdx-section-head-text"><h2 id="\1" class="sr-only">Alert rules<\/h2><p>Alert rules decide when a device shows an issue\. A value that you change here applies to this level and everything below it/.test(demoHtml),'the shared analysis frame (AnalysisTab): the sr-only h2 is the section label, the description is visible');
 ok(!demoHtml.includes('sdx-btn-primary'),'no gradient primary inside the subtab');
 ok(!demoHtml.includes('sdx-alert-rules-head'),'no own head');
@@ -236,4 +236,4 @@ check(route.consoleRouteHash({view:'devices',tab:'settings'}),'#devices','a tab 
 check(route.parseConsoleRoute(`#devices/${deviceId}/overview`).view,'device','old device links stay device links');
 check(route.consoleRouteHash({view:'device',deviceId:'d1',deviceSection:'monitoring',deviceDetail:'alert-rules'}),'#device/d1/monitoring/alert-rules','the device alert rules: Monitoring › Alert rules');
 check(route.consoleRouteHash(route.parseConsoleRoute('#device/d1/configuration')),'#device/d1/monitoring/alert-rules','the old device alert rules link');
-console.log(`PASS alert rules view (${checks} checks): 39 rules with the Alarm column and the limit cell on All devices, group and device, Changed tag and inherited line, origin links, blocked menu entries, demo, loading, error texts, the drawer field descriptions, the sticky actions column and unit frame CSS, and the alert routes.`);
+console.log(`PASS alert rules view (${checks} checks): 41 rules with the Alarm column and the limit cell on All devices, group and device, Changed tag and inherited line, origin links, blocked menu entries, demo, loading, error texts, the drawer field descriptions, the sticky actions column and unit frame CSS, and the alert routes.`);
