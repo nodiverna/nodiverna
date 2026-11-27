@@ -71,30 +71,30 @@ test('wikiPageName refuses invalid characters and reserved names, and wikiPageNa
   assert.deepEqual([...wikiPageNames(['b.md', 'a.md'])], [['a.md', 'A'], ['b.md', 'B']]);
 });
 
-test('rewriteLinks: doc links become page names with their anchor (AC-4 b)', () => {
+test('rewriteLinks: doc links become page names with their anchor', () => {
   assert.equal(rewrite('See [setup](self-hosting.md).'), 'See [setup](Self-hosting).');
   assert.equal(rewrite('See [run](self-hosting.md#run-with-docker-compose).'), 'See [run](Self-hosting#run-with-docker-compose).');
   assert.equal(rewrite('See [customers](./customers.md).'), 'See [customers](Customers).');
   assert.equal(rewrite('See [run](../docs/self-hosting.md#x).'), 'See [run](Self-hosting#x).');
 });
 
-test('rewriteLinks: anchors and external URLs stay unchanged (AC-4 a)', () => {
+test('rewriteLinks: anchors and external URLs stay unchanged', () => {
   const text = 'See [below](#setup), [site](https://example.com/a.md), [mail](mailto:team@example.com) and [ftp](ftp://host/x).';
   assert.equal(rewrite(text), text);
   assert.equal(rewrite('Empty [x]() stays.'), 'Empty [x]() stays.');
 });
 
-test('rewriteLinks: files below docs/images go to images/ (AC-4 c)', () => {
+test('rewriteLinks: files below docs/images go to images/', () => {
   assert.equal(rewrite('![Shot](images/shot.png)'), '![Shot](images/shot.png)');
   assert.equal(rewrite('[Open the picture](./images/shot.png)'), '[Open the picture](images/shot.png)');
   assert.equal(rewrite('![Sub](images/sub/my%20shot.png)'), '![Sub](images/sub/my%20shot.png)');
 });
 
-test('rewriteLinks: images elsewhere in the repository go to raw/<branch> (AC-4 d)', () => {
+test('rewriteLinks: images elsewhere in the repository go to raw/<branch>', () => {
   assert.equal(rewrite('![Logo](../public/logo.svg)'), `![Logo](${repoUrl}/raw/main/ServerDesk/public/logo.svg)`);
 });
 
-test('rewriteLinks: other repository targets go to blob/<branch> with their anchor (AC-4 e)', () => {
+test('rewriteLinks: other repository targets go to blob/<branch> with their anchor', () => {
   assert.equal(rewrite('[code](../lib/x.ts#L5)'), `[code](${repoUrl}/blob/main/ServerDesk/lib/x.ts#L5)`);
   assert.equal(rewrite('[folder](../lib/)'), `[folder](${repoUrl}/blob/main/ServerDesk/lib)`);
   assert.equal(rewrite('[readme](/README.md)'), `[readme](${repoUrl}/blob/main/README.md)`);
