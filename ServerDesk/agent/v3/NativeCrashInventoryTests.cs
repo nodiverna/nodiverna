@@ -22,7 +22,7 @@ internal static class NativeCrashInventoryTests
         internal int Reads;
         public IReadOnlyList<CrashEventRecord> Events(DateTimeOffset since, List<string> errors) => Records;
         public IReadOnlyList<MinidumpFile> Minidumps() => Files;
-        public (string? Version, string? Manufacturer) DriverVersion(string name) { VersionLookups.Add(name); return name.Equals("vjoy.sys", StringComparison.OrdinalIgnoreCase) ? ("2.1.9.1", "Shaul Eizikovich") : (null, null); }
+        public (string? Version, string? Manufacturer) DriverVersion(string name) { VersionLookups.Add(name); return name.Equals("vjoy.sys", StringComparison.OrdinalIgnoreCase) ? ("2.1.9.1", "Contoso Devices") : (null, null); }
         internal MinidumpFile File(string name, byte[] bytes, DateTimeOffset written, long? length = null) => new(name, length ?? bytes.LongLength, written, () => { Reads++; return bytes; });
     }
 
@@ -147,7 +147,7 @@ internal static class NativeCrashInventoryTests
         crashes = result["crashes"]!.AsArray();
         var byFile = crashes.ToDictionary(c => c!["dumpFile"]?.GetValue<string>() ?? "", c => c!);
         Check(crashes.Count == 4, "one crash per event group and per unmatched dump.");
-        Check(byFile["102026-12000-01.dmp"]["source"]!.GetValue<string>() == "event+minidump" && byFile["102026-12000-01.dmp"]["driver"]!["name"]!.GetValue<string>() == "vjoy.sys" && byFile["102026-12000-01.dmp"]["driver"]!["version"]!.GetValue<string>() == "2.1.9.1" && byFile["102026-12000-01.dmp"]["driver"]!["manufacturer"]!.GetValue<string>() == "Shaul Eizikovich", "a dump joins its crash by the file name in the event; driver version and manufacturer.");
+        Check(byFile["102026-12000-01.dmp"]["source"]!.GetValue<string>() == "event+minidump" && byFile["102026-12000-01.dmp"]["driver"]!["name"]!.GetValue<string>() == "vjoy.sys" && byFile["102026-12000-01.dmp"]["driver"]!["version"]!.GetValue<string>() == "2.1.9.1" && byFile["102026-12000-01.dmp"]["driver"]!["manufacturer"]!.GetValue<string>() == "Contoso Devices", "a dump joins its crash by the file name in the event; driver version and manufacturer.");
         Check(byFile["101926-9000-01.dmp"]["source"]!.GetValue<string>() == "minidump" && byFile["101926-9000-01.dmp"]["kind"]!.GetValue<string>() == "bugcheck" && byFile["101926-9000-01.dmp"]["stopCode"]!.GetValue<uint>() == 0x133, "a dump without an event is its own bugcheck.");
         Check(byFile["huge.dmp"]["dumpStatus"]!.GetValue<string>() == "too-large" && byFile["broken.dmp"]["dumpStatus"]!.GetValue<string>() == "unreadable", "too large and broken dumps keep an entry with their status.");
         Check(source.Reads == 3, "a too-large dump is never read.");

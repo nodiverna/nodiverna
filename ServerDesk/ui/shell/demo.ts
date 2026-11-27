@@ -125,7 +125,7 @@ const demoVolume=(drive:string,volumeType:'os'|'fixed',conversion:'encrypted'|'e
 function demoHealth(id:string,time:number):Partial<ServerSnapshot>{
  const at=(offset:number)=>new Date(time-offset).toISOString(),inventory={collectedAt:at(600000),windowDays:30 as const,complete:true,truncated:false};
  const parameters=['0x00000000c0000005','0xfffff80410001234','0xffffd00012345678','0x0000000000000000'];
- const vjoy=(days:number,index:number)=>({id:'demo-crash-'+index,kind:'bugcheck' as const,at:at(days*day),stopCode:0x3B,parameters,driver:{name:'vjoy.sys',version:'2.1.9.1',manufacturer:'Shaul Eizikovich'},source:'event+minidump' as const,dumpFile:'1020'+index+'6-12000-01.dmp',dumpStatus:'parsed' as const,detail:null});
+ const vjoy=(days:number,index:number)=>({id:'demo-crash-'+index,kind:'bugcheck' as const,at:at(days*day),stopCode:0x3B,parameters,driver:{name:'vjoy.sys',version:'2.1.9.1',manufacturer:'Contoso Devices'},source:'event+minidump' as const,dumpFile:'1020'+index+'6-12000-01.dmp',dumpStatus:'parsed' as const,detail:null});
  if(id==='demo-app')return {osInfo:{editionId:'ServerDatacenter',installationType:'Server',displayVersion:'24H2',ubr:2314,productName:'Windows Server 2025 Datacenter',currentBuild:'26100'},
   crashes:[vjoy(1,1),vjoy(6,2),vjoy(13,3)],crashInventory:inventory,
   bitlocker:{available:true,collectedAt:at(600000),volumes:[demoVolume('C:','os','encrypted','on',['tpm','numerical-password']),demoVolume('D:','fixed','encrypted','on',['numerical-password'])]}};

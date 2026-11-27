@@ -107,7 +107,8 @@ try{
  check(await d.one(sql`SELECT server_id,at,cpu,memory,gpus FROM samples WHERE server_id=${'existing-device'}`),{server_id:'existing-device',at:clock,cpu:0,memory:100,gpus:null},'a CPU/RAM sample without GPU data stores no invented GPU data');
  check(!!await d.one(sql`SELECT 1 FROM pg_indexes WHERE schemaname='public' AND tablename='samples' AND indexname='idx_samples_server_at'`),true,'the server/time history index exists');
  await d.exec(sql`DELETE FROM samples WHERE server_id=${'existing-device'}`);
- const currentMeta=JSON.parse(readFileSync(resolve(root,'drizzle/meta/0000_snapshot.json'),'utf8'));
+ const journal=JSON.parse(readFileSync(resolve(root,'drizzle/meta/_journal.json'),'utf8'));
+ const currentMeta=JSON.parse(readFileSync(resolve(root,`drizzle/meta/${String(journal.entries.at(-1).idx).padStart(4,'0')}_snapshot.json`),'utf8'));
  check(currentMeta.tables['public.samples'].columns.gpus.notNull,false,'schema metadata keeps GPU history nullable');
  for(const value of [undefined,null,42,'','not-json','null','{}','[null]',JSON.stringify([gpu,gpu]),JSON.stringify([{...gpu,utilization:101}]),' '.repeat(65537)])check(parseGpuHistory(value),undefined,'damaged or legacy optional GPU history stays unknown');
  check(parseGpuHistory('[]'),[],'an explicit empty inventory remains empty');check(parseGpuHistory(JSON.stringify(gpus)),gpus,'history parser preserves measurements and physical identities exactly');

@@ -34,7 +34,7 @@ internal static class NativeDriverInventoryTests
         var stamp = new DateTime(2026, 10, 1, 8, 0, 0, DateTimeKind.Utc);
         var devices = new List<DriverDevice>
         {
-            new(joystick, 0, "vJoy Device", "HIDClass", "Shaul Eizikovich", "vjoy", "oem42.inf", "2.1.9.1", FileTime(2019, 11, 20), "Shaul Eizikovich"),
+            new(joystick, 0, "vJoy Device", "HIDClass", "Contoso Devices", "vjoy", "oem42.inf", "2.1.9.1", FileTime(2019, 11, 20), "Contoso Devices"),
             new(gpu, 43, "NVIDIA GeForce RTX 3090", "Display", "NVIDIA", "nvlddmkm", "oem12.inf", "31.0.15.3623", FileTime(2023, 6, 12), "NVIDIA"),
             new(missing, 28, null, null, null, null, null, null, null, null),
             new(disabled, 22, "Realtek USB GbE", "Net", "Realtek", "rtux64w10", "rtux64w10.inf", "10.50.0.0", FileTime(1979, 12, 31), "Realtek"),
@@ -61,7 +61,7 @@ internal static class NativeDriverInventoryTests
         Check(items.Select(item => item["key"]!.GetValue<string>()).Order(StringComparer.Ordinal).SequenceEqual(new[] { joystick, gpu, disabled, bridge }.Select(NativeDriverInventory.DeviceKey).Order(StringComparer.Ordinal)), "the driver keys are DeviceKey of the instance ID, as in 4.11.0.");
         var vjoy = items.Single(item => item["infName"]?.GetValue<string>() == "oem42.inf");
         Check(vjoy["file"]!.GetValue<string>() == "vjoy.sys" && vjoy["service"]!.GetValue<string>() == "vjoy" && vjoy["date"]!.GetValue<string>() == "2019-11-20" && vjoy["signed"]!.GetValue<bool>() == false && vjoy["signer"] is null, "service → file join, FILETIME date and unsigned.");
-        Check(vjoy["deviceClass"]!.GetValue<string>() == "HIDCLASS" && vjoy["provider"]!.GetValue<string>() == "Shaul Eizikovich" && vjoy["version"]!.GetValue<string>() == "2.1.9.1", "the driver class is upper case; provider and version.");
+        Check(vjoy["deviceClass"]!.GetValue<string>() == "HIDCLASS" && vjoy["provider"]!.GetValue<string>() == "Contoso Devices" && vjoy["version"]!.GetValue<string>() == "2.1.9.1", "the driver class is upper case; provider and version.");
         var nvidia = items.Single(item => item["infName"]?.GetValue<string>() == "oem12.inf");
         Check(nvidia["file"]!.GetValue<string>() == "nvlddmkm.sys" && nvidia["signed"]!.GetValue<bool>() && nvidia["signer"]!.GetValue<string>() == "Microsoft Windows Hardware Compatibility Publisher" && nvidia["date"]!.GetValue<string>() == "2023-06-12", "the file is the plain name of the image path; a valid signature names its signer.");
         var realtek = items.Single(item => item["infName"]?.GetValue<string>() == "rtux64w10.inf");
@@ -111,11 +111,11 @@ internal static class NativeDriverInventoryTests
         // Same items and value as tests/support/driver-checksum-fixture.mjs (lib/driver-inventory.ts).
         var fixture = new List<DriverEntry>
         {
-            new("0f1e2d3c4b5a6978", "vJoy Device", "HIDClass", "oem42.inf", "vjoy.sys", "vjoy", "Shaul Eizikovich", "2.1.9.1", "2019-11-20", false, null),
+            new("0f1e2d3c4b5a6978", "vJoy Device", "HIDClass", "oem42.inf", "vjoy.sys", "vjoy", "Contoso Devices", "2.1.9.1", "2019-11-20", false, null),
             new("00a1b2c3d4e5f607", "Intel(R) Ethernet Connection \"I219-LM\"", "Net", "oem7.inf", "e1d68x64.sys", "e1dexpress", "Intel", "12.19.2.45", "2023-04-12", true, "Microsoft Windows Hardware Compatibility Publisher"),
             new("ffeeddccbbaa9988", "Gerät \\ Müller ✓ 😀", null, null, null, null, null, "1.0", null, null, null),
         };
-        const string expected = "70bbda527642a6f653812e744083182efce18b931ea6d076cd4d8aa61f85081e";
+        const string expected = "1e4066c5cb20de8d496b7a86184f681474260c780507868306e5e4f5dc0c4fc3";
         Check(NativeDriverInventory.Checksum(fixture) == expected, "the checksum equals the portal's value for the shared fixture: " + NativeDriverInventory.Checksum(fixture));
         Check(NativeDriverInventory.Checksum(Enumerable.Reverse(fixture)) == expected, "the checksum does not depend on the input order.");
         Check(NativeDriverInventory.Checksum([fixture[0] with { Signed = true }, fixture[1], fixture[2]]) != expected, "a signature change changes the checksum.");

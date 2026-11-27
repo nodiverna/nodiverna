@@ -61,7 +61,7 @@ internal static class DnsSelfTests
         // The NetworkId of the modern reverse-zone create (1.0.4) for each reverse zone of the vectors, and null for other names.
         var networks = new Dictionary<string, string> { ["10"] = "10.0.0.0/8", ["10.20"] = "10.20.0.0/16", ["10.20.30"] = "10.20.30.0/24", ["192.168.0"] = "192.168.0.0/24", ["2001:db8:1::/48"] = "2001:db8:1::/48", ["2001:db8::/32"] = "2001:db8::/32", ["fd00::/8"] = "fd00::/8" };
         foreach (var (input, zone) in ReverseVectors.Where(vector => vector.Zone is not null)) Check(DnsChanges.ReverseNetworkId(zone!) == networks[input], "The network ID of " + zone + " is " + (DnsChanges.ReverseNetworkId(zone!) ?? "null") + ".");
-        Check(DnsChanges.ReverseNetworkId("nfi.local") is null && DnsChanges.ReverseNetworkId("0-25.10.10.10.in-addr.arpa") is null && DnsChanges.ReverseNetworkId("4.3.2.1.in-addr.arpa") is null && DnsChanges.ReverseNetworkId("10.10.10.in-addr.arpa.") == "10.10.10.0/24", "A name without a network ID gave one.");
+        Check(DnsChanges.ReverseNetworkId("lab.example") is null && DnsChanges.ReverseNetworkId("0-25.2.0.192.in-addr.arpa") is null && DnsChanges.ReverseNetworkId("4.3.2.1.in-addr.arpa") is null && DnsChanges.ReverseNetworkId("2.0.192.in-addr.arpa.") == "192.0.2.0/24", "A name without a network ID gave one.");
         Check(DnsChanges.NameValid("corp.example") && DnsChanges.NameValid("corp.example.") && DnsChanges.NameValid("_msdcs.corp.example") && !DnsChanges.NameValid("bad name.example") && !DnsChanges.NameValid(new string('a', 64) + ".example") && !DnsChanges.NameValid("a..b") && !DnsChanges.NameValid(""), "Names validate wrongly.");
         Check(DnsChanges.RecordNameValid("@", "corp.example") && DnsChanges.RecordNameValid("", "corp.example") && DnsChanges.RecordNameValid("*.lab", "corp.example") && DnsChanges.RecordNameValid("_ldap._tcp", "corp.example") && !DnsChanges.RecordNameValid("a b", "corp.example") && !DnsChanges.RecordNameValid("x.*", "corp.example"), "Record names validate wrongly.");
         Check(DnsChanges.Fqdn("mail.corp.example") && !DnsChanges.Fqdn("mail") && DnsChanges.Fqdn(".", allowRoot: true) && !DnsChanges.Fqdn("."), "Host names validate wrongly.");
@@ -247,13 +247,13 @@ internal static class DnsSelfTests
     private static void ZoneCreateFailures()
     {
         const int generic = unchecked((int)0x80041001);
-        static JsonObject Primary(string dynamic) => Json("""{"kind":"primary","lookup":"forward","name":"nfi.local","storage":"file","replicationScope":null,"fileName":"nfi.local.dns","masters":[],"dynamicUpdate":"__"}""".Replace("__", dynamic, StringComparison.Ordinal));
+        static JsonObject Primary(string dynamic) => Json("""{"kind":"primary","lookup":"forward","name":"lab.example","storage":"file","replicationScope":null,"fileName":"lab.example.dns","masters":[],"dynamicUpdate":"__"}""".Replace("__", dynamic, StringComparison.Ordinal));
         var anyway = new MemoryDns { FailCreate = new WmiException("ExecMethod CreateZone", generic), AddZoneAnyway = true };
         var created = DnsChanges.Run("dns-zone-create", Primary("nonsecureAndSecure"), Server, Zone, anyway);
-        Check(created.Ok && created.Code == "PLUGIN_DNS_CHANGED" && created.Data?["kind"]?.GetValue<string>() == "server" && anyway.Calls.SequenceEqual(["create nfi.local", "set nfi.local"]), "(a) A zone created despite 0x80041001 did not count as done with its dynamic update: " + created.Code + " " + string.Join("; ", anyway.Calls));
+        Check(created.Ok && created.Code == "PLUGIN_DNS_CHANGED" && created.Data?["kind"]?.GetValue<string>() == "server" && anyway.Calls.SequenceEqual(["create lab.example", "set lab.example"]), "(a) A zone created despite 0x80041001 did not count as done with its dynamic update: " + created.Code + " " + string.Join("; ", anyway.Calls));
         var exists = new MemoryDns { FailCreate = new WmiException("ExecMethod CreateZone", generic, 9609) };
         var refused = DnsChanges.Run("dns-zone-create", Primary("none"), Server, Zone, exists);
-        Check(!refused.Ok && refused.Code == "PLUGIN_DNS_OBJECT_EXISTS" && refused.Args.GetValueOrDefault("object") == "nfi.local", "(b) Provider code 9609 did not give PLUGIN_DNS_OBJECT_EXISTS {object}: " + refused.Code);
+        Check(!refused.Ok && refused.Code == "PLUGIN_DNS_OBJECT_EXISTS" && refused.Args.GetValueOrDefault("object") == "lab.example", "(b) Provider code 9609 did not give PLUGIN_DNS_OBJECT_EXISTS {object}: " + refused.Code);
         var other = DnsChanges.Run("dns-zone-create", Primary("none"), Server, Zone, new MemoryDns { FailCreate = new WmiException("ExecMethod CreateZone", generic, 9999) });
         Check(!other.Ok && other.Code == "PLUGIN_DNS_CHANGE_FAILED" && other.Args.GetValueOrDefault("error") == "9999", "(c) Provider code 9999 did not give PLUGIN_DNS_CHANGE_FAILED {error:9999}: " + other.Code + " " + other.Args.GetValueOrDefault("error"));
         var bare = DnsChanges.Run("dns-zone-create", Primary("none"), Server, Zone, new MemoryDns { FailCreate = new WmiException("ExecMethod CreateZone", generic) });
@@ -274,7 +274,7 @@ internal static class DnsSelfTests
     private static void ZoneProviders()
     {
         const int generic = unchecked((int)0x80041001), notFound = unchecked((int)0x80041002);
-        static JsonObject Primary() => Json("""{"kind":"primary","lookup":"forward","name":"nfi.local","storage":"file","replicationScope":null,"fileName":"nfi.local.dns","masters":[],"dynamicUpdate":"none"}""");
+        static JsonObject Primary() => Json("""{"kind":"primary","lookup":"forward","name":"lab.example","storage":"file","replicationScope":null,"fileName":"lab.example.dns","masters":[],"dynamicUpdate":"none"}""");
         var calls = new List<string>();
         Action Call(string name, WmiException? failure = null) => () => { calls.Add(name); if (failure is not null) throw failure; };
         WmiException? Thrown(Action action) { try { action(); return null; } catch (WmiException e) { return e; } }
@@ -284,20 +284,20 @@ internal static class DnsSelfTests
         Check(Thrown(() => DnsChanges.ModernFirst("primary", Call("modern"), Call("legacy"), () => false)) is null && calls.SequenceEqual(["modern"]), "(f) A successful modern create still ran the legacy call: " + string.Join("; ", calls));
         var f = new MemoryDns { TwoProviders = true };
         var created = DnsChanges.Run("dns-zone-create", Primary(), Server, Zone, f);
-        Check(created.Ok && created.Code == "PLUGIN_DNS_CHANGED" && f.Calls.SequenceEqual(["modern nfi.local"]), "(f) The modern create did not answer PLUGIN_DNS_CHANGED alone: " + created.Code + " " + string.Join("; ", f.Calls));
+        Check(created.Ok && created.Code == "PLUGIN_DNS_CHANGED" && f.Calls.SequenceEqual(["modern lab.example"]), "(f) The modern create did not answer PLUGIN_DNS_CHANGED alone: " + created.Code + " " + string.Join("; ", f.Calls));
 
         // (g) A wrong modern name (GetMethod 0x80041002, no provider code), zone absent: the legacy call runs once and succeeds.
         calls.Clear();
         var lookup = new WmiException("PS_DnsServerPrimaryZone GetMethod AddByFileForwardLookupZone", notFound, signature: "methods AddByADForwardLookupZone") { SchemaStep = true };
         Check(Thrown(() => DnsChanges.ModernFirst("primary", Call("modern", lookup), Call("legacy"), () => false)) is null && calls.SequenceEqual(["modern", "legacy"]), "(g) A failed modern lookup did not run the legacy call once: " + string.Join("; ", calls));
-        Check(!lookup.NotFound && DnsChanges.Refused(lookup, "nfi.local").Code == "PLUGIN_DNS_CHANGE_FAILED" && DnsChanges.Refused(lookup, "nfi.local").Args.GetValueOrDefault("signature") == "methods AddByADForwardLookupZone", "(g) A failed lookup step reads as a missing DNS object or loses its signature.");
+        Check(!lookup.NotFound && DnsChanges.Refused(lookup, "lab.example").Code == "PLUGIN_DNS_CHANGE_FAILED" && DnsChanges.Refused(lookup, "lab.example").Args.GetValueOrDefault("signature") == "methods AddByADForwardLookupZone", "(g) A failed lookup step reads as a missing DNS object or loses its signature.");
 
         // (h) Both fail with 0x80041001, only the modern one has a description: the modern exception with both attempts.
         calls.Clear();
         var modern = new WmiException("PS_DnsServerPrimaryZone ExecMethod AddByFileForwardLookupZone", generic, description: "The zone file could not be written");
         var legacy = new WmiException("MicrosoftDNS_Zone ExecMethod CreateZone", generic);
         var both = Thrown(() => DnsChanges.ModernFirst("primary", Call("modern", modern), Call("legacy", legacy), () => false));
-        var bothResult = both is null ? null : DnsChanges.Refused(both, "nfi.local");
+        var bothResult = both is null ? null : DnsChanges.Refused(both, "lab.example");
         Check(ReferenceEquals(both, modern) && calls.SequenceEqual(["modern", "legacy"]) && bothResult?.Code == "PLUGIN_DNS_CHANGE_FAILED_DETAIL"
             && bothResult.Args.GetValueOrDefault("attempts") == "PS_DnsServerPrimaryZone ExecMethod AddByFileForwardLookupZone 0x80041001; MicrosoftDNS_Zone ExecMethod CreateZone 0x80041001",
             "(h) Two generic failures did not give the modern exception with both attempts: " + bothResult?.Args.GetValueOrDefault("attempts"));
@@ -308,7 +308,7 @@ internal static class DnsSelfTests
         // (i) The modern call answers 9609 (the zone exists): the legacy call does not run, Run gives PLUGIN_DNS_OBJECT_EXISTS.
         var i = new MemoryDns { TwoProviders = true, ModernFailure = new WmiException("PS_DnsServerPrimaryZone ExecMethod AddByFileForwardLookupZone", generic, 9609) };
         var exists = DnsChanges.Run("dns-zone-create", Primary(), Server, Zone, i);
-        Check(!exists.Ok && exists.Code == "PLUGIN_DNS_OBJECT_EXISTS" && exists.Args.GetValueOrDefault("object") == "nfi.local" && i.Calls.SequenceEqual(["modern nfi.local"]), "(i) Provider code 9609 of the modern call did not give PLUGIN_DNS_OBJECT_EXISTS without the legacy call: " + exists.Code + " " + string.Join("; ", i.Calls));
+        Check(!exists.Ok && exists.Code == "PLUGIN_DNS_OBJECT_EXISTS" && exists.Args.GetValueOrDefault("object") == "lab.example" && i.Calls.SequenceEqual(["modern lab.example"]), "(i) Provider code 9609 of the modern call did not give PLUGIN_DNS_OBJECT_EXISTS without the legacy call: " + exists.Code + " " + string.Join("; ", i.Calls));
 
         // (j) A conditional forwarder takes only the legacy call.
         calls.Clear();
@@ -325,7 +325,7 @@ internal static class DnsSelfTests
         // (l) Refused with a description: the detail code, the args of a failed change, at most 8, cleaned and cut to 300 with a final period.
         var text = "Zone\tfile  " + new string('x', 400);
         var detailed = new WmiException("PS_DnsServerPrimaryZone ExecMethod AddByFileForwardLookupZone", generic, 9999, text, "DnsServerPSProvider", "ExecMethod", "AddByFileForwardLookupZone(Name, ZoneFile)");
-        var l = DnsChanges.Refused(detailed, "nfi.local");
+        var l = DnsChanges.Refused(detailed, "lab.example");
         string detail = l.Args.GetValueOrDefault("detail") ?? "";
         Check(l.Code == "PLUGIN_DNS_CHANGE_FAILED_DETAIL" && l.Args.Count <= 8 && l.Args.Keys.SequenceEqual(["error", "call", "hresult", "provider", "operation", "detail", "attempts", "signature"])
             && l.Args["error"] == "9999" && l.Args["hresult"] == "0x80041001" && l.Args["provider"] == "DnsServerPSProvider" && l.Args["operation"] == "ExecMethod"
@@ -335,7 +335,7 @@ internal static class DnsSelfTests
         Check(DnsChanges.Refused(new WmiException("c", generic, description: "Done!"), "z").Args["detail"] == "Done!" && DnsChanges.Refused(new WmiException("c", generic, description: "Fehler"), "z").Args["detail"] == "Fehler.", "(l) The final period is added only when the text has no end mark.");
 
         // (m) Refused without a description: PLUGIN_DNS_CHANGE_FAILED with error, provider - and detail -.
-        var m = DnsChanges.Refused(new WmiException("MicrosoftDNS_Zone ExecMethod CreateZone", generic), "nfi.local");
+        var m = DnsChanges.Refused(new WmiException("MicrosoftDNS_Zone ExecMethod CreateZone", generic), "lab.example");
         Check(m.Code == "PLUGIN_DNS_CHANGE_FAILED" && m.Args["error"] == "2147749889" && m.Args["provider"] == "-" && m.Args["operation"] == "-" && m.Args["detail"] == "-" && !m.Args.ContainsKey("signature") && m.Args.Count == 7
             && Program.Message(m.Code, m.Args) == "The DNS server refused the change (error 2147749889). Check the values and try again.", "(m) A failure without a description gave the wrong result: " + m.Code);
 
@@ -343,16 +343,16 @@ internal static class DnsSelfTests
         IReadOnlyDictionary<string, object?> Row(params (string Key, object? Value)[] values) => values.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
         var rows = new[]
         {
-            Row(("ZoneName", "nfi.local"), ("ZoneType", "Primary"), ("ZoneFile", "nfi.local.dns"), ("IsDsIntegrated", false), ("IsReverseLookupZone", false), ("DynamicUpdate", "None"), ("SecureSecondaries", "NoTransfer"), ("Notify", "NotifyServers"), ("NotifyServers", new[] { "10.10.10.2" })),
-            Row(("ZoneName", "10.10.10.in-addr.arpa"), ("ZoneType", 1), ("ZoneFile", "10.10.10.in-addr.arpa.dns"), ("IsReverseLookupZone", true), ("DynamicUpdate", 1), ("IsAutoCreated", false)),
+            Row(("ZoneName", "lab.example"), ("ZoneType", "Primary"), ("ZoneFile", "lab.example.dns"), ("IsDsIntegrated", false), ("IsReverseLookupZone", false), ("DynamicUpdate", "None"), ("SecureSecondaries", "NoTransfer"), ("Notify", "NotifyServers"), ("NotifyServers", new[] { "192.0.2.2" })),
+            Row(("ZoneName", "2.0.192.in-addr.arpa"), ("ZoneType", 1), ("ZoneFile", "2.0.192.in-addr.arpa.dns"), ("IsReverseLookupZone", true), ("DynamicUpdate", 1), ("IsAutoCreated", false)),
             Row(("ZoneName", "corp.example"), ("ZoneType", "Primary"), ("IsDsIntegrated", true), ("ReplicationScope", "Forest"), ("DirectoryPartitionName", "ForestDnsZones.corp.example")),
             Row(("ZoneName", "."), ("ZoneType", "Cache")),
         }.Select(row => DnsSnapshot.ModernZone(name => row.GetValueOrDefault(name))).OfType<RawZone>().ToList();
         var onlyModern = DnsSnapshot.MergeZones([], rows.Take(2).ToList());
-        var nfi = onlyModern.FirstOrDefault(zone => zone.Name == "nfi.local"); var reverse = onlyModern.FirstOrDefault(zone => zone.Name == "10.10.10.in-addr.arpa");
-        var nfiJson = nfi is null ? null : DnsSnapshot.Zone(nfi); var reverseJson = reverse is null ? null : DnsSnapshot.Zone(reverse);
-        Check(onlyModern.Count == 2 && nfiJson?["kind"]?.GetValue<string>() == "primary" && nfiJson["storage"]?.GetValue<string>() == "file" && nfiJson["fileName"]?.GetValue<string>() == "nfi.local.dns" && nfiJson["lookup"]?.GetValue<string>() == "forward"
-            && nfiJson["transfers"]!["mode"]!.GetValue<string>() == "none" && nfiJson["notify"]!["mode"]!.GetValue<string>() == "list" && nfi!.RecordCount is null && !nfi.Aging
+        var fileZone = onlyModern.FirstOrDefault(zone => zone.Name == "lab.example"); var reverse = onlyModern.FirstOrDefault(zone => zone.Name == "2.0.192.in-addr.arpa");
+        var fileZoneJson = fileZone is null ? null : DnsSnapshot.Zone(fileZone); var reverseJson = reverse is null ? null : DnsSnapshot.Zone(reverse);
+        Check(onlyModern.Count == 2 && fileZoneJson?["kind"]?.GetValue<string>() == "primary" && fileZoneJson["storage"]?.GetValue<string>() == "file" && fileZoneJson["fileName"]?.GetValue<string>() == "lab.example.dns" && fileZoneJson["lookup"]?.GetValue<string>() == "forward"
+            && fileZoneJson["transfers"]!["mode"]!.GetValue<string>() == "none" && fileZoneJson["notify"]!["mode"]!.GetValue<string>() == "list" && fileZone!.RecordCount is null && !fileZone.Aging
             && reverseJson?["kind"]?.GetValue<string>() == "primary" && reverse!.Reverse && reverseJson["lookup"]?.GetValue<string>() == "reverse" && reverseJson["dynamicUpdate"]?.GetValue<string>() == "nonsecureAndSecure",
             "(n) The zones of DnsServerZone map wrongly: " + string.Join("; ", onlyModern.Select(zone => zone.Name + " " + zone.ZoneType)));
         var legacyRow = new RawZone("corp.example", 1, false, true, null, null, null, 2, 1, [], 1, [], [], true, 168, 168, null, false, false, null, 42);
@@ -362,7 +362,7 @@ internal static class DnsSelfTests
             "(n) A zone in both lists did not keep the MicrosoftDNS_Zone row with the scope of DnsServerZone: " + string.Join("; ", merged.Select(zone => zone.Name)));
         var n = new MemoryDns(); n.ZoneList.Clear(); n.ZoneList.AddRange(onlyModern);
         var again = DnsChanges.Run("dns-zone-create", Primary(), Server, Zone, n);
-        Check(!again.Ok && again.Code == "PLUGIN_DNS_OBJECT_EXISTS" && again.Args.GetValueOrDefault("object") == "nfi.local" && n.Calls.Count == 0, "(n) A second create of nfi.local did not answer PLUGIN_DNS_OBJECT_EXISTS: " + again.Code);
+        Check(!again.Ok && again.Code == "PLUGIN_DNS_OBJECT_EXISTS" && again.Args.GetValueOrDefault("object") == "lab.example" && n.Calls.Count == 0, "(n) A second create of lab.example did not answer PLUGIN_DNS_OBJECT_EXISTS: " + again.Code);
 
         // The delete order: legacy first, the modern call only after a generic failure that is no DNS answer.
         calls.Clear();

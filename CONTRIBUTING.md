@@ -21,8 +21,9 @@ Thank you for your help with ServerDesk. Read all of this page before you open a
 5. The database is PostgreSQL 17. To change the schema, follow these steps:
    1. Change `ServerDesk/db/schema.ts`.
    2. Run `pnpm db:generate`. It writes the next migration to `ServerDesk/drizzle/`.
-   3. Write triggers by hand in the migration, as PL/pgSQL functions with `RAISE EXCEPTION '<literal>'`. Register each new literal in `lib/server/errors/db-codes.ts`.
-   4. Run `pnpm db:schema-lock` and commit `drizzle/schema.lock.sql` together with the migration.
+   3. Delete the snapshot of the previous migration in `ServerDesk/drizzle/meta/`. Git tracks only `_journal.json` and the newest snapshot, and `tests/repo/tracked-files.mjs` checks this.
+   4. Write triggers by hand in the migration, as PL/pgSQL functions with `RAISE EXCEPTION '<literal>'`. Register each new literal in `lib/server/errors/db-codes.ts`.
+   5. Run `pnpm db:schema-lock` and commit `drizzle/schema.lock.sql` together with the migration.
 
    SQL lives only in domain modules under `ServerDesk/lib/server/`, never in `ServerDesk/app/` or `ServerDesk/ui/`. Values go into SQL only through the `sql` tag of the data layer. The tests need PostgreSQL: set `TEST_DATABASE_URL` or start Docker.
 6. In the description of the pull request, write the consent sentence from the section [Consent](#consent).

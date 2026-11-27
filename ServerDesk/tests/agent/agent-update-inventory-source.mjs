@@ -82,7 +82,7 @@ ok(/## Fixes in 4\.21\.3/.test(read('docs/native-agent-v4.md')),'docs/native-age
 
 // ---- Portal: schema, rule and view ----
 const now=Date.parse('2026-11-14T12:00:00.000Z');
-const snapshot={hostname:'NFI-WS01',os:'Windows 11 Pro',build:'26100',manufacturer:'',model:'',domain:'',cores:4,memoryGb:16,cpu:5,memory:30,uptimeSeconds:10,rebootPending:false,management:false,disks:[],services:[],processes:[],events:[],networks:[],hotfixes:[],collectionErrors:[],protocolVersion:3,agentVersion:'4.21.3',mode:'ReadOnly',publicKey:{kty:'RSA',n:'a'.repeat(342),e:'AQAB'},agentCapabilities:[],
+const snapshot={hostname:'CT-WS01',os:'Windows 11 Pro',build:'26100',manufacturer:'',model:'',domain:'',cores:4,memoryGb:16,cpu:5,memory:30,uptimeSeconds:10,rebootPending:false,management:false,disks:[],services:[],processes:[],events:[],networks:[],hotfixes:[],collectionErrors:[],protocolVersion:3,agentVersion:'4.21.3',mode:'ReadOnly',publicKey:{kty:'RSA',n:'a'.repeat(342),e:'AQAB'},agentCapabilities:[],
  updates:{checkedAt:new Date(now).toISOString(),pendingCount:1,items:[{id:'0f1e2d3c-4b5a-6978-8796-a5b4c3d2e1f0',title:'Security Intelligence Update for Microsoft Defender Antivirus',kb:'KB2267602',severity:'',rebootRequired:false}]}};
 const parsed=telemetry.safeParse(snapshot);
 ok(parsed.success,'the portal schema accepts an update with severity ""');
