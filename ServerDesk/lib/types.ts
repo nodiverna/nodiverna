@@ -135,6 +135,12 @@ export type DefenderAvailable={available:true;collectedAt:string;mode:DefenderMo
  /** Absent in the console answer without defender.read; null when the agent could not read them. */
  exclusions?:DefenderExclusions|null};
 export type DefenderState=DefenderUnavailable|DefenderAvailable;
+// Windows activation of agent 4.22.0 (lib/server/agent/telemetry.ts windowsLicenseState). No product key is ever sent.
+export type WindowsLicenseStatus='unlicensed'|'licensed'|'initial-grace'|'additional-grace'|'non-genuine-grace'|'notification'|'extended-grace'|'unknown';
+export type WindowsLicenseChannel='evaluation'|'oem'|'volume-kms'|'volume-mak'|'retail'|'unknown';
+/** expiresAt: collection time + the remaining minutes (evaluation end while licensed, else the grace end); evaluationEndsAt: EvaluationEndDate. */
+export type WindowsLicenseAvailable={available:true;collectedAt:string;status:WindowsLicenseStatus;channel:WindowsLicenseChannel;expiresAt:string|null;evaluationEndsAt:string|null};
+export type WindowsLicense={available:false;reason:'not-found'|'access-denied'|'error';collectedAt:string}|WindowsLicenseAvailable;
 /** A scan the portal started that still runs (agent 4.15.0, lib/server/agent/telemetry.ts defenderScanState). */
 export type DefenderScan={kind:'quick'|'full';startedAt:string};
 export type ServerSnapshot = {
@@ -163,6 +169,8 @@ export type ServerSnapshot = {
  /** SHA-256 of the software list (lib/software-inventory.ts); null before the first collection. The list itself goes to POST /api/agent/software. */
  softwareChecksum?:string|null;
  driverHealth?:DriverHealth;collectorErrors?:CollectorError[];reliability?:Reliability;diskHealth?:DiskHealth;battery?:BatteryState;certificates?:CertificateInventory;defender?:DefenderState;
+ /** Windows activation (agent 4.22.0); absent for older agents. */
+ windowsLicense?:WindowsLicense;
  /** Present only while a scan that the portal started still runs. */
  defenderScan?:DefenderScan;
  /** SHA-256 of the autostart list (lib/autostart-inventory.ts); null before the first collection. The list itself goes to POST /api/agent/autostart. */

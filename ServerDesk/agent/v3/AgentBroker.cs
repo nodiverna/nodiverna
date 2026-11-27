@@ -380,6 +380,7 @@ internal sealed class BrokerTelemetry(string root, Action<string>? log = null, F
     private readonly NativeCertificates certificates = new();
     private readonly NativeAutostartInventory autostart = new();
     private readonly NativeDefender defender = new();
+    private readonly NativeWindowsLicense windowsLicense = new();
     private readonly object flights = new();
     private readonly Dictionary<string, Task<JsonObject>> running = new(StringComparer.Ordinal);
     private readonly NativeFeatureTiming rolesTiming = new();
@@ -436,6 +437,7 @@ internal sealed class BrokerTelemetry(string root, Action<string>? log = null, F
         "Certificates" => certificates.Collect(),
         "Autostart" => autostart.Collect(),
         "Defender" => defender.Collect(),
+        "Windows license" => windowsLicense.Collect(),
         "updates" => Updates(),
         _ => throw new InvalidDataException("Unknown privileged inventory.")
     };

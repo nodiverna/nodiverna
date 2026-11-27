@@ -6,7 +6,7 @@ internal static class Program
 {
     // The csproj <Version> (the base X.Y.Z). A dev build of the Agent release workflow
     // adds -dev.<sha7> (BuildVersion.DevSuffix, agent/BuildVersion.targets).
-    internal const string BaseVersion = "4.21.5";
+    internal const string BaseVersion = "4.22.0";
     internal const string Version = BaseVersion + BuildVersion.DevSuffix;
     internal static async Task<int> Main(string[] args)
     {
@@ -29,6 +29,7 @@ internal static class Program
         if (args.Length == 1 && args[0] == "--certificates-self-test") return NativeCertificatesTests.RunSelfTest();
         if (args.Length == 1 && args[0] == "--autostart-self-test") return NativeAutostartTests.RunSelfTest();
         if (args.Length == 1 && args[0] == "--defender-self-test") return NativeDefenderTests.RunSelfTest();
+        if (args.Length == 1 && args[0] == "--windows-license-self-test") return NativeWindowsLicenseTests.RunSelfTest();
         if (args.Length == 1 && args[0] == "--defender-control-self-test") return await NativeDefenderControlTests.RunSelfTestAsync();
         if (args.Length == 1 && args[0] == "--failure-paths-self-test") return await AgentFailurePathTests.RunSelfTestAsync();
         if (args.Length == 1 && args[0] == "--gpu-driver-self-test") return await GpuDriverUpdateTests.RunSelfTestAsync();

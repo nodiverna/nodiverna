@@ -175,6 +175,25 @@ A failed read of the detections or the exclusions does not fail the status. The 
 
 The collector only reads. It calls no WMI method, starts no PowerShell and changes no preference.
 
+## Windows license in 4.22.0
+
+The broker collector "Windows license" runs every 3600 seconds with a deadline of 30 seconds. It is a fixed read without arguments. A manual inventory refresh also starts it. The snapshot key is `windowsLicense`.
+
+The collector reads `root\cimv2` `SoftwareLicensingProduct` for the Windows application ID `55c92734-d682-4d71-983e-d6ec3f16059f`. It reads only rows with an installed product key (`PartialProductKey IS NOT NULL`). It selects only `Description`, `LicenseFamily`, `ProductKeyChannel`, `LicenseStatus`, `GracePeriodRemaining` and `EvaluationEndDate`. When older Windows does not know a property, the agent reads again without `ProductKeyChannel` and `EvaluationEndDate`. With more than one row, the agent uses the first activated row, else the first row.
+
+The agent never selects or sends a product key or a part of one. It calls no method of a licensing class.
+
+When no Windows row has a key, `windowsLicense` is `{available: false, reason: "not-found", collectedAt}`. Denied access gives the reason `access-denied`, and other failures give `error`. Then the object has no other fields.
+
+Else `windowsLicense` is `{available: true, collectedAt, status, channel, expiresAt, evaluationEndsAt}`:
+
+- `status` comes from `LicenseStatus`: 0 `unlicensed`, 1 `licensed`, 2 `initial-grace`, 3 `additional-grace`, 4 `non-genuine-grace`, 5 `notification`, 6 `extended-grace`. Other values give `unknown`.
+- `channel` is `evaluation`, `oem`, `volume-kms`, `volume-mak`, `retail` or `unknown`. The agent reads it from `ProductKeyChannel`, `Description` and `LicenseFamily`. The first rule that matches applies, in this order.
+- `expiresAt` is the collection time in whole minutes plus `GracePeriodRemaining` minutes. It is `null` when no minutes remain. For an activated evaluation, it is the end of the evaluation. Before the activation, it is the end of the grace period.
+- `evaluationEndsAt` is `EvaluationEndDate`. Windows reports the year 1601 for no date, which gives `null`.
+
+A read that does not finish in 30 seconds adds one entry to `collectorErrors`, as for the other collectors. The portal rejects the Heartbeat when a key or a value is unknown.
+
 ## Collector errors in 4.11.1
 
 Agent 4.11.1 adds the optional top-level field `collectorErrors`. It holds one entry for each collector whose most recent run failed, and at most 30 entries. Each entry is a strict object `{collector, code, since, lastAt, failures, elapsedMs}`:

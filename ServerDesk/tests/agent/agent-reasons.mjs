@@ -69,6 +69,10 @@ const collectorNames=[...read('agent/v3/NativeTelemetry.cs').matchAll(/(?:Add|Te
 ok(collectorNames.length>=20,'the scan finds the collector names');
 check(collectorNames.filter(name=>!Object.hasOwn(agentCollectorNames,name)),[],'every collector name has a catalog text');
 for(const key of Object.values(agentCollectorNames))ok(typeof en[key]==='string'&&typeof de[key]==='string',key);
+// The Windows license collector of agent 4.22.0.
+ok(collectorNames.includes('Windows license'),'the scan finds the Windows license collector');
+check(agentCollectorNames['Windows license'],'agentReason.collector.windowsLicense','"Windows license" maps to its catalog key');
+check(agentReasonLine('de','Windows license: the Windows provider does not answer in time; the collection continues independently.').text.startsWith('Windows-Lizenz: '),true,'a slow Windows license collector in German');
 check(agentReasonLine('de','Drivers could not be read ('+detail+').').text,`Treiber konnte nicht gelesen werden (${detail}).`,'a failed collector');
 check(agentReasonLine('de','Software inventory is being initialized.').text,'Softwareinventar: Der Agent erfasst diese Werte noch.','a starting collector');
 check(agentReasonLine('de','Event logs: the Windows provider does not answer in time; the collection continues independently.').text,'Ereignisprotokolle: Windows antwortet zu langsam. Der Agent versucht es weiter, und die anderen Werte werden trotzdem aktualisiert.','a slow collector');

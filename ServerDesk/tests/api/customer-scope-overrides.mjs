@@ -143,7 +143,7 @@ try{
 
  // ---- GET on a customer: the rule table with the chain global → customer ----
  let view=await getRules(reader,'customer',customerA);
- check([view.status,view.body.scope,view.body.rules.length],[200,{type:'customer',id:customerA,name:'Customer A'},39],'GET customer: the 39 rules with the customer name');
+ check([view.status,view.body.scope,view.body.rules.length],[200,{type:'customer',id:customerA,name:'Customer A'},41],'GET customer: the 41 rules with the customer name');
  check([rule(view).origin,rule(view).override,rule(view).inherited.origin],[{type:'default'},null,{type:'default'}],'without overrides: default');
  check([view.body.canEdit,view.body.reason],[false,'customer-right'],'a Reader cannot edit a customer: reason customer-right');
  check([(await getRules(groupManager,'customer',customerA)).body.reason,(await getRules(manager,'customer',customerA)).body.canEdit],['customer-right',true],'a group manager cannot edit the customer; a global alerts.manage can');
