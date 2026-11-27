@@ -4,7 +4,7 @@ Thank you for your help with ServerDesk. Read all of this page before you open a
 
 ## Workflow
 
-1. Prepare the environment as the [README](README.md#run-from-source) tells you.
+1. Prepare the environment as [Develop and test locally](ServerDesk/docs/self-hosting.md#develop-and-test-locally) tells you.
 2. Before you open the pull request, run the full check in `ServerDesk/`:
 
    ```powershell

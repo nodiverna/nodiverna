@@ -238,6 +238,20 @@ The project name, the ports and the volumes are the same as in the local Compose
 
 Agent releases: The image does not contain an agent. A new installation imports the newest agent release from GitHub about one minute after its first start. Without access to GitHub, import a release folder with `import-release` (refer to [Agent releases from GitHub](#agent-releases-from-github)). After the import, the installers and the agent download use this release on every origin.
 
+### Quick-start file
+
+The [Quick start](../../README.md#quick-start) of the README uses the file `deploy/quickstart/compose.yaml`. It has the same services, project name and volumes as `compose.yaml`, and also the one-shot service `migrate`. Compose reads its values from the file `.env` next to it, so no command needs `--env-file`:
+
+- `SESSION_SECRET`, `PASSWORD_PEPPER`, `DATABASE_PASSWORD` and `AGENT_JOB_SIGNING_KEY`: the four secrets from `node scripts/selfhost.mjs secrets`. Without them, Compose does not start.
+- `PORTAL_HOST` (optional): the address of the portal, for example `192.168.1.10`. The default is `localhost`.
+- `SERVERDESK_IMAGE` (optional): a fixed image version, for example `ghcr.io/nodiverna/nodiverna:0.1.1`.
+
+Keep `.env` private and include it in your backups. Without `PASSWORD_PEPPER` and `SESSION_SECRET`, no sign-in works.
+
+To update, run `docker compose pull` and then `docker compose up -d`. Before a pending migration, `migrate` makes a backup, as [Automatic backup before migrations](#automatic-backup-before-migrations) tells. Then it applies the migration, and the app starts after it. For the commands in [Back up and restore](#back-up-and-restore), leave out `--env-file .env.runtime`.
+
+The quick-start file has limits. It uses only the local Caddy CA and the ports 8080 and 8443. For a public DNS name or other ports, use the full `compose.yaml` and the steps of this section.
+
 ### Change to the new image name
 
 The image moved from `docker.io/lostindreamz/nodiverna` to `ghcr.io/nodiverna/nodiverna`. New versions come only from the new name. An installation that exists changes the name once:

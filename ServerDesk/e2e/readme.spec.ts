@@ -2,9 +2,11 @@
 // project readme runs this file, and it exists only with E2E_README=1:
 //   E2E_README=1 BASE_URL=https://localhost:<port> pnpm test:e2e --project readme
 // The path signs in like the smoke path, sets the English locale, opens the
-// sample devices and writes viewport screenshots to docs/images/. The sample
-// devices are fictional (ui/shell/demo.ts), so the images show no real host, address
-// or token. The path changes no data. Each run overwrites the four files.
+// sample devices and writes viewport screenshots (1440×900, scale 1) to
+// docs/images/: the fleet light and dark, the Dashboard light and the overview of
+// SRV-APP01 dark. The sample devices are fictional (ui/shell/demo.ts), so the
+// images show no real host, address or token. The path changes no data. Each
+// run overwrites the four files.
 import {mkdirSync} from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -79,25 +81,24 @@ test('README-Screenshots', async ({page, baseURL}) => {
     });
   }
 
-  await test.step('Gerät SRV-APP01', async () => {
+  // The sample devices stay on while only the hash changes.
+  await test.step('Dashboard', async () => {
     await preferences(page, baseURL, 'light');
+    await sampleFleet(page);
+    await page.evaluate(() => { location.hash = '#dashboard'; });
+    await expect(page.locator('.sdx-dash-status')).toBeVisible();
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    await shoot(page, 'readme-dashboard.png');
+  });
+
+  await test.step('Device SRV-APP01 dark', async () => {
+    await preferences(page, baseURL, 'dark');
     await sampleFleet(page);
     await page.locator('.sdx-fleet .sdx-device-cell', {hasText: 'SRV-APP01'}).click();
     await expect(page).toHaveURL(/#device\/demo-app$/);
     await expect(page.locator('.sdx-device .sdx-page-head h1')).toHaveText('SRV-APP01');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await shoot(page, 'readme-device.png');
-  });
-
-  await test.step('Dienste von SRV-APP01', async () => {
-    const areas = page.locator('.sdx-device nav.sdx-tabs');
-    await areas.locator('a[href$="/management"]').click();
-    await expect(areas.locator('a[aria-current="page"]')).toHaveAttribute('href', /\/management$/);
-    const subtabs = page.locator('.sdx-device .sdx-subtabs');
-    await expect(subtabs.locator('button').first()).toHaveAttribute('aria-pressed', 'true');
-    // The four sample services of SRV-APP01 (ui/shell/demo.ts).
-    await expect(page.locator('.sdx-services .sdx-data-table tbody tr')).toHaveCount(4);
-    // At 1440×900 the fourth row is below the fold; scroll the pane just far enough to show the whole list.
-    await page.locator('.sdx-services .sdx-table-foot').evaluate(element => element.scrollIntoView({block: 'end'}));
-    await shoot(page, 'readme-services.png');
   });
 });

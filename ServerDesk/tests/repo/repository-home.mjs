@@ -88,7 +88,8 @@ test('the migration note follows the steps of "Run with Docker Compose" and step
   const heading = lines.indexOf(migrationHeading);
   const caddy = lines.indexOf('### HTTPS with the local Caddy CA');
   assert.ok(run >= 0 && run < heading && heading < caddy, 'the subsection is in "Run with Docker Compose", before the Caddy CA');
-  assert.equal(lines.slice(run + 1, heading).filter(line => /^#{1,3} /.test(line)).length, 0, 'no other subsection comes between the step list and the note');
+  // Only the short "Quick-start file" subsection may come between the step list and the note.
+  assert.deepEqual(lines.slice(run + 1, heading).filter(line => /^#{1,3} /.test(line)), ['### Quick-start file'], 'no other subsection comes between the step list and the note');
   const section = [...migrationLines(selfHosting)].map(index => lines[index]).join('\n');
   assert.ok(section.includes(`\`docker.io/${formerHome}\` to \`ghcr.io/nodiverna/nodiverna\``), 'it names the old and the new image');
   assert.ok(section.includes(`\`SERVERDESK_IMAGE=docker.io/${formerHome}:<tag>\`, replace it with \`SERVERDESK_IMAGE=ghcr.io/nodiverna/nodiverna:<tag>\``), 'it gives the replacement line');
