@@ -67,6 +67,20 @@ export function issueText(issue:Pick<AlertIssue,'ruleId'|'params'>,locale:Locale
    return left>0?{title:t('device.issue.osSupportEnding',{count:left}),detail:t('device.issue.osSupportDetail',{product,date})}:{title:t('device.issue.osSupportEnded'),detail:t('device.issue.osSupportEndedDetail',{product,date})};
   }
   case 'os-support-unknown':return {title:t('device.issue.osSupportUnknown'),detail:t('device.issue.osSupportUnknownDetail',{product:String(p.product),version:String(p.version),build:String(p.build)})};
+  // Windows activation (agent 4.22.0): the end of an evaluation, or why Windows is not activated.
+  case 'windows-evaluation':{
+   const product=String(p.product),date=typeof p.date==='string'?formatDate(locale,p.date):null;
+   if(p.ended==='true')return {title:t('device.issue.windowsEvaluationEnded'),detail:date?t('device.issue.windowsEvaluationEndedDetail',{product,date}):t('device.issue.windowsEvaluationEndedNoDate',{product})};
+   if(typeof p.daysLeft!=='number'||!date)return {title:t('device.issue.windowsEvaluationUnknown'),detail:t('device.issue.windowsEvaluationUnknownDetail',{product})};
+   return {title:t('device.issue.windowsEvaluationEnding',{count:p.daysLeft}),detail:t('device.issue.windowsEvaluationEndingDetail',{product,date})};
+  }
+  case 'windows-not-activated':{
+   const status=String(p.status),title=t('device.issue.windowsNotActivated');
+   if(status==='notification')return {title,detail:t('device.issue.windowsNotActivatedNotification')};
+   if(status==='non-genuine-grace')return {title,detail:t('device.issue.windowsNotActivatedNotGenuine')};
+   if(status==='unlicensed')return {title,detail:t('device.issue.windowsNotActivatedUnlicensed')};
+   return {title,detail:typeof p.date==='string'?t('device.issue.windowsNotActivatedGrace',{date:formatDate(locale,p.date)}):t('device.issue.windowsNotActivatedGraceNoDate')};
+  }
   case 'bitlocker-system-unencrypted':return {title:t('device.issue.bitlockerSystem'),detail:t('device.issue.bitlockerSystemDetail',{drive:String(p.drive)})};
   case 'bitlocker-suspended':{
    const since=typeof p.suspendedSince==='string'?Date.parse(p.suspendedSince):NaN;

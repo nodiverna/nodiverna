@@ -1,4 +1,4 @@
-// The alert rule catalog (lib/alert-rules.ts): the 39 rules (with the two Defender rules of agent 4.14.0, the two DHCP rules, the DNS rule and the three agent rules of 4.18.0) with their defaults
+// The alert rule catalog (lib/alert-rules.ts): the 41 rules (with the two Windows activation rules of agent 4.22.0, the two Defender rules of agent 4.14.0, the two DHCP rules, the DNS rule and the three agent rules of 4.18.0) with their defaults
 // and ranges (incl. the limit kind and the units count and index), the minimum duration and recovery margin of the alarms, the resolution along the scope chain
 // (default < All devices < customer < groups < device), the shared validation and
 // the description sentences in both catalogs (lib/alert-rules-text.ts).
@@ -13,7 +13,7 @@ let checks=0;
 const check=(actual,expected,label)=>{assert.deepEqual(actual,expected,label);checks++;};
 
 // ---- Catalog ----
-check(rules.alertRules.map(rule=>rule.id),['cpu','memory','disk-free','disk-latency','pagefile','processor-queue','reboot-pending','firewall-off','defender-off','signatures-age','updates-pending','inventory-incomplete','crash-recent','os-support-end','os-support-unknown','bitlocker-system-unencrypted','bitlocker-suspended','bitlocker-no-recovery-password','device-problem','driver-unsigned','stability-low','app-crash-repeated','disk-health-failed','ssd-wear','disk-errors','battery-capacity','cert-expiring','cert-expiring-no-key','autostart-new','autostart-new-suspicious','threat-detected','scan-age','dhcp-scope-full','dhcp-service-stopped','dns-service-stopped','agent-stopped','agent-removed','agent-protection-changed','device-offline'],'39 rules in catalog order, the health signal 2 rules, the two Defender rules, the two DHCP rules, the DNS rule and the three agent rules before Device offline, which stays last');
+check(rules.alertRules.map(rule=>rule.id),['cpu','memory','disk-free','disk-latency','pagefile','processor-queue','reboot-pending','firewall-off','defender-off','signatures-age','updates-pending','inventory-incomplete','crash-recent','os-support-end','os-support-unknown','windows-evaluation','windows-not-activated','bitlocker-system-unencrypted','bitlocker-suspended','bitlocker-no-recovery-password','device-problem','driver-unsigned','stability-low','app-crash-repeated','disk-health-failed','ssd-wear','disk-errors','battery-capacity','cert-expiring','cert-expiring-no-key','autostart-new','autostart-new-suspicious','threat-detected','scan-age','dhcp-scope-full','dhcp-service-stopped','dns-service-stopped','agent-stopped','agent-removed','agent-protection-changed','device-offline'],'41 rules in catalog order, the two Windows activation rules after os-support-unknown, the health signal 2 rules, the two Defender rules, the two DHCP rules, the DNS rule and the three agent rules before Device offline, which stays last');
 const summary=Object.fromEntries(rules.alertRules.map(rule=>{const {enabled,warning,critical,level}=rule.defaults;return [rule.id,[rule.kind,rule.unit,rule.comparison,rule.live,{enabled,warning,critical,level},rule.range]];}));
 check(summary,{
  cpu:['threshold','percent','at-least',true,{enabled:true,warning:80,critical:90,level:null},{min:1,max:100}],
@@ -31,6 +31,9 @@ check(summary,{
  'crash-recent':['threshold','days','within',false,{enabled:true,warning:30,critical:7,level:null},{min:1,max:30}],
  'os-support-end':['threshold','days','remaining-at-most',false,{enabled:true,warning:180,critical:0,level:null},{min:0,max:1825}],
  'os-support-unknown':['boolean',null,null,false,{enabled:true,warning:null,critical:null,level:'info'},null],
+ // Windows activation (agent 4.22.0): an evaluation warns from 180 days left and is critical from 14; not activated warns.
+ 'windows-evaluation':['threshold','days','remaining-at-most',false,{enabled:true,warning:180,critical:14,level:null},{min:0,max:365}],
+ 'windows-not-activated':['boolean',null,null,false,{enabled:true,warning:null,critical:null,level:'warning'},null],
  'bitlocker-system-unencrypted':['boolean',null,null,false,{enabled:true,warning:null,critical:null,level:'warning'},null],
  'bitlocker-suspended':['boolean',null,null,false,{enabled:true,warning:null,critical:null,level:'warning'},null],
  'bitlocker-no-recovery-password':['boolean',null,null,false,{enabled:true,warning:null,critical:null,level:'info'},null],
@@ -259,4 +262,27 @@ check(say('defender-off',{level:'warning'}),'Warning when Defender antivirus or 
 check(say('defender-off',{level:'info'},'de'),'Info, wenn der Defender-Virenschutz oder der Echtzeitschutz ausgeschaltet ist. Ein passiver Defender neben einem anderen Virenschutz zählt nicht.','the changed defender-off (de)');
 for(const level of ['info','warning','critical'])for(const catalog of [en,de])assert.ok(/passive|passiver/i.test(catalog['alertRules.rule.defenderOff.'+level]),`defender-off ${level} names the passive case`);
 check([0,1,365,366].map(warning=>rules.validateAlertRuleSettings('scan-age',{enabled:true,warning,critical:null,durationMinutes:0,recovery:0}).ok),[false,true,true,false],'scan-age accepts 1–365 days');
-console.log(`PASS alert rule catalog (${checks} checks): 39 rules with defaults and ranges, the limit kind, the units count and index, minimum duration and recovery margin, resolution over global, three group levels and device, validation, and description sentences with units in English and German.`);
+// ---- Windows activation rules of agent 4.22.0 ----
+check([rule('windows-evaluation').defaults.durationMinutes,rule('windows-evaluation').defaults.recovery,rules.alarmSettingsApply(rule('windows-evaluation'))],[null,null,false],'windows-evaluation has no alarm settings');
+check(rule('windows-evaluation').dative,['warning'],'windows-evaluation uses the dative for the warning step');
+const evaluationInput=(warning,critical)=>({enabled:true,warning,critical});
+check(rules.validateAlertRuleSettings('windows-evaluation',evaluationInput(180,14)),{ok:true,ruleId:'windows-evaluation',settings:{enabled:true,warning:180,critical:14,level:null,durationMinutes:null,recovery:null}},'windows-evaluation accepts warning above critical');
+check(rules.validateAlertRuleSettings('windows-evaluation',evaluationInput(14,180)),{ok:false,errors:[{field:'critical',code:'orderBelow'}]},'warning 14, critical 180 is refused');
+check(rules.validateAlertRuleSettings('windows-evaluation',evaluationInput(14,14)).ok,false,'warning equal to critical is refused');
+check(rules.validateAlertRuleSettings('windows-evaluation',evaluationInput(366,14)),{ok:false,errors:[{field:'warning',code:'range'}]},'366 days is out of range');
+check([0,365].map(critical=>rules.validateAlertRuleSettings('windows-evaluation',{enabled:true,warning:null,critical}).ok),[true,true],'0 and 365 are in range');
+check(rules.validateAlertRuleSettings('windows-evaluation',{enabled:true,warning:180,critical:14,durationMinutes:5}),{ok:false,errors:[{field:'durationMinutes',code:'not-allowed'}]},'no minimum duration');
+check(rules.validateAlertRuleSettings('windows-not-activated',{enabled:true,level:'critical'}).ok,true,'windows-not-activated takes a level');
+check(say('windows-evaluation',{warning:180,critical:14}),'Warning when the Windows evaluation ends in 180 days or less, critical when 14 days or less remain.','windows-evaluation both (en)');
+check(say('windows-evaluation',{warning:180,critical:14},'de'),'Warnung, wenn die Windows-Evaluierung in 180 Tagen oder weniger endet, kritisch, wenn noch 14 Tage oder weniger bleiben.','windows-evaluation both: dative warning, nominative critical (de)');
+check(say('windows-evaluation',{warning:180,critical:0}),'Warning when the Windows evaluation ends in 180 days or less, critical once it has ended.','windows-evaluation bothEnded (en)');
+check(say('windows-evaluation',{warning:180,critical:0},'de'),'Warnung, wenn die Windows-Evaluierung in 180 Tagen oder weniger endet, kritisch, sobald sie beendet ist.','windows-evaluation bothEnded (de)');
+check(say('windows-evaluation',{warning:30}),'Warning when the Windows evaluation ends in 30 days or less.','windows-evaluation warning only (en)');
+check(say('windows-evaluation',{warning:1},'de'),'Warnung, wenn die Windows-Evaluierung in 1 Tag oder weniger endet.','windows-evaluation warning only, singular (de)');
+check(say('windows-evaluation',{critical:14}),'Critical when 14 days or less of the Windows evaluation remain.','windows-evaluation critical only (en)');
+check(say('windows-evaluation',{critical:14},'de'),'Kritisch, wenn von der Windows-Evaluierung noch 14 Tage oder weniger bleiben.','windows-evaluation critical only (de)');
+check([say('windows-evaluation',{critical:0}),say('windows-evaluation',{critical:0},'de')],['Critical once the Windows evaluation has ended.','Kritisch, sobald die Windows-Evaluierung beendet ist.'],'windows-evaluation criticalOnlyEnded');
+check(['info','warning','critical'].map(level=>say('windows-not-activated',{level})),['Info when Windows is not activated.','Warning when Windows is not activated.','Critical when Windows is not activated.'],'windows-not-activated levels (en)');
+check(['info','warning','critical'].map(level=>say('windows-not-activated',{level},'de')),['Info, wenn Windows nicht aktiviert ist.','Warnung, wenn Windows nicht aktiviert ist.','Kritisch, wenn Windows nicht aktiviert ist.'],'windows-not-activated levels (de)');
+check([text.alertRuleName('windows-evaluation','en'),text.alertRuleName('windows-evaluation','de'),text.alertRuleName('windows-not-activated','en'),text.alertRuleName('windows-not-activated','de')],['Evaluation edition','Evaluierungsversion','Windows not activated','Windows nicht aktiviert'],'the two rule names');
+console.log(`PASS alert rule catalog (${checks} checks): 41 rules with defaults and ranges, the limit kind, the units count and index, minimum duration and recovery margin, resolution over global, three group levels and device, validation, and description sentences with units in English and German.`);

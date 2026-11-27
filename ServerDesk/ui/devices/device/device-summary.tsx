@@ -17,6 +17,7 @@ import {bitlockerStatus,osSupportText,suspendedDuration,systemVolume} from '@/ui
 import {defenderProtectionRow} from '@/lib/defender';
 import {formatSupportDate} from '@/ui/base/ui-device';
 import {EsuDrawer,EsuOrigin,toneKind} from '@/ui/devices/inventory/os-support';
+import {windowsLicenseText} from '@/ui/devices/device/windows-license-model';
 import {DriveList,gibBytes} from '@/ui/devices/hardware/drive-list';
 import {deviceType,deviceTypeLabels} from '@/ui/devices/device/device-type-model';
 import {deviceManufacturer} from '@/ui/devices/hardware/manufacturer-model';
@@ -174,6 +175,7 @@ export default function DeviceSummary({server,viewer,demo,now,samples,jobs,histo
   // Uptime is a fact, not a KPI tile: the row keeps four tiles. Only a device that is online now has a current uptime.
   {id:'uptime',label:t('device.summary.uptime'),value:online&&typeof snapshot?.uptimeSeconds==='number'&&Number.isFinite(snapshot.uptimeSeconds)&&snapshot.uptimeSeconds>=0?uptime(locale,snapshot.uptimeSeconds):EMPTY_VALUE,hint:snapshot?.security?.lastBoot?t('device.summary.since',{exactTime:exactTime(snapshot.security.lastBoot,locale)}):t('device.summary.bootUnknown')},
   {id:'os-support',label:t('osSupport.fact'),value:<OsSupportValue server={server} viewer={viewer} demo={demo} onOpenEsuGroup={onOpenEsuGroup} onOpenEsuCustomer={onOpenEsuCustomer} onRefresh={onRefresh}/>},
+  {id:'windows-license',label:t('windowsLicense.fact'),value:<WindowsLicenseValue server={server} now={now} locale={locale}/>},
   ...(gpus.length>0?[{id:'graphics',label:t('device.summary.graphics'),value:gpus.map(gpu=>gpu.name).join(', ')}]:[]),
  ];
 
@@ -236,6 +238,14 @@ function OsSupportValue({server,viewer,demo,onOpenEsuGroup,onOpenEsuCustomer,onR
   {esu&&<small className="sdx-fact-line">{t('osSupport.esu',{date:formatSupportDate(locale,esu.until)})}{esu.origin.type!=='device'&&<EsuOrigin origin={{...esu.origin,type:esu.origin.type}} onOpenGroup={onOpenEsuGroup} onOpenCustomer={onOpenEsuCustomer}/>}</small>}
   {support?.entry&&<small><a href={support.entry.source} target="_blank" rel="noopener noreferrer" className="sdx-external"><ExternalLink size={12} aria-hidden/>{t('osSupport.source')}</a></small>}
   <EsuDrawer open={open} onClose={()=>setOpen(false)} returnFocus={button} scope={{type:'device',id:server.id}} demo={demo} onRefresh={()=>onRefresh?.()} onOpenGroup={onOpenEsuGroup} onOpenCustomer={onOpenEsuCustomer}/>
+ </span>;
+}
+/** The value of the fact "Windows activation": the state as a pill (its colour follows the device's issue), then up to two meta lines. */
+export function WindowsLicenseValue({server,now,locale}:{server:Device;now:number;locale:Locale}){
+ const text=windowsLicenseText(server,now,locale);
+ return <span className="sdx-os-support-value">
+  <span className="sdx-fact-line"><StatusPill kind={toneKind[text.tone]}>{text.text}</StatusPill></span>
+  {text.lines.map(line=><small key={line}>{line}</small>)}
  </span>;
 }
 function Throughput({label,value,warn=false}:{label:string;value:string;warn?:boolean}){return <div className={cx(warn&&'warn')}><dt>{label}</dt><dd className="mono">{value}</dd></div>;}

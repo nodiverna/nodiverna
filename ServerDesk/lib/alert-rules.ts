@@ -10,9 +10,10 @@ import type {AgentIntegrityEvent,DefenderAvailable,PhysicalDiskHealth,Server,Ser
 import {AGENT_INTEGRITY_STOP_KINDS,AGENT_INTEGRITY_WINDOW_MS} from './agent-integrity-contract';
 import {connectionKind} from './device-connection';
 import {programCrashCounts} from './reliability';
+import {daysLeftUntil,evaluationEnd,graceEnd,notActivated} from './windows-license';
 
 export type AlertLevel='info'|'warning'|'critical';
-export type AlertRuleId='cpu'|'memory'|'disk-free'|'disk-latency'|'pagefile'|'processor-queue'|'reboot-pending'|'firewall-off'|'defender-off'|'signatures-age'|'updates-pending'|'inventory-incomplete'|'crash-recent'|'os-support-end'|'os-support-unknown'|'bitlocker-system-unencrypted'|'bitlocker-suspended'|'bitlocker-no-recovery-password'
+export type AlertRuleId='cpu'|'memory'|'disk-free'|'disk-latency'|'pagefile'|'processor-queue'|'reboot-pending'|'firewall-off'|'defender-off'|'signatures-age'|'updates-pending'|'inventory-incomplete'|'crash-recent'|'os-support-end'|'os-support-unknown'|'windows-evaluation'|'windows-not-activated'|'bitlocker-system-unencrypted'|'bitlocker-suspended'|'bitlocker-no-recovery-password'
  |'device-problem'|'driver-unsigned'|'stability-low'|'app-crash-repeated'|'disk-health-failed'|'ssd-wear'|'disk-errors'|'battery-capacity'|'cert-expiring'|'cert-expiring-no-key'|'autostart-new'|'autostart-new-suspicious'|'threat-detected'|'scan-age'|'dhcp-scope-full'|'dhcp-service-stopped'|'dns-service-stopped'|'agent-stopped'|'agent-removed'|'agent-protection-changed'|'device-offline';
 /**
  * `at-least`: value ≥ threshold, `above`: value > threshold, `below`: value < threshold,
@@ -60,7 +61,7 @@ const limit=(id:AlertRuleId,key:string,metric:string,unit:AlertUnit,comparison:'
 const withEndedText=(rule:ThresholdRule,key:string):ThresholdRule=>({...rule,description:{...rule.description,bothEnded:`alertRules.rule.${key}.bothEnded` as MessageKey,criticalOnlyEnded:`alertRules.rule.${key}.criticalOnlyEnded` as MessageKey}});
 
 /**
- * The 38 rules in catalog order, Device offline last. The defaults of the first
+ * The 41 rules in catalog order, Device offline last. The defaults of the first
  * 12 are the behavior before rules could be changed. The alarm argument of the
  * alarm threshold rules is [minimum duration in minutes, recovery margin in the rule unit].
  */
@@ -82,6 +83,10 @@ export const alertRules:readonly AlertRule[]=[
  {...threshold('crash-recent','crashRecent','crashes[].at','days','within',30,7,1,30,false),dative:['warning','critical']},
  {...withEndedText(threshold('os-support-end','osSupportEnd','osSupport.effectiveEnd','days','remaining-at-most',180,0,0,1825,false),'osSupportEnd'),dative:['warning']},
  boolean('os-support-unknown','osSupportUnknown','osSupport.status','info'),
+ // Windows activation of agent 4.22.0 (docs/alert-rules.md, lib/windows-license.ts). Silent without
+ // snapshot.windowsLicense (older agents) and while it is not available.
+ {...withEndedText(threshold('windows-evaluation','windowsEvaluation','windowsLicense.expiresAt / evaluationEndsAt','days','remaining-at-most',180,14,0,365,false),'windowsEvaluation'),dative:['warning']},
+ boolean('windows-not-activated','windowsNotActivated','windowsLicense.status','warning'),
  boolean('bitlocker-system-unencrypted','bitlockerSystemUnencrypted','bitlocker.volumes[os].conversion','warning'),
  boolean('bitlocker-suspended','bitlockerSuspended','bitlocker.volumes[].protection','warning'),
  boolean('bitlocker-no-recovery-password','bitlockerNoRecoveryPassword','bitlocker.volumes[].protectors','info'),
@@ -372,6 +377,21 @@ export function evaluateAlertRules(server:Pick<Server,'snapshot'|'lastSeen'|'mai
  }
  const osInfo=s.osInfo;
  flag('os-support-unknown','os-support-unknown',!!osInfo&&support?.status==='unknown'&&support.reason==='no-entry',{product:osInfo?.productName??s.os??'',version:osInfo?.displayVersion??'',build:osInfo?.currentBuild??s.build??''});
+ // ---- Windows activation (agent 4.22.0); silent without the field or while it is not available ----
+ const license=s.windowsLicense;
+ if(license?.available){
+  const end=evaluationEnd(license,osInfo,now),own=settings['windows-evaluation'],product=osInfo?.productName??s.os??'';
+  if(active('windows-evaluation')&&end){
+   // Without a reported end the evaluation still needs a full license: the warning step, if set.
+   if(end.state==='unknown'){if(own.warning!==null)add('windows-evaluation','windows-evaluation','warning',{product,date:null,daysLeft:null,ended:'false'});}
+   else{
+    const fired=firedLevel(own,threshold=>end.daysLeft<=threshold);
+    if(fired)add('windows-evaluation','windows-evaluation',fired.level,{product,date:end.date,daysLeft:end.daysLeft,ended:end.state==='ended'?'true':'false'});
+   }
+  }
+  const grace=graceEnd(license);
+  flag('windows-not-activated','windows-not-activated',notActivated(license),{status:license.status,channel:license.channel,date:grace,daysLeft:grace?daysLeftUntil(grace,now):null});
+ }
  const bitlocker=s.bitlocker;
  if(bitlocker?.available){
   const volumes=list(bitlocker.volumes),system=volumes.find(volume=>volume.volumeType==='os');
@@ -557,8 +577,7 @@ export const diskLabel=(disk:Pick<PhysicalDiskHealth,'model'|'number'|'id'>)=>di
  * less once it has expired.
  */
 export function certificateDaysLeft(notAfter:string,now:number):number{
- const left=(Date.parse(notAfter)-now)/dayMs;
- return left>0?Math.ceil(left):Math.floor(left);
+ return daysLeftUntil(notAfter,now);
 }
 /**
  * Whole days left until an end date (YYYY-MM-DD; support ends at 00:00 UTC of
@@ -578,7 +597,7 @@ export type AlertReading={ruleId:AlertRuleId;key:string;value:number};
  * rule does not fire and whatever the settings: CPU, memory and page file in %,
  * free space in % per volume, disk latency in ms, threads per processor, the
  * signature age and the age of the newest crash in days, the days left of OS
- * support and of every certificate, the minutes since the last Heartbeat, the
+ * support, of a Windows evaluation and of every certificate, the minutes since the last Heartbeat, the
  * stability index, the crashes per program, the SSD wear and the battery health. The alarm state
  * (lib/server/devices/alert-state.ts) uses it for the peak and the recovery margin. Live
  * readings are returned whether the device is online or not; the alarm state
@@ -605,6 +624,9 @@ export function alertReadings(server:Pick<Server,'snapshot'|'lastSeen'|'osSuppor
  if(crashes.length)add('crash-recent','crash',(now-Math.max(...crashes))/dayMs);
  const support=server.osSupport;
  if(support?.entry&&support.effectiveEnd)add('os-support-end','os-support',osSupportDaysLeft(support.effectiveEnd,now));
+ // The days left of a Windows evaluation; past its end the alarm peak says "N days overdue".
+ const end=evaluationEnd(s.windowsLicense,s.osInfo,now);
+ if(end&&end.state!=='unknown')add('windows-evaluation','windows-evaluation',end.daysLeft);
  // Health signals of 4.11.0: the stability index, crashes per program in 7 days, the wear per disk,
  // the battery percent and the days left per certificate.
  const stability=s.reliability?.stability;

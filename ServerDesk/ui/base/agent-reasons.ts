@@ -36,6 +36,7 @@ export const agentCollectorNames:Readonly<Record<string,MessageKey>>={
  'Certificates':'agentReason.collector.certificates',
  'Autostart':'agentReason.collector.autostart',
  'Defender':'agentReason.collector.defender',
+ 'Windows license':'agentReason.collector.windowsLicense',
 };
 
 /** The items of NativeNetworkInventory.cs that a "Network partly readable" warning names. */

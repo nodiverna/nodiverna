@@ -95,6 +95,7 @@ To update, run `docker compose pull` and then `docker compose up -d`. The databa
 - [Own login and RBAC](ServerDesk/docs/local-identity-rbac.md): accounts, invitations, MFA and roles.
 - [Customers](ServerDesk/docs/customers.md): several customers in one portal, with their own devices, installers and access.
 - [Usage data](ServerDesk/docs/usage-data.md): which technical values the portal can send, and only with your consent.
+- [Wiki](https://github.com/nodiverna/nodiverna/wiki): the same documentation as wiki pages with a sidebar.
 - [Releases](https://github.com/nodiverna/nodiverna/releases): the versions of the image and the agent, with their changes.
 
 ## Contributing and security

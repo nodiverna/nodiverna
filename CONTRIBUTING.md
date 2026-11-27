@@ -170,6 +170,8 @@ Write all documentation in English after ASD-STE100 (Simplified Technical Englis
 
 The test uses these counting rules. A sentence ends at `.`, `!`, `?` or `:` before a space or the end of the line. Inline code, bold text and a bare URL count as one word each, and a link counts as its text. The test does not count headings, tables, code blocks and HTML comments. A list item with its indented lines is one unit. Lines of text up to the next blank line, list or heading are one paragraph.
 
+The workflow **Docs wiki** mirrors `ServerDesk/docs/` into the GitHub wiki after each merge to `main`. Change the documentation only in `ServerDesk/docs/`, because each run replaces the wiki pages. Write links between docs as relative `.md` links, for example `[Customers](customers.md)`. Put images into `ServerDesk/docs/images/`.
+
 ## Contribution terms
 
 A "contribution" is all code, documentation and other work that you submit for inclusion in ServerDesk. You can submit it through a pull request or in a different way.
