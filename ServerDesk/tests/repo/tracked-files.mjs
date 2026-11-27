@@ -117,7 +117,7 @@ none(docsRule(tree), 'the in-memory tree passes docsRule');
 none(supportRule(tree), 'the in-memory tree passes supportRule');
 
 const broken = (changes) => { const entries = {...valid, ...changes}; for (const [file, text] of Object.entries(changes)) if (text === null) delete entries[file]; return memoryTree(entries); };
-fails(publicRule(broken({'public/Agent-Setup.txt': 'old'})), 'an extra file in public/');
+fails(publicRule(broken({'public/Notes.txt': 'old'})), 'an extra file in public/');
 fails(publicRule(broken({'public/favicon.svg': null})), 'a listed file is missing in public/');
 fails(publicRule(broken({'public/backgrounds/new.svg': ''})), 'an extra background');
 fails(snapshotRule(broken({'drizzle/meta/0000_snapshot.json': '{}'})), 'a second snapshot');
