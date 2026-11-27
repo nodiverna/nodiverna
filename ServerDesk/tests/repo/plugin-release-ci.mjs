@@ -2,11 +2,14 @@
 // the assets and notes, the assets and verify CLIs (notes.md only with
 // --check-notes), the copy of the build into the checkout, the project
 // metadata of the DHCP and DNS plugins and the hardening of the workflow. The agent
-// workflow keeps its single-EXE ZIP.
+// workflow keeps its single-EXE ZIP. The build artifact: staging takes the layout
+// that upload-artifact produces (root ServerDesk/.build), checked against the
+// upload, download and stage steps through tests/support/upload-artifact-layout.mjs.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { generateKeyPairSync, randomUUID, sign, createHash } from 'node:crypto';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { symlinkSync } from 'node:fs';
+import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
@@ -17,6 +20,7 @@ import { pluginProjectMetadata } from '../../scripts/build-plugin.mjs';
 import { validateReleaseChangelog } from '../../scripts/release-changelog.mjs';
 import { pluginReleaseManifest } from '../../scripts/sign-plugin-release.mjs';
 import { serverDeskRoot, repositoryRoot } from '../support/paths.mjs';
+import { filesOfUploadPath, uploadArtifactLayout } from '../support/upload-artifact-layout.mjs';
 
 const root = serverDeskRoot;
 const repository = repositoryRoot;
@@ -62,9 +66,9 @@ test('the notes, the assets, stage, digests and verify of a dev plugin build', a
   const directory = await mkdtemp(path.join(os.tmpdir(), 'sd-plugin-dev-'));
   try {
     const from = path.join(directory, 'artifact'), to = path.join(directory, 'checkout');
-    await mkdir(path.join(from, '.build', 'plugin-dns-publish'), { recursive: true });
-    await writeFile(path.join(from, '.build', 'plugin-dns-artifact.json'), JSON.stringify({ name: 'dns', version }));
-    await writeFile(path.join(from, '.build', 'plugin-dns-publish', 'ServerDesk.Plugin.Dns.exe'), exe);
+    await mkdir(path.join(from, 'plugin-dns-publish'), { recursive: true });
+    await writeFile(path.join(from, 'plugin-dns-artifact.json'), JSON.stringify({ name: 'dns', version }));
+    await writeFile(path.join(from, 'plugin-dns-publish', 'ServerDesk.Plugin.Dns.exe'), exe);
     await mkdir(to);
     assert.deepEqual(stagePluginBuild({ from, to, name: 'dns', version }).sort(), ['.build/plugin-dns-artifact.json', '.build/plugin-dns-publish/ServerDesk.Plugin.Dns.exe']);
     assert.deepEqual(pluginBuildDigests(to, 'dns', version).map(row => row.name), [`ServerDesk-Plugin-dns-${version}-win-x64.exe`]);
@@ -229,18 +233,71 @@ test('the assets and verify CLIs check the signed files; verify compares the uns
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
 
-test('stage copies only the artifact metadata and the published EXE and refuses anything else', async () => {
-  const from = await mkdtemp(path.join(os.tmpdir(), 'sd-plugin-stage-')), to = await mkdtemp(path.join(os.tmpdir(), 'sd-plugin-checkout-'));
+// The artifact root is ServerDesk/.build of the build job (upload-artifact stores the
+// files relative to the common folder of the upload paths): the fixtures hold the
+// entries without a .build/ prefix, as the sign job downloads them.
+test('stage copies only the artifact metadata and the published EXE into .build/ and refuses anything else', async t => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'sd-plugin-stage-'));
   try {
-    await mkdir(path.join(from, '.build', 'plugin-dhcp-publish'), { recursive: true });
-    await writeFile(path.join(from, '.build', 'plugin-dhcp-artifact.json'), JSON.stringify({ name: 'dhcp', version: '1.0.0' }));
-    await writeFile(path.join(from, '.build', 'plugin-dhcp-publish', 'ServerDesk.Plugin.Dhcp.exe'), 'exe');
-    assert.deepEqual(stagePluginBuild({ from, to, name: 'dhcp', version: '1.0.0' }), ['.build/plugin-dhcp-artifact.json', '.build/plugin-dhcp-publish/ServerDesk.Plugin.Dhcp.exe']);
-    assert.equal(await readFile(path.join(to, '.build', 'plugin-dhcp-publish', 'ServerDesk.Plugin.Dhcp.exe'), 'utf8'), 'exe');
-    assert.throws(() => stagePluginBuild({ from, to, name: 'dhcp', version: '1.0.1' }), /not dhcp 1\.0\.1/, 'another version');
-    await writeFile(path.join(from, 'scripts.mjs'), 'evil');
-    assert.throws(() => stagePluginBuild({ from, to, name: 'dhcp', version: '1.0.0' }), /unexpected entry: scripts\.mjs/, 'a planted file');
-  } finally { await rm(from, { recursive: true, force: true }); await rm(to, { recursive: true, force: true }); }
+    const from = path.join(directory, 'artifact');
+    const put = async (relative, content) => { await mkdir(path.dirname(path.join(from, relative)), { recursive: true }); await writeFile(path.join(from, relative), content); };
+    const expected = { 'plugin-dhcp-artifact.json': JSON.stringify({ name: 'dhcp', version: '1.0.0' }), 'plugin-dhcp-publish/ServerDesk.Plugin.Dhcp.exe': 'exe' };
+    const fresh = async () => { await rm(from, { recursive: true, force: true }); for (const [relative, content] of Object.entries(expected)) await put(relative, content); };
+    await fresh();
+    const ok = path.join(directory, 'ok');
+    await mkdir(ok);
+    assert.deepEqual(stagePluginBuild({ from, to: ok, name: 'dhcp', version: '1.0.0' }), ['.build/plugin-dhcp-artifact.json', '.build/plugin-dhcp-publish/ServerDesk.Plugin.Dhcp.exe']);
+    for (const [relative, content] of Object.entries(expected)) assert.equal(await readFile(path.join(ok, '.build', relative), 'utf8'), content);
+    assert.deepEqual(await readdir(ok), ['.build'], 'nothing outside .build/ of the checkout');
+    assert.deepEqual(pluginBuildDigests(ok, 'dhcp', '1.0.0'), [{ name: 'ServerDesk-Plugin-dhcp-1.0.0-win-x64.exe', size: 3, sha256: hashOf('exe') }]);
+    assert.deepEqual([pluginPaths('dhcp').artifact, pluginPaths('dhcp').publish], ['.build/plugin-dhcp-artifact.json', '.build/plugin-dhcp-publish'], 'pluginPaths keeps the paths of the checkout');
+
+    let attempt = 0;
+    const refused = async (message, label, input = {}) => {
+      const to = path.join(directory, `refused-${attempt++}`);
+      await mkdir(to);
+      assert.throws(() => stagePluginBuild({ from, to, name: 'dhcp', version: '1.0.0', ...input }), { message }, label);
+      assert.deepEqual(await readdir(to), [], `nothing copied after a refusal: ${label}`);
+    };
+    await refused('The build artifact is dhcp 1.0.0, not dhcp 1.0.1.', 'another version', { version: '1.0.1' });
+    for (const [relative, message] of [
+      ['scripts.mjs', 'The build artifact has an unexpected entry: scripts.mjs.'],
+      ['scripts/plugin-release.mjs', 'The build artifact has an unexpected entry: scripts.'],
+      ['agent/v3/release-public.pem', 'The build artifact has an unexpected entry: agent.'],
+      ['plugin-dhcp-release.json', 'The build artifact has an unexpected entry: plugin-dhcp-release.json.'],
+      ['plugin-dhcp-publish/ServerDesk.Plugin.Dhcp.pdb', 'The build artifact has an unexpected entry: plugin-dhcp-publish/ServerDesk.Plugin.Dhcp.pdb.'],
+      ['plugin-dhcp-publish/other.exe', 'The build artifact has an unexpected entry: plugin-dhcp-publish/other.exe.'],
+      ['plugin-dns-publish/ServerDesk.Plugin.Dns.exe', 'The build artifact has an unexpected entry: plugin-dns-publish.'],
+    ]) {
+      await fresh();
+      await put(relative, 'evil');
+      await refused(message, relative);
+    }
+    // The layout this script assumed before: the files below a .build folder of the artifact.
+    await rm(from, { recursive: true, force: true });
+    for (const [relative, content] of Object.entries(expected)) await put(`.build/${relative}`, content);
+    await refused('The build artifact has an unexpected entry: .build.', 'a root .build folder');
+    await fresh();
+    await rm(path.join(from, 'plugin-dhcp-publish', 'ServerDesk.Plugin.Dhcp.exe'));
+    await refused('The build artifact has no plugin-dhcp-publish/ServerDesk.Plugin.Dhcp.exe.', 'a missing EXE');
+    await fresh();
+    await put('plugin-dhcp-artifact.json', '{ not json');
+    await refused('plugin-dhcp-artifact.json in the build artifact is not valid JSON.', 'metadata that is not JSON');
+    await fresh();
+    await put('plugin-dhcp-artifact.json', JSON.stringify({ name: 'dns', version: '1.0.0' }));
+    await refused('The build artifact is dns 1.0.0, not dhcp 1.0.0.', 'metadata of another plugin');
+    // The artifact of another plugin: its files are unexpected for dhcp.
+    await rm(from, { recursive: true, force: true });
+    await put('plugin-dns-artifact.json', JSON.stringify({ name: 'dns', version: '1.0.0' }));
+    await refused('The build artifact has an unexpected entry: plugin-dns-artifact.json.', 'the artifact of dns');
+    await fresh();
+    await rm(path.join(from, 'plugin-dhcp-artifact.json'));
+    try { symlinkSync(path.join(directory, 'ok', '.build', 'plugin-dhcp-artifact.json'), path.join(from, 'plugin-dhcp-artifact.json'), 'file'); } catch (error) {
+      if (error?.code === 'EPERM') { t.skip('creating links needs more rights here'); return; }
+      throw error;
+    }
+    await refused('The build artifact has a link: plugin-dhcp-artifact.json.', 'a link');
+  } finally { await rm(directory, { recursive: true, force: true }); }
 });
 
 test('the DHCP plugin project names its version, target, minimum agent and capability, and the plugin says the same', async () => {
@@ -364,6 +421,72 @@ test('the plugin workflow pins its actions, keeps the key in the sign job and pu
   for (const file of ['scripts/plugin-release.mjs', 'scripts/sign-plugin-release.mjs', 'scripts/build-plugin.mjs', 'runtime/plugin-release-verify.mjs']) {
     const text = await readFile(path.join(root, file), 'utf8');
     for (const [, specifier] of text.matchAll(/^import [^'"]*['"]([^'"]+)['"]/gm)) assert.ok(specifier.startsWith('node:') || specifier.startsWith('.'), `${file} imports ${specifier}`);
+  }
+});
+
+test('the plugin upload comment names the real artifact root', () => {
+  const lines = workflowText.split(/\r?\n/), at = lines.findIndex(line => line.trim() === '- name: Upload the build');
+  let first = at;
+  while (lines[first - 1].trim().startsWith('#')) first--;
+  const comment = lines.slice(first, at).map(line => line.trim().replace(/^#\s?/, '')).join(' ');
+  assert.ok(first < at, 'a comment above the upload');
+  assert.doesNotMatch(comment, /relative to ServerDesk/);
+  assert.match(comment, /the artifact root is ServerDesk\/\.build/);
+  assert.match(comment, /The sign job copies the expected files back into \.build\//);
+});
+
+// Every process of the layout test gets the env of this process without any GITHUB_* variable.
+const childEnv = () => Object.fromEntries(Object.entries(process.env).filter(([name]) => !name.toUpperCase().startsWith('GITHUB_')));
+/** The words of a run line with "$NAME" replaced from `variables`; only plain words and double quotes. */
+const commandWords = (line, variables) => [...line.matchAll(/"([^"]*)"|(\S+)/g)].map(match => (match[1] ?? match[2]).replace(/\$([A-Z_]+)/g, (_all, name) => {
+  if (!Object.hasOwn(variables, name)) throw new Error(`No value for ${name} in: ${line}`);
+  return variables[name];
+}));
+
+test('the sign job stages the plugin build in the layout that upload-artifact produces', async () => {
+  const upload = jobs.build.steps.find(step => step.uses?.startsWith('actions/upload-artifact@'));
+  const download = jobs.sign.steps.find(step => step.uses?.startsWith('actions/download-artifact@'));
+  const stage = jobs.sign.steps.find(step => step.name === 'Copy the expected build files');
+  assert.equal(download.with.name, upload.with.name, 'the sign job downloads the artifact of the build job');
+  for (const [name, version] of [['dns', '1.0.5'], ['dns', '1.0.5-dev.abc1234'], ['dhcp', '1.1.2'], ['dhcp', '1.1.2-dev.abc1234']]) {
+    const label = `${name} ${version}`, exe = `ServerDesk.Plugin.${pluginPascalName(name)}.exe`;
+    const directory = await mkdtemp(path.join(os.tmpdir(), 'sd-plugin-layout-'));
+    try {
+      const runnerTemp = path.join(directory, 'runner-temp');
+      const expression = text => {
+        const value = text.replaceAll('${{ needs.plan.outputs.name }}', name).replaceAll('${{ needs.plan.outputs.version }}', version).replaceAll('${{ runner.temp }}', runnerTemp);
+        assert.ok(!value.includes('${{'), `an expression the test does not know: ${value}`);
+        return value;
+      };
+      // What the build job leaves in the workspace: one EXE in the publish folder (build-plugin.mjs) and files the upload leaves out.
+      const built = {
+        [`ServerDesk/.build/plugin-${name}-artifact.json`]: JSON.stringify({ name, version }),
+        [`ServerDesk/.build/plugin-${name}-publish/${exe}`]: `exe ${label}`,
+      };
+      const workspace = [...Object.keys(built), `ServerDesk/.build/plugin-${name}-publish/${exe}.config`, 'ServerDesk/.build/agent-v3-artifact.json', 'ServerDesk/scripts/plugin-release.mjs'];
+      const lines = expression(upload.with.path).split('\n').map(line => line.trim()).filter(Boolean);
+      const layout = uploadArtifactLayout(lines, Object.fromEntries(lines.map(line => [line, filesOfUploadPath(line, workspace)])));
+      assert.equal(layout.root, 'ServerDesk/.build', label);
+      assert.deepEqual(layout.entries.map(item => item.file).sort(), Object.keys(built).sort(), `${label}: the upload holds the metadata and the one EXE`);
+      const downloaded = expression(download.with.path);
+      for (const { file, entry } of layout.entries) {
+        await mkdir(path.dirname(path.join(downloaded, entry)), { recursive: true });
+        await writeFile(path.join(downloaded, entry), built[file]);
+      }
+      const checkout = path.join(directory, 'checkout');
+      for (const file of ['scripts/plugin-release.mjs', 'scripts/release-changelog.mjs', 'runtime/plugin-release-verify.mjs', 'runtime/release-version.mjs']) {
+        await mkdir(path.dirname(path.join(checkout, 'ServerDesk', file)), { recursive: true });
+        await writeFile(path.join(checkout, 'ServerDesk', file), await readFile(path.join(root, file)));
+      }
+      const variables = { RUNNER_TEMP: runnerTemp, ...Object.fromEntries(Object.entries(stage.env).map(([key, value]) => [key, expression(value)])) };
+      const [program, ...args] = commandWords(stage.run, variables);
+      assert.equal(program, 'node');
+      const result = spawnSync(process.execPath, args, { cwd: path.join(checkout, stage['working-directory']), encoding: 'utf8', env: childEnv() });
+      assert.equal(result.status, 0, `${label}: ${result.stderr}`);
+      assert.ok(result.stdout.includes(`Copied 2 build files: .build/plugin-${name}-artifact.json, .build/plugin-${name}-publish/${exe}.`), result.stdout);
+      for (const [file, content] of Object.entries(built)) assert.equal(await readFile(path.join(checkout, file), 'utf8'), content, file);
+      assert.deepEqual((await readdir(path.join(checkout, 'ServerDesk'))).sort(), ['.build', 'runtime', 'scripts'], 'the stage writes only into .build/');
+    } finally { await rm(directory, { recursive: true, force: true }); }
   }
 });
 

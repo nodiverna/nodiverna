@@ -10,6 +10,7 @@ import test from 'node:test';
 import { agentDevNotesLine, agentReleaseAssets, agentReleaseNotes, agentReleaseNotesLimit, agentReleasePartSize, buildDigests, earlierAgentChangelogs, planAgentRelease, stageAgentBuild, verifyAgentRelease } from '../../scripts/agent-release.mjs';
 import { releaseManifestForm } from '../../runtime/release-manifest.mjs';
 import { serverDeskRoot, repositoryRoot } from '../support/paths.mjs';
+import { filesOfUploadPath, uploadArtifactLayout, uploadSearchPath } from '../support/upload-artifact-layout.mjs';
 
 // Agent releases from the CI: the plan, the check of a signed record
 // against the pinned key, the release assets and notes, and the workflow.
@@ -17,6 +18,9 @@ import { serverDeskRoot, repositoryRoot } from '../support/paths.mjs';
 // the dev version through stage, digests, assets and verify, the build
 // version, the generated changelog of the signing script, the first notes line
 // and the workflow conditions with --prerelease only on the dev path.
+// The build artifact: staging takes the layout that upload-artifact produces
+// (root ServerDesk/.build), checked against the upload, download and stage
+// steps of the workflow through tests/support/upload-artifact-layout.mjs.
 const root = serverDeskRoot;
 const repository = repositoryRoot;
 const script = path.join(root, 'scripts', 'agent-release.mjs');
@@ -583,71 +587,104 @@ test('the assets and verify CLIs collect and check the files with the key of the
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
 
-test('staging copies only the expected build files of the version into the checkout', async () => {
+// The artifact root is ServerDesk/.build of the build job (upload-artifact stores the
+// files relative to the common folder of the upload paths): the fixtures below hold
+// the entries without a .build/ prefix, as the sign job downloads them.
+test('staging copies only the expected build files of the version into .build/ of the checkout', async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'serverdesk-agent-stage-'));
   try {
     const from = path.join(directory, 'artifact');
     const put = async (relative, content) => { await mkdir(path.dirname(path.join(from, relative)), { recursive: true }); await writeFile(path.join(from, relative), content); };
     const expected = {
-      '.build/agent-v3-artifact.json': JSON.stringify({ version: '4.7.4' }),
-      '.build/ServerDesk-Agent-4.7.4-win-x64.zip': 'zip',
-      '.build/agent-v3-publish/ServerDesk.Agent.exe': 'exe',
+      'agent-v3-artifact.json': JSON.stringify({ version: '4.7.4' }),
+      'ServerDesk-Agent-4.7.4-win-x64.zip': 'zip',
+      'agent-v3-publish/ServerDesk.Agent.exe': 'exe',
     };
     const fresh = async () => { await rm(from, { recursive: true, force: true }); for (const [relative, content] of Object.entries(expected)) await put(relative, content); };
 
     await fresh();
     const ok = path.join(directory, 'ok');
     await mkdir(ok);
-    assert.deepEqual([...stageAgentBuild({ from, to: ok, version: '4.7.4' })].sort(), Object.keys(expected).sort());
-    for (const [relative, content] of Object.entries(expected)) assert.equal(await readFile(path.join(ok, relative), 'utf8'), content);
+    assert.deepEqual(stageAgentBuild({ from, to: ok, version: '4.7.4' }), ['.build/ServerDesk-Agent-4.7.4-win-x64.zip', '.build/agent-v3-artifact.json', '.build/agent-v3-publish/ServerDesk.Agent.exe']);
+    for (const [relative, content] of Object.entries(expected)) assert.equal(await readFile(path.join(ok, '.build', relative), 'utf8'), content);
+    assert.deepEqual(await readdir(ok), ['.build'], 'nothing outside .build/ of the checkout');
     assert.deepEqual(buildDigests(ok, '4.7.4'), [
       { name: 'ServerDesk-Agent-4.7.4-win-x64.zip', size: 3, sha256: hash('zip') },
       { name: 'ServerDesk-Agent-4.7.4-win-x64.exe', size: 3, sha256: hash('exe') },
     ]);
 
     let attempt = 0;
+    const refused = async (message, label) => {
+      const to = path.join(directory, `refused-${attempt++}`);
+      await mkdir(to);
+      assert.throws(() => stageAgentBuild({ from, to, version: '4.7.4' }), { message }, label);
+      assert.deepEqual(await readdir(to), [], `nothing copied after a refusal: ${label}`);
+    };
     for (const [relative, message] of [
       ['scripts/sign-agent-release.mjs', 'The build artifact has an unexpected entry: scripts.'],
       ['agent/v3/release-public.pem', 'The build artifact has an unexpected entry: agent.'],
-      ['.build/release-changelog.mjs', 'The build artifact has an unexpected entry: .build/release-changelog.mjs.'],
+      ['release-changelog.mjs', 'The build artifact has an unexpected entry: release-changelog.mjs.'],
       // The build writes no part files: nothing below public/ belongs into the artifact.
       ['public/downloads/ServerDesk-Agent-4.7.4-win-x64.zip.part1', 'The build artifact has an unexpected entry: public.'],
       ['public/Bootstrap-ServerDesk-V3.ps1', 'The build artifact has an unexpected entry: public.'],
-      ['.build/agent-v3-release.json', 'The build artifact has an unexpected entry: .build/agent-v3-release.json.'],
-      ['.build/agent-v3-publish/extra/x', 'The build artifact has an unexpected entry: .build/agent-v3-publish/extra.'],
+      ['agent-v3-release.json', 'The build artifact has an unexpected entry: agent-v3-release.json.'],
+      ['agent-v3-publish/extra/x', 'The build artifact has an unexpected entry: agent-v3-publish/extra.'],
+      ['agent-v3-publish/ServerDesk.Agent.pdb', 'The build artifact has an unexpected entry: agent-v3-publish/ServerDesk.Agent.pdb.'],
+      ['ServerDesk-Agent-4.7.5-win-x64.zip', 'The build artifact has an unexpected entry: ServerDesk-Agent-4.7.5-win-x64.zip.'],
     ]) {
       await fresh();
       await put(relative, 'console.log(1)');
-      const to = path.join(directory, `refused-${attempt++}`);
-      await mkdir(to);
-      assert.throws(() => stageAgentBuild({ from, to, version: '4.7.4' }), { message }, relative);
-      assert.deepEqual(await readdir(to), [], 'nothing copied after a refusal');
+      await refused(message, relative);
     }
+    // The layout this script assumed before: the three files below a .build folder of the artifact.
+    await rm(from, { recursive: true, force: true });
+    for (const [relative, content] of Object.entries(expected)) await put(`.build/${relative}`, content);
+    await refused('The build artifact has an unexpected entry: .build.', 'a root .build folder');
     await fresh();
-    await rm(path.join(from, '.build', 'agent-v3-publish', 'ServerDesk.Agent.exe'));
-    assert.throws(() => stageAgentBuild({ from, to: directory, version: '4.7.4' }), { message: 'The build artifact has no .build/agent-v3-publish/ServerDesk.Agent.exe.' });
+    for (const [relative, content] of Object.entries(expected)) await put(`.build/${relative}`, content);
+    await refused('The build artifact has an unexpected entry: .build.', 'a root .build folder next to the files');
+    // Only the ZIP of another version.
     await fresh();
-    await put('.build/agent-v3-artifact.json', JSON.stringify({ version: '4.7.5' }));
-    assert.throws(() => stageAgentBuild({ from, to: directory, version: '4.7.4' }), { message: 'The build artifact has version 4.7.5, not 4.7.4.' });
+    await rm(path.join(from, 'ServerDesk-Agent-4.7.4-win-x64.zip'));
+    await put('ServerDesk-Agent-4.7.5-win-x64.zip', 'zip');
+    await refused('The build artifact has an unexpected entry: ServerDesk-Agent-4.7.5-win-x64.zip.', 'a ZIP of another version');
+    // The EXE as a folder is no file.
+    await fresh();
+    await rm(path.join(from, 'agent-v3-publish', 'ServerDesk.Agent.exe'));
+    await mkdir(path.join(from, 'agent-v3-publish', 'ServerDesk.Agent.exe'));
+    await refused('The build artifact has an unexpected entry: agent-v3-publish/ServerDesk.Agent.exe.', 'the EXE as a folder');
+    await fresh();
+    await rm(path.join(from, 'agent-v3-publish', 'ServerDesk.Agent.exe'));
+    await refused('The build artifact has no agent-v3-publish/ServerDesk.Agent.exe.', 'a missing EXE');
+    await fresh();
+    await rm(path.join(from, 'agent-v3-artifact.json'));
+    await refused('The build artifact has no agent-v3-artifact.json.', 'missing metadata');
+    await fresh();
+    await put('agent-v3-artifact.json', '{ not json');
+    await refused('agent-v3-artifact.json in the build artifact is not valid JSON.', 'metadata that is not JSON');
+    await fresh();
+    await put('agent-v3-artifact.json', JSON.stringify({ version: '4.7.5' }));
+    await refused('The build artifact has version 4.7.5, not 4.7.4.', 'metadata of another version');
     assert.throws(() => stageAgentBuild({ from, to: directory, version: '4.7' }), { message: 'Agent version "4.7" must be X.Y.Z or X.Y.Z-dev.<sha7>.' });
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
 
-test('the stage and digests CLIs copy into the current directory and write the hashes to the job summary', async () => {
+test('the stage and digests CLIs copy into .build/ of the current directory and write the hashes to the job summary', async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'serverdesk-agent-stage-cli-'));
   try {
     const from = path.join(directory, 'artifact');
     const checkout = path.join(directory, 'checkout');
-    await mkdir(path.join(from, '.build', 'agent-v3-publish'), { recursive: true });
+    await mkdir(path.join(from, 'agent-v3-publish'), { recursive: true });
     await mkdir(checkout);
-    await writeFile(path.join(from, '.build', 'agent-v3-artifact.json'), JSON.stringify({ version: '4.7.4' }));
-    await writeFile(path.join(from, '.build', 'ServerDesk-Agent-4.7.4-win-x64.zip'), 'zip');
-    await writeFile(path.join(from, '.build', 'agent-v3-publish', 'ServerDesk.Agent.exe'), 'exe');
+    await writeFile(path.join(from, 'agent-v3-artifact.json'), JSON.stringify({ version: '4.7.4' }));
+    await writeFile(path.join(from, 'ServerDesk-Agent-4.7.4-win-x64.zip'), 'zip');
+    await writeFile(path.join(from, 'agent-v3-publish', 'ServerDesk.Agent.exe'), 'exe');
     const summary = path.join(directory, 'summary.md');
     const cli = args => spawnSync(process.execPath, [script, ...args], { cwd: checkout, encoding: 'utf8', env: childEnv({ GITHUB_STEP_SUMMARY: summary }) });
     const staged = cli(['stage', '--dir', from, '--version', '4.7.4']);
     assert.equal(staged.status, 0, staged.stderr);
     assert.ok(existsSync(path.join(checkout, '.build', 'agent-v3-publish', 'ServerDesk.Agent.exe')));
+    assert.ok(staged.stdout.includes('Copied 3 build files: .build/ServerDesk-Agent-4.7.4-win-x64.zip, .build/agent-v3-artifact.json, .build/agent-v3-publish/ServerDesk.Agent.exe.'), staged.stdout);
     assert.match(staged.stdout, new RegExp(`ServerDesk-Agent-4\\.7\\.4-win-x64\\.exe: 3 bytes, SHA-256 ${hash('exe')}`));
     const shown = cli(['digests', '--version', '4.7.4']);
     assert.equal(shown.status, 0, shown.stderr);
@@ -656,20 +693,28 @@ test('the stage and digests CLIs copy into the current directory and write the h
     assert.match(text, /^### Agent 4\.7\.4 build$/m);
     assert.ok(text.includes(`| ServerDesk-Agent-4.7.4-win-x64.zip | 3 | \`${hash('zip')}\` |`), text);
     for (const args of [['stage', '--dir', from], ['digests'], ['digests', '--version', '4.7']]) assert.equal(cli(args).status, 1, args.join(' '));
+    // A refusal names the entry relative to the artifact root and stops the CLI.
+    await writeFile(path.join(from, 'release-changelog.mjs'), 'console.log(1)');
+    const planted = cli(['stage', '--dir', from, '--version', '4.7.4']);
+    assert.deepEqual([planted.status, planted.stderr.trim()], [1, 'The build artifact has an unexpected entry: release-changelog.mjs.']);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
 
 test('staging refuses a link in the build artifact', async t => {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'serverdesk-agent-link-'));
   try {
-    const from = path.join(directory, 'artifact');
-    await mkdir(path.join(from, '.build'), { recursive: true });
+    const from = path.join(directory, 'artifact'), to = path.join(directory, 'to');
+    await mkdir(path.join(from, 'agent-v3-publish'), { recursive: true });
+    await mkdir(to);
+    await writeFile(path.join(from, 'ServerDesk-Agent-4.7.4-win-x64.zip'), 'zip');
+    await writeFile(path.join(from, 'agent-v3-publish', 'ServerDesk.Agent.exe'), 'exe');
     await writeFile(path.join(directory, 'target.json'), JSON.stringify({ version: '4.7.4' }));
-    try { symlinkSync(path.join(directory, 'target.json'), path.join(from, '.build', 'agent-v3-artifact.json'), 'file'); } catch (error) {
+    try { symlinkSync(path.join(directory, 'target.json'), path.join(from, 'agent-v3-artifact.json'), 'file'); } catch (error) {
       if (error?.code === 'EPERM') { t.skip('creating links needs more rights here'); return; }
       throw error;
     }
-    assert.throws(() => stageAgentBuild({ from, to: path.join(directory, 'to'), version: '4.7.4' }), { message: 'The build artifact has a link: .build/agent-v3-artifact.json.' });
+    assert.throws(() => stageAgentBuild({ from, to, version: '4.7.4' }), { message: 'The build artifact has a link: agent-v3-artifact.json.' });
+    assert.deepEqual(await readdir(to), [], 'nothing copied after a refusal');
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
 
@@ -746,6 +791,109 @@ test('the build job builds on Windows without any secret and uploads the build w
     'ServerDesk/.build/ServerDesk-Agent-${{ needs.plan.outputs.version }}-win-x64.zip',
     'ServerDesk/.build/agent-v3-publish/ServerDesk.Agent.exe',
   ]);
+});
+
+test('the build upload comment names the real artifact root', () => {
+  const lines = workflowText.split(/\r?\n/), at = lines.findIndex(line => line.trim() === '- name: Upload the build');
+  let first = at;
+  while (lines[first - 1].trim().startsWith('#')) first--;
+  const comment = lines.slice(first, at).map(line => line.trim().replace(/^#\s?/, '')).join(' ');
+  assert.ok(first < at, 'a comment above the upload');
+  assert.doesNotMatch(comment, /relative to ServerDesk/);
+  assert.match(comment, /the artifact root is ServerDesk\/\.build/);
+  assert.match(comment, /The sign job copies the expected files back into \.build\//);
+});
+
+test('the upload-artifact layout helper takes the common folder of the search paths, or the folder of one file', () => {
+  const literal = ['ServerDesk/.build/agent-v3-artifact.json', 'ServerDesk/.build/ServerDesk-Agent-4.7.4-win-x64.zip', 'ServerDesk/.build/agent-v3-publish/ServerDesk.Agent.exe'];
+  const each = list => Object.fromEntries(list.map(file => [file, [file]]));
+  const three = uploadArtifactLayout(literal, each(literal));
+  assert.equal(three.root, 'ServerDesk/.build');
+  assert.deepEqual(three.entries.map(item => item.entry), ['agent-v3-artifact.json', 'ServerDesk-Agent-4.7.4-win-x64.zip', 'agent-v3-publish/ServerDesk.Agent.exe']);
+  // A literal file and a glob: the search path of the glob ends before its first wildcard segment.
+  const workspace = ['ServerDesk/.build/plugin-dns-artifact.json', 'ServerDesk/.build/plugin-dns-publish/ServerDesk.Plugin.Dns.exe', 'ServerDesk/.build/plugin-dns-publish/ServerDesk.Plugin.Dns.pdb', 'ServerDesk/.build/plugin-dhcp-publish/ServerDesk.Plugin.Dhcp.exe'];
+  const lines = ['ServerDesk/.build/plugin-dns-artifact.json', 'ServerDesk/.build/plugin-dns-publish/*.exe'];
+  assert.equal(uploadSearchPath(lines[1]), 'ServerDesk/.build/plugin-dns-publish');
+  assert.equal(uploadSearchPath('ServerDesk/**/plugin-*-publish/*.exe'), 'ServerDesk');
+  assert.deepEqual(filesOfUploadPath(lines[1], workspace), ['ServerDesk/.build/plugin-dns-publish/ServerDesk.Plugin.Dns.exe']);
+  assert.deepEqual(filesOfUploadPath('ServerDesk/**/*.exe', workspace), ['ServerDesk/.build/plugin-dns-publish/ServerDesk.Plugin.Dns.exe', 'ServerDesk/.build/plugin-dhcp-publish/ServerDesk.Plugin.Dhcp.exe']);
+  const glob = uploadArtifactLayout(lines, Object.fromEntries(lines.map(line => [line, filesOfUploadPath(line, workspace)])));
+  assert.equal(glob.root, 'ServerDesk/.build');
+  assert.deepEqual(glob.entries.map(item => item.entry), ['plugin-dns-artifact.json', 'plugin-dns-publish/ServerDesk.Plugin.Dns.exe']);
+  // One literal file: its folder is the root.
+  const single = uploadArtifactLayout([literal[2]], each([literal[2]]));
+  assert.deepEqual([single.root, single.entries.map(item => item.entry)], ['ServerDesk/.build/agent-v3-publish', ['ServerDesk.Agent.exe']]);
+  // One glob or one folder: the search path is the root, also for a single file.
+  const oneGlob = uploadArtifactLayout([lines[1]], { [lines[1]]: filesOfUploadPath(lines[1], workspace) });
+  assert.deepEqual([oneGlob.root, oneGlob.entries.map(item => item.entry)], ['ServerDesk/.build/plugin-dns-publish', ['ServerDesk.Plugin.Dns.exe']]);
+  const folder = uploadArtifactLayout(['ServerDesk/.build/'], { 'ServerDesk/.build/': filesOfUploadPath('ServerDesk/.build/', literal) });
+  assert.deepEqual([folder.root, folder.entries.length], ['ServerDesk/.build', 3]);
+  // The common ancestor goes by whole segments, not by characters.
+  const siblings = ['ServerDesk/.build-a/x.json', 'ServerDesk/.build-b/y.json'];
+  assert.equal(uploadArtifactLayout(siblings, each(siblings)).root, 'ServerDesk');
+  // A search path below another one counts once.
+  const nested = uploadArtifactLayout(['ServerDesk/.build', literal[2]], { 'ServerDesk/.build': literal, [literal[2]]: [literal[2]] });
+  assert.deepEqual([nested.root, nested.entries.length], ['ServerDesk/.build', 3]);
+  assert.throws(() => uploadArtifactLayout([literal[0]], { [literal[0]]: [literal[1]] }), /is not below the search path/);
+  assert.throws(() => uploadArtifactLayout([literal[0]], {}), /uploads no file/);
+});
+
+/** Copies the given files of ServerDesk into <directory>/ServerDesk, a checkout with only these files. */
+const checkoutWith = async (directory, files) => {
+  for (const file of files) {
+    const target = path.join(directory, 'ServerDesk', file);
+    await mkdir(path.dirname(target), { recursive: true });
+    await writeFile(target, await readFile(path.join(root, file)));
+  }
+};
+/** The words of a run line with "$NAME" replaced from `variables`; only plain words and double quotes. */
+const commandWords = (line, variables) => [...line.matchAll(/"([^"]*)"|(\S+)/g)].map(match => (match[1] ?? match[2]).replace(/\$([A-Z_]+)/g, (_all, name) => {
+  if (!Object.hasOwn(variables, name)) throw new Error(`No value for $${name} in: ${line}`);
+  return variables[name];
+}));
+
+test('the sign job stages the build in the layout that upload-artifact produces', async () => {
+  const upload = steps('build').find(step => step.uses?.startsWith('actions/upload-artifact@'));
+  const download = steps('sign').find(step => step.uses?.startsWith('actions/download-artifact@'));
+  const stage = steps('sign').find(step => step.name === 'Copy the expected build files');
+  assert.equal(download.with.name, upload.with.name, 'the sign job downloads the artifact of the build job');
+  for (const version of ['4.7.4', '4.12.1-dev.abc1234']) {
+    const directory = await mkdtemp(path.join(os.tmpdir(), 'serverdesk-agent-layout-'));
+    try {
+      const runnerTemp = path.join(directory, 'runner-temp');
+      const expression = text => {
+        const value = text.replaceAll('${{ needs.plan.outputs.version }}', version).replaceAll('${{ runner.temp }}', runnerTemp);
+        assert.ok(!value.includes('${{'), `an expression the test does not know: ${value}`);
+        return value;
+      };
+      // What the build job leaves in the workspace: the uploaded files and others that stay behind.
+      const built = {
+        'ServerDesk/.build/agent-v3-artifact.json': JSON.stringify({ version }),
+        [`ServerDesk/.build/ServerDesk-Agent-${version}-win-x64.zip`]: `zip ${version}`,
+        'ServerDesk/.build/agent-v3-publish/ServerDesk.Agent.exe': `exe ${version}`,
+      };
+      const workspace = [...Object.keys(built), 'ServerDesk/.build/agent-v3-publish/ServerDesk.Agent.pdb', 'ServerDesk/scripts/agent-release.mjs'];
+      const lines = expression(upload.with.path).split('\n').map(line => line.trim()).filter(Boolean);
+      const layout = uploadArtifactLayout(lines, Object.fromEntries(lines.map(line => [line, filesOfUploadPath(line, workspace)])));
+      assert.equal(layout.root, 'ServerDesk/.build', version);
+      assert.deepEqual(layout.entries.map(item => item.file).sort(), Object.keys(built).sort(), 'the upload holds exactly the three build files');
+      const downloaded = expression(download.with.path);
+      for (const { file, entry } of layout.entries) {
+        await mkdir(path.dirname(path.join(downloaded, entry)), { recursive: true });
+        await writeFile(path.join(downloaded, entry), built[file]);
+      }
+      const checkout = path.join(directory, 'checkout');
+      await checkoutWith(checkout, ['scripts/agent-release.mjs', 'scripts/release-changelog.mjs', 'runtime/agent-release-verify.mjs', 'runtime/release-manifest.mjs', 'runtime/release-version.mjs']);
+      const variables = { RUNNER_TEMP: runnerTemp, ...Object.fromEntries(Object.entries(stage.env).map(([name, value]) => [name, expression(value)])) };
+      const [program, ...args] = commandWords(stage.run, variables);
+      assert.equal(program, 'node');
+      const result = spawnSync(process.execPath, args, { cwd: path.join(checkout, stage['working-directory']), encoding: 'utf8', env: childEnv() });
+      assert.equal(result.status, 0, `${version}: ${result.stderr}`);
+      assert.ok(result.stdout.includes(`Copied 3 build files: .build/ServerDesk-Agent-${version}-win-x64.zip, .build/agent-v3-artifact.json, .build/agent-v3-publish/ServerDesk.Agent.exe.`), result.stdout);
+      for (const [file, content] of Object.entries(built)) assert.equal(await readFile(path.join(checkout, file), 'utf8'), content, file);
+      assert.deepEqual((await readdir(path.join(checkout, 'ServerDesk'))).sort(), ['.build', 'runtime', 'scripts'], 'the stage writes only into .build/');
+    } finally { await rm(directory, { recursive: true, force: true }); }
+  }
 });
 
 test('the sign job is the only place of the key: one step, a private temporary file and no install', () => {
@@ -941,9 +1089,9 @@ test('stage, digests, verify and the asset names accept a dev version and refuse
   try {
     const from = path.join(directory, 'artifact'), to = path.join(directory, 'checkout');
     const put = async (relative, content) => { await mkdir(path.dirname(path.join(from, relative)), { recursive: true }); await writeFile(path.join(from, relative), content); };
-    await put('.build/agent-v3-artifact.json', JSON.stringify({ version: devVersion }));
-    await put(`.build/ServerDesk-Agent-${devVersion}-win-x64.zip`, 'zip');
-    await put('.build/agent-v3-publish/ServerDesk.Agent.exe', 'exe');
+    await put('agent-v3-artifact.json', JSON.stringify({ version: devVersion }));
+    await put(`ServerDesk-Agent-${devVersion}-win-x64.zip`, 'zip');
+    await put('agent-v3-publish/ServerDesk.Agent.exe', 'exe');
     await mkdir(to);
     assert.deepEqual(stageAgentBuild({ from, to, version: devVersion }).sort(), ['.build/ServerDesk-Agent-4.12.1-dev.abc1234-win-x64.zip', '.build/agent-v3-artifact.json', '.build/agent-v3-publish/ServerDesk.Agent.exe']);
     assert.deepEqual(buildDigests(to, devVersion).map(row => row.name), [`ServerDesk-Agent-${devVersion}-win-x64.zip`, `ServerDesk-Agent-${devVersion}-win-x64.exe`]);

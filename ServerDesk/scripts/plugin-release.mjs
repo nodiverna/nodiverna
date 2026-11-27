@@ -95,19 +95,35 @@ export function pluginReleaseNotes(record) {
   return sections.join('\n\n');
 }
 
+// The build folder of the checkout. The artifact of the build job holds its files
+// without this prefix (see stagePluginBuild).
+const buildFolder = '.build';
+/** A path of pluginPaths below .build/, relative to that folder. */
+const inBuildFolder = file => {
+  if (!file.startsWith(`${buildFolder}/`)) throw new Error(`${file} is not below ${buildFolder}/.`);
+  return file.slice(buildFolder.length + 1);
+};
+
 /**
  * Copies the build artifact into the checkout, but only the two files the build
  * job uploads: the artifact metadata and the published EXE. The build job runs
  * third-party code, so its artifact may hold anything: a link, a script or a
  * key file would otherwise replace a file of the checkout before the signing
  * step runs that checkout with the key.
+ * The artifact root is ServerDesk/.build of the build job: upload-artifact
+ * stores the files relative to the common folder of the upload paths, which
+ * all lie below ServerDesk/.build. So `from` holds plugin-<name>-artifact.json
+ * and plugin-<name>-publish/<EXE>, and they go back into .build/ of `to`;
+ * nothing is written anywhere else in `to`. Refusals name the entry relative to
+ * the artifact root, as the operator finds it in the download.
  * @param {{ from: string, to: string, name: string, version: string }} input
- * @returns {string[]} the copied paths, relative and with "/"
+ * @returns {string[]} the copied paths relative to `to`, with "/" (.build/...)
  */
 export function stagePluginBuild({ from, to, name, version }) {
   if (!isReleaseVersion(version)) throw new Error(`Plugin version "${version}" must be X.Y.Z or X.Y.Z-dev.<sha7>.`);
-  const paths = pluginPaths(name), required = [paths.artifact, `${paths.publish}/${paths.exe}`];
-  const directories = new Set(['.build', paths.publish]);
+  const paths = pluginPaths(name), artifact = inBuildFolder(paths.artifact), publish = inBuildFolder(paths.publish);
+  const required = [artifact, `${publish}/${paths.exe}`];
+  const directories = new Set([publish]);
   const files = [];
   const walk = relative => {
     for (const entry of readdirSync(path.join(from, relative)).sort()) {
@@ -122,13 +138,14 @@ export function stagePluginBuild({ from, to, name, version }) {
   walk('');
   for (const entry of required) if (!files.includes(entry)) throw new Error(`The build artifact has no ${entry}.`);
   let metadata;
-  try { metadata = JSON.parse(readFileSync(path.join(from, paths.artifact), 'utf8')); } catch { throw new Error(`${paths.artifact} in the build artifact is not valid JSON.`); }
+  try { metadata = JSON.parse(readFileSync(path.join(from, artifact), 'utf8')); } catch { throw new Error(`${artifact} in the build artifact is not valid JSON.`); }
   if (metadata?.name !== name || metadata?.version !== version) throw new Error(`The build artifact is ${metadata?.name} ${metadata?.version}, not ${name} ${version}.`);
   for (const entry of files) {
-    mkdirSync(path.dirname(path.join(to, entry)), { recursive: true });
-    copyFileSync(path.join(from, entry), path.join(to, entry));
+    const target = path.join(to, buildFolder, entry);
+    mkdirSync(path.dirname(target), { recursive: true });
+    copyFileSync(path.join(from, entry), target);
   }
-  return files;
+  return files.map(entry => `${buildFolder}/${entry}`);
 }
 
 /** Size and SHA-256 of the published EXE, for the approver to compare. */

@@ -148,27 +148,36 @@ export function agentReleaseNotes(record, earlier = []) {
   return text;
 }
 
-const buildDirectories = new Set(['.build', '.build/agent-v3-publish']);
-const buildRequired = version => ['.build/agent-v3-artifact.json', `.build/${agentReleaseFiles(version).zip}`, '.build/agent-v3-publish/ServerDesk.Agent.exe'];
+// The build folder of the checkout. The artifact of the build job holds its files
+// without this prefix (see stageAgentBuild).
+const buildFolder = '.build';
+const artifactDirectories = new Set(['agent-v3-publish']);
+const artifactRequired = version => ['agent-v3-artifact.json', agentReleaseFiles(version).zip, 'agent-v3-publish/ServerDesk.Agent.exe'];
 
 /**
  * Copies the build artifact into the checkout, but only the files the build job
  * uploads for this version. The build job runs third-party code, so its artifact
  * may hold anything: a link, a script or a key file would otherwise replace a
  * file of the checkout before the signing step runs that checkout with the key.
+ * The artifact root is ServerDesk/.build of the build job: upload-artifact
+ * stores the files relative to the common folder of the upload paths, which
+ * all lie below ServerDesk/.build. So `from` holds agent-v3-artifact.json, the
+ * ZIP and agent-v3-publish/ServerDesk.Agent.exe, and they go back into .build/
+ * of `to`; nothing is written anywhere else in `to`. Refusals name the entry
+ * relative to the artifact root, as the operator finds it in the download.
  * @param {{ from: string, to: string, version: string }} input
- * @returns {string[]} the copied paths, relative and with "/"
+ * @returns {string[]} the copied paths relative to `to`, with "/" (.build/...)
  */
 export function stageAgentBuild({ from, to, version }) {
   if (!isReleaseVersion(version)) throw new Error(`Agent version "${version}" must be X.Y.Z or X.Y.Z-dev.<sha7>.`);
-  const required = buildRequired(version);
+  const required = artifactRequired(version);
   const files = [];
   const walk = relative => {
     for (const name of readdirSync(path.join(from, relative)).sort()) {
       const entry = relative ? `${relative}/${name}` : name;
       const stat = lstatSync(path.join(from, entry));
       if (stat.isSymbolicLink()) throw new Error(`The build artifact has a link: ${entry}.`);
-      if (stat.isDirectory() && buildDirectories.has(entry)) walk(entry);
+      if (stat.isDirectory() && artifactDirectories.has(entry)) walk(entry);
       else if (stat.isFile() && required.includes(entry)) files.push(entry);
       else throw new Error(`The build artifact has an unexpected entry: ${entry}.`);
     }
@@ -179,10 +188,11 @@ export function stageAgentBuild({ from, to, version }) {
   try { metadata = JSON.parse(readFileSync(path.join(from, required[0]), 'utf8')); } catch { throw new Error(`${required[0]} in the build artifact is not valid JSON.`); }
   if (metadata?.version !== version) throw new Error(`The build artifact has version ${metadata?.version}, not ${version}.`);
   for (const entry of files) {
-    mkdirSync(path.dirname(path.join(to, entry)), { recursive: true });
-    copyFileSync(path.join(from, entry), path.join(to, entry));
+    const target = path.join(to, buildFolder, entry);
+    mkdirSync(path.dirname(target), { recursive: true });
+    copyFileSync(path.join(from, entry), target);
   }
-  return files;
+  return files.map(entry => `${buildFolder}/${entry}`);
 }
 
 /** Size and SHA-256 of the ZIP and the EXE in .build, for the approver to compare. */
