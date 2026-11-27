@@ -106,6 +106,4 @@ Read [`CONTRIBUTING.md`](CONTRIBUTING.md) before you open a pull request. We mer
 
 The whole repository uses the GNU Affero General Public License, version 3 only (AGPL-3.0, refer to [`LICENSE`](LICENSE)). Contributions use the same license, as the contribution terms in [`CONTRIBUTING.md`](CONTRIBUTING.md) tell you.
 
-Third-party components keep their own licenses, for example the components in [`ServerDesk/agent/v3/THIRD-PARTY-NOTICES.txt`](ServerDesk/agent/v3/THIRD-PARTY-NOTICES.txt).
-
-The manufacturer logos come from Simple Icons (CC0-1.0) and are trademarks of their owners, refer to [`ServerDesk/docs/manufacturer-logos.md`](ServerDesk/docs/manufacturer-logos.md).
+Third-party components keep their own licenses, for example the components in [`ServerDesk/agent/v3/THIRD-PARTY-NOTICES.txt`](ServerDesk/agent/v3/THIRD-PARTY-NOTICES.txt). The manufacturer logos come from Simple Icons (CC0-1.0) and are trademarks of their owners, refer to [`ServerDesk/docs/manufacturer-logos.md`](ServerDesk/docs/manufacturer-logos.md).
