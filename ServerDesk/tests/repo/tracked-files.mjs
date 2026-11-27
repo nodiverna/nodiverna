@@ -1,4 +1,4 @@
-// Every tracked file has a user (job 338, the public file audit). Four rules on the files below
+// Every tracked file has a user, so the public repository holds no unused file. Four rules on the files below
 // ServerDesk/: public/ holds exactly the listed static files (the ignored public/downloads/ does not
 // count); drizzle/meta/ holds exactly _journal.json and the snapshot of the last journal entry,
 // because drizzle-kit reads only the newest snapshot; every docs/*.md is named by file name in a
