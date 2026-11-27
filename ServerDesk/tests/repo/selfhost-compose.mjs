@@ -490,8 +490,12 @@ test('development smoke migrates the same persistent /data volume used by the va
   assert.deepEqual(result.calls.at(-1).args.slice(0, 2), ['network', 'rm'], 'only isolated smoke data and its network are removed');
 });
 
-// The strings are assembled so that this file does not match itself.
-const forbidden = [['192', '168', '178', '5'].join('.'), 'nifi' + '@', '/home/' + 'nifi', 'appgprj' + '_', 'deploy/' + 'nas.sh', 'compose.nas' + '.dev', 'pipeline.mjs' + ' nas'];
+// The strings are assembled so that this file does not match itself. The second
+// line holds real environment and personal names that test and demo data replaced
+// with documentation values (lab.example, CT-WS01, Contoso Devices).
+const forbidden = [['192', '168', '178', '5'].join('.'), 'nifi' + '@', '/home/' + 'nifi', 'appgprj' + '_', 'deploy/' + 'nas.sh', 'compose.nas' + '.dev', 'pipeline.mjs' + ' nas',
+  'nf' + 'i.local', 'NF' + 'I-WS', 'NF' + 'I-DC', 'Eizi' + 'kovich'];
+const forbiddenFindings = (name, text) => forbidden.filter(value => text.includes(value)).map(value => `${name}: ${value}`);
 const skippedPrefixes = ['factory' + '/', '.claude/', 'ServerDesk/public/downloads/'];
 function isBinary(file) {
   const handle = openSync(file, 'r');
@@ -501,7 +505,14 @@ function isBinary(file) {
   } finally { closeSync(handle); }
 }
 
-test('no tracked text file outside the factory and .claude folders contains a private NAS address, user, path or hosting ID', async t => {
+test('the forbidden list finds each real environment and personal name in a text', () => {
+  for (const value of ['nf' + 'i.local', 'NF' + 'I-WS01', 'NF' + 'I-DC01', 'Shaul ' + 'Eizi' + 'kovich']) {
+    assert.equal(forbiddenFindings('sample.cs', `const host = "${value}";`).length, 1, value);
+  }
+  assert.deepEqual(forbiddenFindings('sample.cs', 'lab.example CT-WS01 Contoso Devices 192.0.2.2'), []);
+});
+
+test('no tracked text file outside the factory and .claude folders contains a private NAS address, user, path, hosting ID, real environment name or personal name', async t => {
   const listed = spawnSync('git', ['ls-files', '-z'], { cwd: repository, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   if (listed.status !== 0) { t.skip('git ls-files is not available'); return; }
   const files = listed.stdout.split('\0').filter(name => name && !skippedPrefixes.some(prefix => name.startsWith(prefix)));
@@ -511,7 +522,7 @@ test('no tracked text file outside the factory and .claude folders contains a pr
     const file = path.join(repository, name);
     if (!existsSync(file) || isBinary(file)) continue;
     const text = await readFile(file, 'utf8');
-    for (const value of forbidden) if (text.includes(value)) findings.push(`${name}: ${value}`);
+    findings.push(...forbiddenFindings(name, text));
   }
   assert.deepEqual(findings, []);
 });

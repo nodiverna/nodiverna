@@ -13,6 +13,7 @@ import {hookDatabase} from '../support/hooked-database.mjs';
 import {sql} from '../../runtime/database.mjs';
 import '../support/register.mjs';
 import {boundaryPhase,everyCustomer} from '../support/customer-separation.mjs';
+import {autostartFixture,autostartFixtureIds,autostartFixtureChecksum} from '../support/autostart-checksum-fixture.mjs';
 
 const uuid=()=>crypto.randomUUID();
 const customerA='00000000-0000-4000-8000-000000000100';
@@ -57,6 +58,14 @@ const audits=()=>d.query(sql`SELECT actor,target,server_id AS "serverId",scope F
 const later=(ms=61000)=>{clock+=ms;};
 
 try{
+ // ---- Entry ID and checksum parity with the agent (NativeAutostartTests.cs) ----
+ check(await Promise.all(autostartFixture.map(item=>inventory.autostartId(item))),autostartFixtureIds,'the portal entry IDs equal the agent values');
+ const fixtureItems=autostartFixture.map((item,index)=>({id:autostartFixtureIds[index],...item}));
+ check(await inventory.autostartChecksum(fixtureItems),autostartFixtureChecksum,'the portal checksum equals the agent value');
+ check(await inventory.autostartChecksum([...fixtureItems].reverse()),autostartFixtureChecksum,'independent of the input order');
+ const agentSelfTest=(await import('node:fs')).readFileSync('agent/v3/NativeAutostartTests.cs','utf8');
+ check([autostartFixtureChecksum,...autostartFixtureIds].every(value=>agentSelfTest.includes(value)),true,'the agent self-test checks the same checksum and IDs');
+
  // ---- Fixture ----
  const customerB=uuid();await insert('customers',{id:customerB,name:'Customer B',created_at:time,updated_at:time});
  const parent=await group('Parent',null),groupB=await group('B group',null,customerB);

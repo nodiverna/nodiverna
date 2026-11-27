@@ -15,7 +15,7 @@ const check=(actual,expected,label)=>{assert.deepEqual(actual,expected,label);ch
 
 const now=Date.parse('2026-10-20T12:00:00.000Z'),day=86400000,iso=offset=>new Date(now-offset).toISOString();
 const parameters=['0x00000000c0000005','0xfffff80410001234','0xffffd00012345678','0x0000000000000000'];
-const crash=(offset,overrides={})=>({id:'a1b2c3d4e5f60718',kind:'bugcheck',at:iso(offset),stopCode:0x3B,parameters,driver:{name:'vjoy.sys',version:'2.1.9.1',manufacturer:'Shaul Eizikovich'},source:'event+minidump',dumpFile:'102026-12000-01.dmp',dumpStatus:'parsed',detail:null,...overrides});
+const crash=(offset,overrides={})=>({id:'a1b2c3d4e5f60718',kind:'bugcheck',at:iso(offset),stopCode:0x3B,parameters,driver:{name:'vjoy.sys',version:'2.1.9.1',manufacturer:'Contoso Devices'},source:'event+minidump',dumpFile:'102026-12000-01.dmp',dumpStatus:'parsed',detail:null,...overrides});
 const inventory={collectedAt:iso(0),windowDays:30,complete:true,truncated:false};
 
 // ---- Telemetry schema ----

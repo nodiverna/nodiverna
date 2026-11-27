@@ -27,7 +27,7 @@ const commonDrivers:DemoDriver[]=[
  ['Intel(R) Ethernet Connection I219-LM','Net','oem7.inf','e1d68x64.sys','Intel','12.19.2.45','2023-04-12',true],
 ];
 const ownDrivers:Record<string,DemoDriver[]>={
- 'demo-app':[['vJoy Device','HIDClass','oem42.inf','vjoy.sys','Shaul Eizikovich','2.1.9.1','2019-11-20',false],['NVIDIA GeForce RTX A2000','Display','oem12.inf','nvlddmkm.sys','NVIDIA','31.0.15.3623','2023-06-12',true]],
+ 'demo-app':[['vJoy Device','HIDClass','oem42.inf','vjoy.sys','Contoso Devices','2.1.9.1','2019-11-20',false],['NVIDIA GeForce RTX A2000','Display','oem12.inf','nvlddmkm.sys','NVIDIA','31.0.15.3623','2023-06-12',true]],
  'demo-db':[['Broadcom NetXtreme Gigabit Ethernet','Net','oem3.inf','b57nd60a.sys','Broadcom','214.0.0.6','2015-03-10',true]],
 };
 function demoDriverItems(serverId:string):DriverItem[]{

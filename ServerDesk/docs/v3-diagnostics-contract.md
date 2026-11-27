@@ -19,6 +19,8 @@ All requests use the existing authenticated identity. State changes need a same-
 | `export-events` | `filter`, `format:json/csv/evtx` | Descriptor of a local staged file for the separate authenticated transfer flow |
 | `support-bundle` | `channels` 1–3, default System/Application; `includeEvents` default true | ZIP with the selected event JSON, a bounded process inventory, sessions and network diagnostics. No agent credentials or configuration |
 
+[`v3-process-telemetry.md`](v3-process-telemetry.md) describes the process list that the agent sends with each collection pass, without a diagnostic job.
+
 The event filter has these fields: `channel`, optional ISO UTC/offset `from` and `to`, `levels` 0–5, optional `provider`, `eventIds` 0–65535, `text`, `limit` 1–100 and `includeXml`. It also has an optional `{channel,recordId,timeCreated}` cursor. Before the device goes to the next page, it verifies the anchor timestamp of the cursor against the current log. If somebody cleared or overwrote the anchor, the job fails with the code `AGENT_EVENT_CURSOR_INVALID` (`AGENT_EVENT_CURSOR_INVALID_CHANNEL` for a cursor of a different channel). The UI must then start again without its cursor.
 
 Queries use the Windows event engine for system filters. For bounded free-text matching, they scan a maximum of 1000 records. They also limit the length of each description and XML. EVTX exports contain only the selected page and support system filters. They reject a free-text filter. JSON and CSV exports contain the selected result page, and an empty EVTX export returns a clear error.
