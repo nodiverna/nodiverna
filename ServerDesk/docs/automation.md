@@ -51,6 +51,9 @@ device report. Until then, **Next run** shows **After the next device report**.
 **Turn off** stops a schedule. **Show assignment** opens the assignment on the
 **Assignments** tab.
 
+[`v3-automation.md`](v3-automation.md) describes the runbook versions, the secret
+parameters, the schedule rules and the optional drift monitoring in detail.
+
 ## Templates and inheritance
 
 - **Drift:** Copy the data sources from the reference device. As an option, use

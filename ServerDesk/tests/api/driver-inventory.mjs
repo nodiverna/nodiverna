@@ -58,7 +58,7 @@ const later=(ms=61000)=>{clock+=ms;};
 try{
  // ---- Snapshot and report schemas ----
  const base={hostname:'H',os:'Windows 11 Pro',build:'26100',manufacturer:'',model:'',domain:'',cores:4,memoryGb:16,cpu:5,memory:30,uptimeSeconds:10,rebootPending:false,management:false,disks:[],services:[],processes:[],events:[],networks:[],hotfixes:[],collectionErrors:[],protocolVersion:3,agentVersion:'4.11.0',mode:'ReadOnly',publicKey:{kty:'RSA',n:'a'.repeat(342),e:'AQAB'},agentCapabilities:[]};
- const health=(extra={})=>({collectedAt:new Date(time).toISOString(),checksum:'a'.repeat(64),count:120,truncated:false,unsignedCount:1,unsigned:[{key:key('vjoy'),deviceName:'vJoy Device',infName:'oem42.inf',file:'vjoy.sys',provider:'Shaul Eizikovich',version:'2.1.9.1'}],problems:[{key:key('p1'),name:'Unknown USB Device',class:'USB',code:43,manufacturer:null},{key:key('p2'),name:'PCI Data Acquisition',class:null,code:28,manufacturer:null}],problemsTruncated:false,...extra});
+ const health=(extra={})=>({collectedAt:new Date(time).toISOString(),checksum:'a'.repeat(64),count:120,truncated:false,unsignedCount:1,unsigned:[{key:key('vjoy'),deviceName:'vJoy Device',infName:'oem42.inf',file:'vjoy.sys',provider:'Contoso Devices',version:'2.1.9.1'}],problems:[{key:key('p1'),name:'Unknown USB Device',class:'USB',code:43,manufacturer:null},{key:key('p2'),name:'PCI Data Acquisition',class:null,code:28,manufacturer:null}],problemsTruncated:false,...extra});
  check(telemetry.safeParse({...base,driverHealth:health()}).success,true,'a valid driverHealth');
  for(const [label,value] of [
   ['a PNPDeviceID',health({problems:[{key:key('p1'),name:'X',class:null,code:43,manufacturer:null,pnpDeviceId:'USB\\VID_1234'}]})],
@@ -97,7 +97,7 @@ try{
  await d.exec(everyCustomer(time));
 
  // ---- Ingest ----
- const vjoy=item('vJoy Device','oem42.inf','2.1.9.1',{file:'vjoy.sys',service:'vjoy',signed:false,signer:null,provider:'Shaul Eizikovich',date:'2019-08-01'});
+ const vjoy=item('vJoy Device','oem42.inf','2.1.9.1',{file:'vjoy.sys',service:'vjoy',signed:false,signer:null,provider:'Contoso Devices',date:'2019-08-01'});
  const nic=item('Intel Ethernet','oem7.inf','12.19.2.45',{provider:'Intel',deviceClass:'Net'});
  const gpu=item('NVIDIA RTX','oem9.inf','31.0.15.5222',{provider:'NVIDIA',deviceClass:'Display'});
  const first=await report([vjoy,nic]);

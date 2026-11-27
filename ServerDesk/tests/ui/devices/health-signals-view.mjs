@@ -36,7 +36,7 @@ let html=render(h(CrashList,{server:byId['demo-app']}));
 ok(text(html).includes('Crashes')&&text(html).includes('Blue screens, unexpected shutdowns and hardware errors of the last 30 days.'),'title and meta');
 check([...html.matchAll(/<th scope="col">([^<]+)<\/th>/g)].map(match=>match[1]),['Time','Type','Stop code','Driver','Source'],'columns');
 ok(html.includes('href="https://learn.microsoft.com/windows-hardware/drivers/debugger/bug-check-0x3b--system-service-exception" target="_blank" rel="noopener noreferrer"'),'the documentation link opens in a new tab without referrer');
-ok(text(html).includes('0x3B SYSTEM_SERVICE_EXCEPTION')&&text(html).includes('vjoy.sys')&&text(html).includes('2.1.9.1 · Shaul Eizikovich')&&text(html).includes('Event log and minidump'),'stop code, driver with version and manufacturer, source');
+ok(text(html).includes('0x3B SYSTEM_SERVICE_EXCEPTION')&&text(html).includes('vjoy.sys')&&text(html).includes('2.1.9.1 · Contoso Devices')&&text(html).includes('Event log and minidump'),'stop code, driver with version and manufacturer, source');
 html=render(h(CrashList,{server:byId['demo-db']}));
 ok(text(html).includes('Unexpected shutdown')&&!html.includes('learn.microsoft.com'),'no documentation link without a bugcheck');
 ok(text(render(h(CrashList,{server:byId['demo-file']}))).includes('No crashes in the last 30 days'),'empty');
